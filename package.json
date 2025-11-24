@@ -1,5 +1,5 @@
 {
-  "name": "shacl-form-editor",
+  "name": "@shacl-form-editor/shacl-form-editor",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,4 +15,3 @@
     "prettier": "3.6.2"
   }
 }
-

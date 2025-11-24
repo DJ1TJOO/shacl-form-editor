@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import SFEFooter from '@/components/sfe-footer/index.vue'
-import SFEHeader from '@/components/sfe-header/index.vue'
+import { SFEFooter } from '@/components/sfe-footer'
+import { SFEHeader } from '@/components/sfe-header'
 import { RouterView } from 'vue-router'
 </script>
 

@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import SFEFooter from '@/components/sfe-footer/index.vue'
+import SFEHeader from '@/components/sfe-header/index.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <header>
-    <RouterLink to="/">Home</RouterLink>
-  </header>
+  <div class="flex flex-col min-h-screen">
+    <SFEHeader />
 
-  <RouterView />
+    <div class="flex-1 min-h-0">
+      <RouterView />
+    </div>
+
+    <SFEFooter />
+  </div>
 </template>

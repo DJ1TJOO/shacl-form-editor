@@ -1,1 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 @import 'tailwindcss';
+
+@theme {
+  --color-branding: #00518e;
+  --color-branding-lighter: #0066b3;
+  --color-branding-darker: #004980;
+
+  --color-light: #ffffff;
+  --color-complementary: #efc700;
+
+  --color-text: #4a4a4a;
+  --color-text-lighter: #9b9b9b;
+  --color-text-light: #ababab;
+  --color-text-dark: #000000;
+
+  --color-background: #ffffff;
+  --color-background-highlighted: #f1f1f1;
+  --color-background-blue: #bfd4e3;
+  --color-separator: #dcdcdc;
+
+  --color-danger: #990000;
+  --color-danger-lighter: #bd0000;
+  --color-danger-light: #ff8282;
+
+  --color-warning: #856404;
+  --color-warning-lighter: #a97f05;
+  --color-warning-light: #fbdc80;
+
+  --color-success: #009900;
+  --color-success-lighter: #00bd00;
+  --color-success-light: #82ff82;
+
+  --font-sans: 'Open Sans', sans-serif;
+}

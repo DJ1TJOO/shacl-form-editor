@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 @import 'tailwindcss';
+@import 'tw-animate-css';
 
 @theme {
   --color-branding: #00518e;
@@ -31,5 +32,19 @@
   --color-success-lighter: #00bd00;
   --color-success-light: #82ff82;
 
+  --color-border: oklch(0.92 0.004 286.32);
+
   --font-sans: 'Open Sans', sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-separator focus-visible:ring-branding/50 focus-visible:ring-[3px] outline-none;
+  }
+  *:focus-visible {
+    @apply rounded-sm;
+  }
+  body {
+    @apply bg-background-highlighted text-text;
+  }
 }

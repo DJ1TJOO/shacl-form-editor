@@ -4,7 +4,10 @@ import { FolderGit } from 'lucide-vue-next'
 </script>
 
 <template>
-  <footer class="flex flex-col items-center bg-background px-10 py-2 w-full text-xs">
+  <footer
+    data-slot="footer"
+    class="flex flex-col items-center bg-background px-10 py-2 w-full text-xs"
+  >
     <a
       href="https://github.com/DJ1TJOO/shacl-form-editor"
       target="_blank"
@@ -29,5 +32,5 @@ import { FolderGit } from 'lucide-vue-next'
       ></span
     >
   </footer>
-  <Separator />
+  <Separator data-slot="footer-separator" />
 </template>

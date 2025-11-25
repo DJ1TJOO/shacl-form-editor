@@ -17,7 +17,7 @@ function isActive(path: string) {
 </script>
 
 <template>
-  <RouterLink :to="to">
+  <RouterLink :to="to" class="shrink-0">
     <BarItem :active="isActive(to)" text-color="text">
       <component :is="type === 'node' ? DiamondIcon : CircleIcon" class="size-4" />
       {{ label }}

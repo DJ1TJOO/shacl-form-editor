@@ -27,7 +27,7 @@ const color = ref('red')
   <DropdownMenu v-slot="{ open }">
     <DropdownMenuTrigger>
       <BarItem :active="open" class="text-branding">
-        <span class="bg-background-blue p-1 rounded-sm"><FileIcon class="size-4" /></span>
+        <span class="bg-background-blue p-1 rounded-sm"><FileIcon class="size-5" /></span>
         MyShaclFile
       </BarItem>
     </DropdownMenuTrigger>

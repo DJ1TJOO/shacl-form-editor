@@ -11,11 +11,11 @@ import { DownloadIcon, EyeIcon } from 'lucide-vue-next'
       <p class="leading-none tracking-wider">Build Validation Schemas Visually</p>
     </div>
     <div class="flex gap-2">
-      <Button color="background-highlighted" size="wide">
+      <Button color="background-highlighted" size="lg">
         <EyeIcon />
         Preview
       </Button>
-      <Button size="wide">
+      <Button size="lg">
         <DownloadIcon />
         Export Schema
       </Button>

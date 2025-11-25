@@ -10,8 +10,8 @@ const props = defineProps<{
 
 const classes = computed(() =>
   cn(
-    'flex items-center gap-2 hover:bg-background-highlighted px-3 pt-2 pb-[calc((var(--spacing)*2)-2px)] border-b-2 text-text transition-colors cursor-default',
-    props.active ? 'border-branding' : 'border-transparent',
+    'flex items-center gap-2 hover:bg-background-highlighted px-3 border-y-2 border-y-transparent h-full text-text transition-colors cursor-default',
+    props.active && 'border-b-branding',
     props.class,
   ),
 )

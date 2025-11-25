@@ -5,7 +5,7 @@ import ShapeItem from '@/components/editor-bar/shape-item.vue'
 </script>
 
 <template>
-  <div class="flex bg-background w-full h-10">
+  <div data-slot="editor-bar" class="top-0 sticky flex bg-background w-full h-10 overflow-x-auto">
     <FileItem />
     <ShapeItem to="/file/MyShaclFile/MyNode" label="MyNode" type="node" />
     <ShapeItem to="/file/MyShaclFile/MyProperty" label="MyProperty" type="property" />

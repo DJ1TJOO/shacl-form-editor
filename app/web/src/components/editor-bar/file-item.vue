@@ -25,9 +25,12 @@ const color = ref('red')
 
 <template>
   <DropdownMenu v-slot="{ open }">
-    <DropdownMenuTrigger>
+    <DropdownMenuTrigger class="group shrink-0">
       <BarItem :active="open" class="text-branding">
-        <span class="bg-background-blue p-1 rounded-sm"><FileIcon class="size-5" /></span>
+        <span
+          class="bg-background-blue group-hover:bg-background-blue/70 p-1 rounded-sm transition-colors"
+          ><FileIcon class="size-5"
+        /></span>
         MyShaclFile
       </BarItem>
     </DropdownMenuTrigger>

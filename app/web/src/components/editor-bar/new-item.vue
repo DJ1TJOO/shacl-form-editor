@@ -13,7 +13,7 @@ import { PlusIcon } from 'lucide-vue-next'
 
 <template>
   <Dialog>
-    <DialogTrigger>
+    <DialogTrigger class="shrink-0">
       <BarItem>
         <PlusIcon class="size-4" />
         New Node or Property

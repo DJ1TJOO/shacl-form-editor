@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Separator } from '@/components/separator'
+import { ColoredSeparator } from '@/components/colored-separator'
 import { FolderGit } from 'lucide-vue-next'
 </script>
 
@@ -32,5 +32,5 @@ import { FolderGit } from 'lucide-vue-next'
       ></span
     >
   </footer>
-  <Separator data-slot="footer-separator" />
+  <ColoredSeparator data-slot="footer-separator" />
 </template>

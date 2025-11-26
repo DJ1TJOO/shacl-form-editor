@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Separator } from '@/components/separator'
+import { ColoredSeparator } from '@/components/colored-separator'
 import { Button } from '@/components/ui/button'
 import { DownloadIcon, EyeIcon } from 'lucide-vue-next'
 </script>
@@ -24,5 +24,5 @@ import { DownloadIcon, EyeIcon } from 'lucide-vue-next'
       </Button>
     </div>
   </header>
-  <Separator data-slot="header-separator" />
+  <ColoredSeparator data-slot="header-separator" />
 </template>

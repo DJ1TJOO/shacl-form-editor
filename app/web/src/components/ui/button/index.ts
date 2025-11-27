@@ -45,10 +45,10 @@ export const buttonVariants = cva(
         ghost: 'hover:bg-background-highlighted hover:text-(--button-accent)',
       },
       size: {
-        default: 'px-1 py-1 h-7',
+        default: 'px-3 py-1 h-7',
         sm: "h-5 py-0.5 px-1 gap-1 text-xs [&_svg:not([class*='size-'])]:size-3",
         lg: 'px-5 py-1 h-8 gap-2.5 rounded-md',
-        icon: "size-7 [&_svg:not([class*='size-'])]:size-6",
+        icon: 'size-7',
         'icon-sm': "size-5 [&_svg:not([class*='size-'])]:size-4",
       },
     },

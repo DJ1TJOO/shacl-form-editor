@@ -7,3 +7,7 @@ export interface InputProps extends /* @vue-ignore */ InputHTMLAttributes {
   modelValue?: string | number
   class?: HTMLAttributes['class']
 }
+
+export interface InputEmits {
+  (e: 'update:modelValue', payload: string | number): void
+}

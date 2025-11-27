@@ -7,3 +7,7 @@ export interface TextareaProps extends /* @vue-ignore */ TextareaHTMLAttributes 
   modelValue?: string | number
   class?: HTMLAttributes['class']
 }
+
+export interface TextareaEmits {
+  (e: 'update:modelValue', payload: string | number): void
+}

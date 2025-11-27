@@ -46,6 +46,7 @@ import {
   InputGroupText,
   InputGroupTextarea,
 } from '@/components/ui/input-group'
+import { InputList } from '@/components/ui/input-list'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
@@ -64,6 +65,34 @@ import { computed, ref } from 'vue'
 
 const isLeftSideBarOpen = ref(true)
 const isRightSideBarOpen = ref(true)
+
+let nextEntryId = 0
+
+type PatternEntry = {
+  id: number
+  pattern: string
+  flags: string
+}
+
+const createPatternEntry = (): PatternEntry => ({
+  id: nextEntryId++,
+  pattern: '',
+  flags: '',
+})
+
+const patternEntries = ref<PatternEntry[]>([createPatternEntry()])
+
+type ClassEntry = {
+  id: number
+  class: string
+}
+
+const createClassEntry = (): ClassEntry => ({
+  id: nextEntryId++,
+  class: '',
+})
+
+const classEntries = ref<ClassEntry[]>([createClassEntry()])
 
 const gridTemplateColumns = computed(() => {
   const leftWidth = isLeftSideBarOpen.value ? '16rem' : '44px'
@@ -219,14 +248,16 @@ const gridTemplateColumns = computed(() => {
             <ComboboxItem value="red">
               <div class="flex items-center gap-2">
                 <ComboboxItemIndicator />
-                <span>Red</span>
+                <InfoIcon />
+                <span> Red</span>
               </div>
             </ComboboxItem>
 
             <ComboboxItem value="blue">
               <div class="flex items-center gap-2">
                 <ComboboxItemIndicator />
-                <span>Blue</span>
+                <InfoIcon />
+                <span> Blue</span>
               </div>
             </ComboboxItem>
           </ComboboxGroup>
@@ -366,6 +397,90 @@ const gridTemplateColumns = computed(() => {
           <Button variant="outline" type="button"> Cancel </Button>
         </Field>
       </FieldGroup>
+
+      <FieldSet
+        ><FieldGroup>
+          <Field>
+            <FieldLabel> Class </FieldLabel>
+            <InputList
+              v-model="classEntries"
+              :min="0"
+              :max="5"
+              :create-entry="createClassEntry"
+              :get-key="(entry: ClassEntry) => entry.id"
+              v-slot="{ entry, remove, isRemovable }"
+            >
+              <InputGroup>
+                <InputGroupInput
+                  v-model="entry.class"
+                  placeholder="Class (e.g. Person)"
+                  class="flex-1"
+                />
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    size="icon-sm"
+                    variant="ghost"
+                    color="danger"
+                    v-if="isRemovable"
+                    @click="remove"
+                  >
+                    <XIcon />
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
+            </InputList>
+          </Field>
+        </FieldGroup>
+        <FieldGroup>
+          <Field class="gap-0.5 grid grid-cols-[1fr_auto]">
+            <div class="grid grid-cols-subgrid col-span-2">
+              <FieldLabel> Patterns </FieldLabel>
+              <FieldLabel v-if="patternEntries.length > 0"> Flags </FieldLabel>
+            </div>
+            <InputList
+              v-model="patternEntries"
+              :min="0"
+              :max="1"
+              :create-entry="createPatternEntry"
+              :get-key="(entry: PatternEntry) => entry.id"
+              v-slot="{ entry, remove, isRemovable }"
+            >
+              <div class="grid grid-cols-subgrid col-span-2">
+                <InputGroup>
+                  <InputGroupInput
+                    v-model="entry.pattern"
+                    placeholder="Pattern (e.g. [a-b])"
+                    class="flex-1"
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton
+                      size="icon-sm"
+                      variant="ghost"
+                      color="danger"
+                      type="button"
+                      v-if="isRemovable"
+                      @click="remove"
+                    >
+                      <XIcon />
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
+                <Select v-model="entry.flags">
+                  <SelectTrigger class="w-full">
+                    <SelectValue placeholder="Flags" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none"> None </SelectItem>
+                    <SelectItem value="i"> i </SelectItem>
+                    <SelectItem value="m"> m </SelectItem>
+                    <SelectItem value="g"> g </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </InputList>
+          </Field>
+        </FieldGroup>
+      </FieldSet>
     </SideBar>
   </main>
 </template>

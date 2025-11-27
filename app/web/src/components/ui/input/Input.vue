@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import type { InputProps } from '@/components/ui/input'
+import type { InputEmits, InputProps } from '@/components/ui/input'
 import { cn } from '@/lib/cn'
 import { useVModel } from '@vueuse/core'
 import { ref } from 'vue'
 
 const props = defineProps<InputProps>()
 
-const emits = defineEmits<{
-  (e: 'update:modelValue', payload: string | number): void
-}>()
+const emits = defineEmits<InputEmits>()
 
 const modelValue = useVModel(props, 'modelValue', emits, {
   passive: true,

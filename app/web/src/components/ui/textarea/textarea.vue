@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import type { TextareaProps } from '@/components/ui/textarea'
+import type { TextareaEmits, TextareaProps } from '@/components/ui/textarea'
 import { cn } from '@/lib/cn'
 import { useVModel } from '@vueuse/core'
 
 const props = defineProps<TextareaProps>()
 
-const emits = defineEmits<{
-  (e: 'update:modelValue', payload: string | number): void
-}>()
+const emits = defineEmits<TextareaEmits>()
 
 const modelValue = useVModel(props, 'modelValue', emits, {
   passive: true,

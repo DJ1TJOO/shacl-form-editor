@@ -33,7 +33,7 @@ defineEmits<{
       <br />
       some text
     </template>
-    <Button color="background-blue" @click="$emit('update:open', !open)" v-else>
+    <Button color="background-blue" size="icon" @click="$emit('update:open', !open)" v-else>
       <component :is="shape === 'node' ? DiamondIcon : CircleIcon" />
     </Button>
   </div>

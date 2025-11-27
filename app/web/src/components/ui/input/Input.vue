@@ -1,18 +1,12 @@
 <script setup lang="ts">
+import type { InputEmits, InputProps } from '@/components/ui/input'
 import { cn } from '@/lib/cn'
 import { useVModel } from '@vueuse/core'
-import type { HTMLAttributes } from 'vue'
 import { ref } from 'vue'
 
-const props = defineProps<{
-  defaultValue?: string | number
-  modelValue?: string | number
-  class?: HTMLAttributes['class']
-}>()
+const props = defineProps<InputProps>()
 
-const emits = defineEmits<{
-  (e: 'update:modelValue', payload: string | number): void
-}>()
+const emits = defineEmits<InputEmits>()
 
 const modelValue = useVModel(props, 'modelValue', emits, {
   passive: true,
@@ -35,7 +29,7 @@ defineExpose({ inputRef })
         'placeholder:text-text-light',
         'selection:bg-background-blue selection:text-branding ',
         'file:border-0 file:inline-flex file:bg-transparent file:font-medium file:text-text file:text-sm file:h-7',
-        'aria-invalid:ring-destructive/20 aria-invalid:border-destructive',
+        'aria-invalid:ring-danger/20 aria-invalid:border-danger',
         'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
         props.class,
       )

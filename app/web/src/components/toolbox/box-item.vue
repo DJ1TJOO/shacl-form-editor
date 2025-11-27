@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { InfoIcon } from 'lucide-vue-next'
 import { type Component } from 'vue'
 
@@ -25,16 +25,14 @@ defineProps<Props>()
         label
       }}</span>
     </span>
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger
-          class="hidden mr-1 size-5 text-separator group-data-[toolbox-open=true]/toolbox-items:[display:unset]"
-          ><InfoIcon class="size-5"
-        /></TooltipTrigger>
-        <TooltipContent>
-          <slot />
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger
+        class="hidden mr-1 size-5 text-separator group-data-[toolbox-open=true]/toolbox-items:[display:unset]"
+        ><InfoIcon class="size-5"
+      /></TooltipTrigger>
+      <TooltipContent>
+        <slot />
+      </TooltipContent>
+    </Tooltip>
   </button>
 </template>

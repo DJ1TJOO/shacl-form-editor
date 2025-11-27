@@ -4,9 +4,9 @@ export { default as Button } from './button.vue'
 
 export const buttonVariants = cva(
   [
-    'inline-flex py-1 items-center justify-center gap-2 whitespace-nowrap rounded-sm text-sm font-medium transition-all',
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-sm font-medium transition-all',
     'disabled:pointer-events-none disabled:opacity-50',
-    'outline-none focus-visible:border-branding  focus-visible:ring-branding/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 aria-invalid:border-destructive',
+    'outline-none focus-visible:border-branding  focus-visible:ring-branding/50 focus-visible:ring-[3px] aria-invalid:ring-danger/20 aria-invalid:border-danger',
     "[&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5 shrink-0 [&_svg]:shrink-0",
   ],
   {
@@ -45,9 +45,11 @@ export const buttonVariants = cva(
         ghost: 'hover:bg-background-highlighted hover:text-(--button-accent)',
       },
       size: {
-        default: 'px-1 h-7',
+        default: 'px-3 py-1 h-7',
         sm: "h-5 py-0.5 px-1 gap-1 text-xs [&_svg:not([class*='size-'])]:size-3",
-        lg: 'px-5 h-8 gap-2.5 rounded-md',
+        lg: 'px-5 py-1 h-8 gap-2.5 rounded-md',
+        icon: 'size-7',
+        'icon-sm': "size-5 [&_svg:not([class*='size-'])]:size-4",
       },
     },
     defaultVariants: {

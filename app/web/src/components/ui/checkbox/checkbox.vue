@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { cn } from '@/lib/cn'
 import { reactiveOmit } from '@vueuse/core'
-import { Check } from 'lucide-vue-next'
+import { Check, Minus } from 'lucide-vue-next'
 import type { CheckboxRootEmits, CheckboxRootProps } from 'reka-ui'
 import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
@@ -21,7 +21,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     v-bind="forwarded"
     :class="
       cn(
-        'peer relative bg-background-highlighted shadow-xs rounded-[4px] size-5 transition-shadow shrink-0',
+        'peer relative bg-background-highlighted shadow-xs rounded-[4px] size-5! transition-shadow shrink-0',
         'data-[state=checked]:text-branding',
         'disabled:cursor-not-allowed disabled:opacity-50',
         'aria-invalid:border-danger aria-invalid:ring-danger/20',
@@ -32,10 +32,11 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
   >
     <CheckboxIndicator
       data-slot="checkbox-indicator"
-      class="absolute inset-0 place-content-center grid text-current transition-none"
+      class="group/checkbox-indicator absolute inset-0 place-content-center grid text-current transition-none"
     >
       <slot v-bind="slotProps">
-        <Check class="size-4" />
+        <Check class="group-data-[state=indeterminate]/checkbox-indicator:hidden size-4" />
+        <Minus class="hidden group-data-[state=indeterminate]/checkbox-indicator:block size-4" />
       </slot>
     </CheckboxIndicator>
   </CheckboxRoot>

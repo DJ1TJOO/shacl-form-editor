@@ -19,7 +19,7 @@ const modelValue = useVModel(props, 'modelValue', emits, {
     data-slot="textarea"
     :class="
       cn(
-        'flex bg-background-highlighted shadow-xs px-3 py-2 rounded-sm outline-none w-full min-h-16',
+        'flex bg-background-highlighted shadow-xs px-3 py-2 rounded-sm outline-none w-full min-h-14',
         'md:text-sm text-base placeholder:text-text-light',
         'selection:bg-background-blue selection:text-branding ',
         'transition-[color,box-shadow] field-sizing-content',

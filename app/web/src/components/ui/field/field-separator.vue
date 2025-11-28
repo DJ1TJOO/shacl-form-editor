@@ -12,7 +12,7 @@ const props = defineProps<{
   <div
     data-slot="field-separator"
     :data-content="!!$slots.default"
-    :class="cn('relative h-4 text-sm', props.class)"
+    :class="cn('relative h-1 text-sm', props.class)"
   >
     <Separator class="top-1/2 absolute" />
     <span

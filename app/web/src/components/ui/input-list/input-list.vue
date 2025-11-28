@@ -2,11 +2,12 @@
 import { Button } from '@/components/ui/button'
 import { computed } from 'vue'
 
+// @TODO: This component is not funcitonal atall
 const props = defineProps<{
   modelValue: T[]
   min?: number
   max?: number
-  createEntry: () => T
+  create: () => T
   getKey: (entry: T, index: number) => string | number
 }>()
 
@@ -23,7 +24,7 @@ const canRemove = computed(() => entries.value.length > minEntries.value)
 
 const handleAdd = () => {
   if (!canAdd.value) return
-  const create = props.createEntry
+  const create = props.create
   emit('update:modelValue', [...entries.value, create()])
 }
 

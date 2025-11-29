@@ -49,11 +49,11 @@ onMounted(updateLayoutHeight)
 </script>
 
 <template>
-  <div class="top-11 sticky h-fit">
+  <aside class="top-11 sticky h-fit">
     <ScrollArea class="rounded-lg" :style="{ height: scrollAreaHeight }">
       <div :class="cn('gap-1 flex flex-col', props.childClass)">
         <slot />
       </div>
     </ScrollArea>
-  </div>
+  </aside>
 </template>

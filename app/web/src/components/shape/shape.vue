@@ -4,10 +4,10 @@ import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/componen
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useOptionsSidebar } from '@/composables/use-options-sidebar'
 import { cn } from '@/lib/cn'
-import { useFocusWithin } from '@vueuse/core'
 import { CircleIcon, DiamondIcon, InfoIcon, PanelRightOpenIcon, TypeIcon } from 'lucide-vue-next'
-import { ref, useId } from 'vue'
+import { ref, useId, watch } from 'vue'
 
 defineProps<{
   open: boolean
@@ -17,22 +17,36 @@ defineEmits<{
   (e: 'update:open', payload: boolean): void
 }>()
 
-const target = ref()
-const { focused } = useFocusWithin(target)
+const {
+  target,
+  Define: DefineOptions,
+  open: openOptions,
+  isOpen,
+} = useOptionsSidebar('Options for MyNode')
 
 const iriId = useId()
 const labelId = useId()
 const pathId = useId()
 const descriptionId = useId()
+
+const value = ref('')
+watch(value, (value) => {
+  console.log('input value', value)
+})
 </script>
 
 <template>
+  <DefineOptions>
+    <p>test</p>
+    <Input v-model="value" />
+  </DefineOptions>
   <div
+    data-activatable
     ref="target"
     :class="
       cn(
         'bg-background p-2 rounded-lg',
-        focused && 'outline-solid outline-2 outline-complementary -outline-offset-2',
+        isOpen && 'outline-solid outline-2 outline-complementary -outline-offset-2',
       )
     "
   >
@@ -84,7 +98,7 @@ const descriptionId = useId()
         </Field>
       </FieldGroup>
     </FieldSet>
-    <Button v-if="open" color="background-blue" class="mt-2 w-full">
+    <Button v-if="open" color="background-blue" class="mt-2 w-full" @click="openOptions">
       <PanelRightOpenIcon /> Additional options
     </Button>
     <Button color="background-blue" size="icon" @click="$emit('update:open', !open)" v-else>

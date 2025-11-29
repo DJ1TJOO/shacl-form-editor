@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { ReuseTemplateComponent } from '@vueuse/core'
-import { createContext, useForwardExpose } from 'reka-ui'
+import { createContext } from 'reka-ui'
 import type { Ref, ShallowRef } from 'vue'
 
 interface OptionsSidebarProviderContext {
@@ -27,8 +27,6 @@ import { ref, shallowRef } from 'vue'
 defineOptions({
   inheritAttrs: false,
 })
-
-useForwardExpose()
 
 const isOpen = ref(false)
 const title = ref('')

@@ -22,7 +22,7 @@ const {
   Define: DefineOptions,
   open: openOptions,
   isOpen,
-} = useOptionsSidebar('Options for MyNode')
+} = useOptionsSidebar(Symbol('shape-options'), 'Options for MyNode')
 
 const iriId = useId()
 const labelId = useId()

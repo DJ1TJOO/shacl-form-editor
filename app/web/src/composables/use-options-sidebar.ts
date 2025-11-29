@@ -3,18 +3,18 @@ import { createReusableTemplate } from '@vueuse/core'
 import { ref, watch } from 'vue'
 import { useActive } from './use-active'
 
-export function useOptionsSidebar(title: string) {
+export function useOptionsSidebar(id: symbol, title: string) {
   const target = ref<HTMLElement>()
 
   const optionsSidebar = injectOptionsSidebarProviderContext()
   const [Define, Reuse] = createReusableTemplate()
 
   function open() {
-    optionsSidebar.open(title, Reuse)
+    optionsSidebar.open(id, title, Reuse)
   }
 
   function close() {
-    optionsSidebar.close()
+    optionsSidebar.close(id)
     deactivate()
   }
 
@@ -24,7 +24,7 @@ export function useOptionsSidebar(title: string) {
     if (isActive) {
       open()
     } else {
-      optionsSidebar.close()
+      optionsSidebar.close(id)
     }
   })
 

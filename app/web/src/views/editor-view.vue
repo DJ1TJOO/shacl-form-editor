@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { EditorBar } from '@/components/editor-bar'
 import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
+import { Property } from '@/components/properties'
 import { Shape } from '@/components/shape'
 import { SideBar } from '@/components/side-bar'
 import { Toolbox } from '@/components/toolbox'
-import { Input } from '@/components/ui/input'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -39,9 +39,7 @@ const gridTemplateColumns = computed(() => {
         />
       </SideBar>
       <main class="space-y-3">
-        <div class="bg-background mx-auto p-2 rounded-lg max-w-md h-40" data-activatable>
-          <Input />
-        </div>
+        <Property />
         <div class="bg-background mx-auto rounded-lg max-w-md h-40"></div>
         <div class="bg-background mx-auto rounded-lg max-w-md h-40"></div>
         <div class="bg-background mx-auto rounded-lg max-w-md h-40"></div>

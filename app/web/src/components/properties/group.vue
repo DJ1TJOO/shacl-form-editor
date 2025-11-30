@@ -1,20 +1,31 @@
 <script setup lang="ts">
 import { injectPropertiesListContext } from '@/components/properties/list.vue'
 import { Button } from '@/components/ui/button'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
 import { cn } from '@/lib/cn'
-import { ChevronDownIcon, GripVerticalIcon, type LucideIcon, XIcon } from 'lucide-vue-next'
+import { ChevronDownIcon, GripVerticalIcon, UngroupIcon, XIcon } from 'lucide-vue-next'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import { ref, watch } from 'vue'
 
 const props = defineProps<{
-  icon: LucideIcon
   label: string
-  path: string
-  inGroup?: boolean
 }>()
 
-const isOpen = ref(false)
+const {
+  target,
+  Define: DefineOptions,
+  isOpen: isOpenOptions,
+} = useOptionsSidebar(Symbol('group-options'), 'Options for ' + props.label, {
+  allowGrouping: false,
+})
+
+const isOpen = ref(true)
 const { listOpen, indeterminate } = injectPropertiesListContext()
 watch(listOpen, (newVal) => {
   if (newVal === 'indeterminate') return
@@ -25,43 +36,50 @@ watch(isOpen, (newVal) => {
   indeterminate()
 })
 
-const {
-  target,
-  Define: DefineOptions,
-  isOpen: isOpenOptions,
-} = useOptionsSidebar(Symbol('property-options'), 'Options for ' + props.path, {
-  allowGrouping: !props.inGroup,
-})
+const title = ref('')
 </script>
 
 <template>
   <DefineOptions>
-    <slot name="options" />
+    <InputGroup>
+      <InputGroupInput v-model="title" placeholder="Group title" />
+      <InputGroupAddon align="inline-end">
+        <InputGroupButton
+          v-if="title"
+          size="icon-sm"
+          variant="ghost"
+          color="danger"
+          @click="title = ''"
+        >
+          <XIcon />
+        </InputGroupButton>
+      </InputGroupAddon>
+    </InputGroup>
+    <Button class="w-full" color="danger">
+      <UngroupIcon />
+      Ungroup properties
+    </Button>
   </DefineOptions>
-  <!--  @TODO: id remove or change to something useful when components are based on data -->
   <CollapsibleRoot
     ref="target"
-    :id="`property-${path}`"
     :class="
       cn(
-        'bg-background mx-auto p-2 rounded-lg max-w-md',
+        'mx-auto p-2 border-2 border-separator rounded-lg max-w-[calc(var(--container-md)+1rem)]',
         isOpenOptions && 'outline-solid outline-2 outline-complementary -outline-offset-2',
       )
     "
-    default-open
     v-model:open="isOpen"
+    :unmountOnHide="false"
   >
-    <div class="relative flex justify-between items-center gap-2">
+    <div class="flex justify-between items-center gap-2">
       <Button variant="ghost" size="icon">
         <GripVerticalIcon />
       </Button>
-      <p v-if="path" class="left-8 absolute text-text-lighter text-sm">
-        {{ path }}
-      </p>
 
       <CollapsibleTrigger as-child class="group/property-collapsible-trigger">
-        <h2 class="flex justify-center justify-self-center items-center gap-1 w-fit">
-          <component :is="icon" class="size-5" />
+        <h2
+          class="flex justify-center justify-self-center items-center gap-1 w-fit font-bold text-branding"
+        >
           {{ label }}
           <Button variant="ghost" size="icon">
             <ChevronDownIcon
@@ -72,7 +90,7 @@ const {
       </CollapsibleTrigger>
       <Button variant="ghost" size="icon" color="danger" class="justify-self-end"><XIcon /></Button>
     </div>
-    <CollapsibleContent class="mt-1">
+    <CollapsibleContent class="space-y-2 mt-1">
       <slot />
     </CollapsibleContent>
   </CollapsibleRoot>

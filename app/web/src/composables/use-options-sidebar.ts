@@ -1,9 +1,9 @@
 import { injectOptionsSidebarProviderContext } from '@/components/options-bar'
 import { createReusableTemplate } from '@vueuse/core'
 import { ref, watch } from 'vue'
-import { useActive } from './use-active'
+import { useActive, type UseActiveOptions } from './use-active'
 
-export function useOptionsSidebar(id: symbol, title: string) {
+export function useOptionsSidebar(id: symbol, title: string, options: UseActiveOptions = {}) {
   const target = ref<HTMLElement>()
 
   const optionsSidebar = injectOptionsSidebarProviderContext()
@@ -18,23 +18,22 @@ export function useOptionsSidebar(id: symbol, title: string) {
     deactivate()
   }
 
-  const { isActive, deactivate } = useActive(target)
+  const { isActive, isGrouped, deactivate } = useActive(target, options)
 
   watch(isActive, (isActive) => {
-    if (isActive) {
-      open()
-    } else {
+    if (!isActive) {
       optionsSidebar.close(id)
+      return
     }
+
+    if (isGrouped.value) return
+    open()
   })
 
-  watch(
-    () => optionsSidebar.isOpen.value,
-    (isOpen) => {
-      if (isOpen) return
-      deactivate()
-    },
-  )
+  watch(optionsSidebar.currentId, (newId, oldId) => {
+    if (newId !== undefined || oldId !== id) return
+    deactivate()
+  })
 
   return {
     target,

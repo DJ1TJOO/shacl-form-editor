@@ -22,7 +22,7 @@ const {
   Define: DefineOptions,
   open: openOptions,
   isOpen,
-} = useOptionsSidebar(Symbol('shape-options'), 'Options for MyNode')
+} = useOptionsSidebar(Symbol('shape-options'), 'Options for MyNode', { allowGrouping: false })
 
 const iriId = useId()
 const labelId = useId()
@@ -37,12 +37,11 @@ watch(value, (value) => {
 
 <template>
   <DefineOptions>
-    <p>test</p>
     <Input v-model="value" />
   </DefineOptions>
   <div
-    data-activatable
     ref="target"
+    :id="shape === 'node' ? 'MyNode' : 'MyProperty'"
     :class="
       cn(
         'bg-background p-2 rounded-lg',

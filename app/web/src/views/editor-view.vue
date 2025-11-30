@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { EditorBar } from '@/components/editor-bar'
 import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
-import { Property } from '@/components/properties'
+import { Group, PropertiesList, Property } from '@/components/properties'
 import { Shape } from '@/components/shape'
 import { SideBar } from '@/components/side-bar'
 import { Toolbox } from '@/components/toolbox'
+import { Input } from '@/components/ui/input'
+import { TypeIcon } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -24,6 +26,8 @@ const gridTemplateColumns = computed(() => {
   }
   return `${leftWidth} 1fr`
 })
+
+const value = ref('')
 </script>
 
 <template>
@@ -38,14 +42,29 @@ const gridTemplateColumns = computed(() => {
           @update:open="isLeftSideBarOpen = $event"
         />
       </SideBar>
-      <main class="space-y-3">
-        <Property />
-        <div class="bg-background mx-auto rounded-lg max-w-md h-40"></div>
-        <div class="bg-background mx-auto rounded-lg max-w-md h-40"></div>
-        <div class="bg-background mx-auto rounded-lg max-w-md h-40"></div>
-        <div class="bg-background mx-auto rounded-lg max-w-md h-40"></div>
-        <div class="bg-background mx-auto rounded-lg max-w-md h-40"></div>
-      </main>
+      <PropertiesList as="main">
+        <Group label="Name">
+          <Property :icon="TypeIcon" label="Text Field" path="firstName" in-group>
+            <template #options>
+              <Input v-model="value" />
+            </template>
+
+            <Input v-model="value" />
+          </Property>
+          <Property :icon="TypeIcon" label="Text Field" path="lastName" in-group>
+            hoi
+            <template #options> doei </template>
+          </Property>
+        </Group>
+        <Property :icon="TypeIcon" label="Text Field" path="email">
+          hoi
+          <template #options> doei </template>
+        </Property>
+        <Property :icon="TypeIcon" label="Text Field" path="other path">
+          hoi
+          <template #options> doei </template>
+        </Property>
+      </PropertiesList>
       <OptionsBar />
     </div>
   </OptionsSidebarProvider>

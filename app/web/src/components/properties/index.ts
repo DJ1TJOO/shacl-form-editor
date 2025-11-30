@@ -1,1 +1,5 @@
+export { default as CreateGroup } from './create-group.vue'
+export { default as Empty } from './empty.vue'
+export { default as Group } from './group.vue'
+export { default as PropertiesList } from './list.vue'
 export { default as Property } from './property.vue'

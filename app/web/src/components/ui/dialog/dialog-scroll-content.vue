@@ -7,10 +7,15 @@ import { DialogClose, DialogContent, DialogPortal, useForwardPropsEmits } from '
 import type { HTMLAttributes } from 'vue'
 import DialogOverlay from './dialog-overlay.vue'
 
-const props = defineProps<DialogContentProps & { class?: HTMLAttributes['class'] }>()
+const props = defineProps<
+  DialogContentProps & {
+    class?: HTMLAttributes['class']
+    'aria-describedby'?: HTMLAttributes['aria-describedby']
+  }
+>()
 const emits = defineEmits<DialogContentEmits>()
 
-const delegatedProps = reactiveOmit(props, 'class')
+const delegatedProps = reactiveOmit(props, 'class', 'aria-describedby')
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>
@@ -25,6 +30,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
             props.class,
           )
         "
+        :aria-describedby="props['aria-describedby']"
         v-bind="forwarded"
         @pointer-down-outside="
           (event) => {

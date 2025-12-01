@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AdditionalConstraints } from '@/components/constraints'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -37,7 +38,7 @@ watch(value, (value) => {
 
 <template>
   <DefineOptions>
-    <Input v-model="value" />
+    <AdditionalConstraints />
   </DefineOptions>
   <div
     ref="target"

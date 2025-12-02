@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import BarItem from '@/components/editor-bar/bar-item.vue'
 import { injectFileContext, Shacl } from '@/components/rdf'
+import { getLocalName } from '@/components/rdf/shacl'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,9 +18,11 @@ import { CircleIcon, DiamondIcon, InfoIcon, PlusIcon } from 'lucide-vue-next'
 import { NamedNode } from 'rdflib'
 import { RovingFocusGroup, RovingFocusItem } from 'reka-ui'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const { store } = injectFileContext()
 
+const router = useRouter()
 const type = ref<'node' | 'property'>('node')
 const iri = ref('')
 
@@ -35,14 +38,16 @@ function create() {
     return
   }
 
+  const shapeIRINode = new NamedNode(shapeIRI)
   if (type.value === 'node') {
-    Shacl.addShape(store.value, new NamedNode(shapeIRI))
+    Shacl.addShape(store.value, shapeIRINode)
   } else {
-    Shacl.addProperty(store.value, new NamedNode(shapeIRI))
+    Shacl.addProperty(store.value, shapeIRINode)
   }
 
   type.value = 'node'
   iri.value = ''
+  router.push(`/file/MyShaclFile/${getLocalName(shapeIRINode)}`)
   close()
 }
 </script>

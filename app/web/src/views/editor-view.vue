@@ -3,13 +3,14 @@ import ExampleFormElements from '@/components/constraints/example-form-elements.
 import { EditorBar } from '@/components/editor-bar'
 import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
 import { Group, PropertiesList, Property } from '@/components/properties'
-import { FileProvider, Shacl } from '@/components/rdf'
+import { FileProvider } from '@/components/rdf'
 import { Shape } from '@/components/shape'
 import { SideBar } from '@/components/side-bar'
 import { Toolbox } from '@/components/toolbox'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { TypeIcon } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -30,11 +31,6 @@ const gridTemplateColumns = computed(() => {
 })
 
 const fileProviderRef = ref<InstanceType<typeof FileProvider> | null>(null)
-const store = computed(() => fileProviderRef.value?.store)
-const shapes = computed(() => (store.value ? Shacl.findShapes(store.value) : []))
-watch(shapes, (newShapes) => {
-  console.log(newShapes)
-})
 
 const value = ref('')
 
@@ -67,11 +63,7 @@ const downloadTtl = () => {
       <EditorBar />
       <div class="gap-3 grid p-1" :style="{ gridTemplateColumns }">
         <SideBar :child-class="!isLeftSideBarOpen && 'h-full justify-center'">
-          <Shape
-            :open="isLeftSideBarOpen"
-            :shape="shape"
-            @update:open="isLeftSideBarOpen = $event"
-          />
+          <Shape :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
           <Toolbox
             v-if="shape === 'node'"
             :open="isLeftSideBarOpen"
@@ -79,7 +71,7 @@ const downloadTtl = () => {
           />
         </SideBar>
         <PropertiesList as="main">
-          <!-- <Button @click="downloadTtl">To TTL</Button> -->
+          <Button @click="downloadTtl">To TTL</Button>
           <Group label="Name">
             <Property :icon="TypeIcon" label="Text Field" path="firstName" in-group>
               <template #options>

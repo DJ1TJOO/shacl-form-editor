@@ -1,22 +1,33 @@
 <script setup lang="ts">
 import { AdditionalConstraints } from '@/components/constraints'
+import { injectFileContext, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
+import { useLiteral } from '@/composables/use-rdf'
 import { cn } from '@/lib/cn'
 import { CircleIcon, DiamondIcon, InfoIcon, PanelRightOpenIcon, TypeIcon } from 'lucide-vue-next'
-import { ref, useId, watch } from 'vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
 defineProps<{
   open: boolean
-  shape: 'node' | 'property'
 }>()
 defineEmits<{
   (e: 'update:open', payload: boolean): void
 }>()
+
+const route = useRoute()
+const { store } = injectFileContext()
+const shape = computed(() =>
+  store.value
+    ? Shacl.findShapes(store.value).find((shape) => shape.name === route.params.shapeId)
+    : undefined,
+)
+const node = computed(() => shape.value?.node)
 
 const {
   target,
@@ -25,15 +36,8 @@ const {
   isOpen,
 } = useOptionsSidebar(Symbol('shape-options'), 'Options for MyNode', { allowGrouping: false })
 
-const iriId = useId()
-const labelId = useId()
-const pathId = useId()
-const descriptionId = useId()
-
-const value = ref('')
-watch(value, (value) => {
-  console.log('input value', value)
-})
+const label = useLiteral(node, Shacl.SHACL('name'))
+const description = useLiteral(node, Shacl.SHACL('description'))
 </script>
 
 <template>
@@ -41,8 +45,10 @@ watch(value, (value) => {
     <AdditionalConstraints />
   </DefineOptions>
   <div
+    v-if="shape"
+    :key="shape.name"
     ref="target"
-    :id="shape === 'node' ? 'MyNode' : 'MyProperty'"
+    :id="shape.name"
     :class="
       cn(
         'bg-background p-2 rounded-lg',
@@ -51,50 +57,53 @@ watch(value, (value) => {
     "
   >
     <FieldSet v-if="open">
-      <FieldLegend v-if="shape === 'property'" class="justify-center w-full font-normal text-text">
+      <FieldLegend
+        v-if="shape.type === 'property'"
+        class="justify-center w-full font-normal text-text"
+      >
         <TypeIcon />
         Text field
       </FieldLegend>
       <FieldGroup>
         <Field>
-          <FieldLabel :for="iriId">
+          <FieldLabel>
             IRI
             <Tooltip>
               <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input :id="iriId" placeholder="ex:MyNode" />
+          <Input :model-value="shape.node.value" placeholder="ex:MyNode" />
         </Field>
-        <Field v-if="shape === 'property'">
-          <FieldLabel :for="pathId">
+        <Field v-if="shape.type === 'property'">
+          <FieldLabel>
             Path
             <Tooltip>
               <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input :id="pathId" placeholder="ex:path" />
+          <Input placeholder="ex:path" />
         </Field>
         <Field>
-          <FieldLabel :for="labelId">
+          <FieldLabel>
             Label
             <Tooltip>
               <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input :id="labelId" placeholder="My Node" />
+          <Input placeholder="My Node" v-model="label" />
         </Field>
         <Field>
-          <FieldLabel :for="descriptionId">
+          <FieldLabel>
             Description
             <Tooltip>
               <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Textarea :id="descriptionId" placeholder="This is a node with a description" />
+          <Textarea v-model="description" placeholder="This is a node with a description" />
         </Field>
       </FieldGroup>
     </FieldSet>
@@ -102,7 +111,7 @@ watch(value, (value) => {
       <PanelRightOpenIcon /> Additional options
     </Button>
     <Button color="background-blue" size="icon" @click="$emit('update:open', !open)" v-else>
-      <component :is="shape === 'node' ? DiamondIcon : CircleIcon" />
+      <component :is="shape.type === 'node' ? DiamondIcon : CircleIcon" />
     </Button>
   </div>
 </template>

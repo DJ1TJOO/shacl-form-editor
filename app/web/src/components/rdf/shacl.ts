@@ -2,8 +2,8 @@ import type { NamedNode as NamedNodeType } from '@rdfjs/types'
 import type { IndexedFormula } from 'rdflib'
 import { NamedNode, Namespace } from 'rdflib'
 
-const SHACL = Namespace('http://www.w3.org/ns/shacl#')
-const RDF = Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+export const SHACL = Namespace('http://www.w3.org/ns/shacl#')
+export const RDF = Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#')
 
 export function getLocalName(iri: NamedNodeType) {
   const name = iri.value.split('/').pop()

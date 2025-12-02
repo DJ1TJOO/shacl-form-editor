@@ -165,12 +165,16 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
     setActive(false)
   }
 
-  onMounted(() => {
-    targetElement.value?.setAttribute(ACTIVATABLE_ATTRIBUTE, '')
-    if (!allowGrouping) {
-      targetElement.value?.setAttribute(NO_GROUPING_ATTRIBUTE, '')
-    }
+  watch(targetElement, (targetElement) => {
+    if (!targetElement) return
 
+    targetElement.setAttribute(ACTIVATABLE_ATTRIBUTE, '')
+    if (!allowGrouping) {
+      targetElement.setAttribute(NO_GROUPING_ATTRIBUTE, '')
+    }
+  })
+
+  onMounted(() => {
     window.addEventListener(DEACTIVATE_GROUPED_EVENT, handleGroupedDeactivate)
   })
 

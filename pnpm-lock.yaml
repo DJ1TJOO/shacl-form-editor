@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  rdflib@2.3.0:
+    hash: 59262843d0bc2b5946b608015f4bcd5bd9d097d48bca9d15a5cad35c4ff62c3f
+    path: patches/rdflib@2.3.0.patch
+
 importers:
 
   .:
@@ -40,7 +45,7 @@ importers:
         version: 0.554.0(vue@3.5.25(typescript@5.9.3))
       rdflib:
         specifier: ^2.3.0
-        version: 2.3.0(web-streams-polyfill@3.3.3)
+        version: 2.3.0(patch_hash=59262843d0bc2b5946b608015f4bcd5bd9d097d48bca9d15a5cad35c4ff62c3f)(web-streams-polyfill@3.3.3)
       reka-ui:
         specifier: ^2.6.0
         version: 2.6.0(typescript@5.9.3)(vue@3.5.25(typescript@5.9.3))
@@ -3550,7 +3555,7 @@ snapshots:
     dependencies:
       setimmediate: 1.0.5
 
-  rdflib@2.3.0(web-streams-polyfill@3.3.3):
+  rdflib@2.3.0(patch_hash=59262843d0bc2b5946b608015f4bcd5bd9d097d48bca9d15a5cad35c4ff62c3f)(web-streams-polyfill@3.3.3):
     dependencies:
       '@babel/runtime': 7.28.4
       '@frogcat/ttl2jsonld': 0.0.10

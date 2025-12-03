@@ -1,0 +1,39 @@
+diff --git a/esm/serializer.js b/esm/serializer.js
+index 56a42295fbf81427b90dafc0287123dfe5c0a588..4c53339e5bb885009df8a1299b44f696a16bbde0 100644
+--- a/esm/serializer.js
++++ b/esm/serializer.js
+@@ -162,7 +162,7 @@ export class Serializer {
+     if (slash >= 0) p = p.slice(slash + 1);
+     var i = 0;
+     while (i < p.length) {
+-      if (this.prefixchars.indexOf(p[i])) {
++      if (this.prefixchars.indexOf(p[i]) >= 0) {
+         i++;
+       } else {
+         break;
+diff --git a/lib/serializer.js b/lib/serializer.js
+index 26b766052e86c0044574558c8bbbadfd7e7127a8..4bf72682fffd4ee212489d21ef6419ab9a494b84 100644
+--- a/lib/serializer.js
++++ b/lib/serializer.js
+@@ -172,7 +172,7 @@ class Serializer {
+     if (slash >= 0) p = p.slice(slash + 1);
+     var i = 0;
+     while (i < p.length) {
+-      if (this.prefixchars.indexOf(p[i])) {
++      if (this.prefixchars.indexOf(p[i]) >= 0) {
+         i++;
+       } else {
+         break;
+diff --git a/src/serializer.js b/src/serializer.js
+index 251f11c709d2ee4b3e341bf6f58a39c4f6863098..2b3ac813c173480d8bc26e074a1330631655251f 100644
+--- a/src/serializer.js
++++ b/src/serializer.js
+@@ -170,7 +170,7 @@ export class Serializer {
+     if (slash >= 0) p = p.slice(slash + 1)
+     var i = 0
+     while (i < p.length) {
+-      if (this.prefixchars.indexOf(p[i])) {
++      if (this.prefixchars.indexOf(p[i]) >= 0) {
+         i++
+       } else {
+         break

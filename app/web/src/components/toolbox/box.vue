@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { injectFileContext, RDF, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useNamedNode } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import {
   CalendarClockIcon,
@@ -22,6 +24,13 @@ import type { Component } from 'vue'
 import { computed, ref } from 'vue'
 import BoxItem from './box-item.vue'
 
+interface ToolboxItem {
+  icon: Component
+  label: string
+  tooltip: string
+  create?: () => void
+}
+
 defineProps<{
   open: boolean
 }>()
@@ -29,16 +38,27 @@ defineEmits<{
   (e: 'update:open', payload: boolean): void
 }>()
 
-const searchQuery = ref('')
-
-interface ToolboxItem {
-  icon: Component
-  label: string
-  tooltip: string
-}
+const { currentShape, store } = injectFileContext()
+const { value: type } = useNamedNode({
+  subject: currentShape.namedNode,
+  predicate: RDF('type'),
+})
 
 const items: ToolboxItem[] = [
-  { icon: TypeIcon, label: 'Text field', tooltip: 'Add to library' },
+  {
+    icon: TypeIcon,
+    label: 'Text field',
+    tooltip: 'Add to library',
+    create: () => {
+      if (!store.value || !currentShape.namedNode.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.namedNode.value,
+        'TextFieldEditor',
+        'LiteralViewer',
+      )
+    },
+  },
   { icon: FileTextIcon, label: 'Text area', tooltip: 'Add to library' },
   { icon: TextCursorInputIcon, label: 'Combobox', tooltip: 'Add to library' },
   { icon: ListTodoIcon, label: 'True / False', tooltip: 'Add to library' },
@@ -53,6 +73,7 @@ const items: ToolboxItem[] = [
   { icon: CircleIcon, label: 'Subproperty', tooltip: 'Add to library' },
 ]
 
+const searchQuery = ref('')
 const filteredItems = computed(() => {
   if (!searchQuery.value.trim()) {
     return items
@@ -63,7 +84,10 @@ const filteredItems = computed(() => {
 </script>
 
 <template>
-  <div :class="cn('gap-2 grid bg-background p-2 rounded-lg', open ? 'w-full' : 'w-fit')">
+  <div
+    v-if="type === Shacl.SHACL('NodeShape').value"
+    :class="cn('gap-2 grid bg-background p-2 rounded-lg', open ? 'w-full' : 'w-fit')"
+  >
     <div class="flex gap-1">
       <Button color="background-blue" size="icon" @click="$emit('update:open', !open)">
         <component :is="open ? PanelLeftCloseIcon : PanelLeftOpenIcon" />
@@ -77,6 +101,8 @@ const filteredItems = computed(() => {
         :key="item.label"
         :icon="item.icon"
         :label="item.label"
+        :disabled="!item.create"
+        @click="item.create?.()"
       >
         {{ item.tooltip }}
       </BoxItem>

@@ -2,11 +2,9 @@
 import FileItem from '@/components/editor-bar/file-item.vue'
 import NewItem from '@/components/editor-bar/new-item.vue'
 import ShapeItem from '@/components/editor-bar/shape-item.vue'
-import { injectFileContext, Shacl } from '@/components/rdf'
-import { computed } from 'vue'
+import { useShapes } from '@/composables/use-shacl'
 
-const { store } = injectFileContext()
-const shapes = computed(() => (store.value ? Shacl.findShapes(store.value) : []))
+const { shapes, removeShape } = useShapes()
 </script>
 
 <template>
@@ -14,11 +12,11 @@ const shapes = computed(() => (store.value ? Shacl.findShapes(store.value) : [])
     <FileItem />
     <ShapeItem
       v-for="shape in shapes"
-      :key="shape.name"
+      :key="shape.value"
       :to="`/file/MyShaclFile/${encodeURIComponent(shape.value)}`"
       :label="shape.name"
       :type="shape.type"
-      @removeShape="() => Shacl.removeShape(store, shape.value)"
+      @removeShape="() => removeShape(shape.value)"
     />
     <NewItem />
   </nav>

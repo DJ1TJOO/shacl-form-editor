@@ -10,8 +10,12 @@ import { ref, watch } from 'vue'
 const props = defineProps<{
   icon: LucideIcon
   label: string
-  path: string
+  path?: string
   inGroup?: boolean
+}>()
+
+defineEmits<{
+  (e: 'remove'): void
 }>()
 
 const isOpen = ref(false)
@@ -70,7 +74,15 @@ const {
           </Button>
         </h2>
       </CollapsibleTrigger>
-      <Button variant="ghost" size="icon" color="danger" class="justify-self-end"><XIcon /></Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        color="danger"
+        class="justify-self-end"
+        @click="$emit('remove')"
+      >
+        <XIcon />
+      </Button>
     </div>
     <CollapsibleContent class="mt-1">
       <slot />

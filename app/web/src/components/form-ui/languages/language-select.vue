@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { languages, type Language } from '@/components/rdf'
 import {
   Combobox,
   ComboboxAnchor,
@@ -10,6 +9,7 @@ import {
   ComboboxList,
   ComboboxTrigger,
 } from '@/components/ui/combobox'
+import { languages, type Language } from './languages'
 
 import type { ComboboxRootEmits, ComboboxRootProps } from 'reka-ui'
 import { ComboboxVirtualizer, useFilter, useForwardPropsEmits } from 'reka-ui'

@@ -13,7 +13,7 @@ import { RouterLink, useRoute } from 'vue-router'
 
 defineProps<{
   to: string
-  label: string
+  label?: string
   type: 'node' | 'property'
 }>()
 

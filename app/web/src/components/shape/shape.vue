@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { AdditionalConstraints } from '@/components/constraints'
-import { SelectLanguage, Shacl } from '@/components/rdf'
-import { RDF } from '@/components/rdf/shacl'
+import { LanguageSelect } from '@/components/form-ui/languages'
+import { injectFileContext, RDF, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
-import { useLiteral, useNamedNode } from '@/composables/use-rdf'
+import { useLiteral, useNamedNode } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
-import { useDebounceFn } from '@vueuse/core'
 import { CircleIcon, DiamondIcon, InfoIcon, PanelRightOpenIcon, TypeIcon } from 'lucide-vue-next'
-import { computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, watch } from 'vue'
 
 defineProps<{
   open: boolean
@@ -22,43 +20,43 @@ defineEmits<{
   (e: 'update:open', payload: boolean): void
 }>()
 
-const route = useRoute()
-const router = useRouter()
+const { currentShape } = injectFileContext()
+const { value: type } = useNamedNode({ subject: currentShape.namedNode, predicate: RDF('type') })
 
-const shapeIRI = computed(() =>
-  typeof route.params.shapeId === 'string' ? decodeURIComponent(route.params.shapeId) : undefined,
+const iri = ref<string | undefined>(currentShape.value.value)
+watch(
+  () => currentShape.value.value,
+  (newVal) => {
+    iri.value = newVal
+  },
+  { immediate: true },
 )
-
-const { value: iri, namedNode: node } = useNamedNode({ initialValue: shapeIRI })
-const { value: type } = useNamedNode({ subject: node, predicate: RDF('type') })
-
-const updateRoute = useDebounceFn((iri: string | undefined) => {
-  if (!iri) return
-
-  const fileId = typeof route.params.fileId === 'string' ? route.params.fileId : 'MyShaclFile'
-  router.replace(`/file/${fileId}/${encodeURIComponent(iri)}`)
-}, 500)
-
-watch(iri, (iri) => {
-  updateRoute(iri)
-})
 
 const {
   target,
   Define: DefineOptions,
   open: openOptions,
   isOpen,
-} = useOptionsSidebar(Symbol('shape-options'), 'Options for MyNode', { allowGrouping: false })
+} = useOptionsSidebar(
+  Symbol(
+    `shape-options-${currentShape.namedNode.value ? Shacl.getLocalName(currentShape.namedNode.value) : ''}`,
+  ),
+  `Options for ${currentShape.namedNode.value ? Shacl.getLocalName(currentShape.namedNode.value) : ''}`,
+  { allowGrouping: false },
+)
 
 const { value: label, language: labelLanguage } = useLiteral({
-  subject: node,
+  subject: currentShape.namedNode,
   predicate: Shacl.SHACL('name'),
 })
 const { value: description, language: descriptionLanguage } = useLiteral({
-  subject: node,
+  subject: currentShape.namedNode,
   predicate: Shacl.SHACL('description'),
 })
-const { value: path } = useNamedNode({ subject: node, predicate: Shacl.SHACL('path') })
+const { value: path } = useNamedNode({
+  subject: currentShape.namedNode,
+  predicate: Shacl.SHACL('path'),
+})
 </script>
 
 <template>
@@ -91,7 +89,11 @@ const { value: path } = useNamedNode({ subject: node, predicate: Shacl.SHACL('pa
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input v-model="iri" placeholder="ex:MyNode" />
+          <Input
+            v-model="iri"
+            placeholder="ex:MyNode"
+            @blur="currentShape.value.value = iri ?? undefined"
+          />
         </Field>
         <Field v-if="type === Shacl.SHACL('PropertyShape').value">
           <FieldLabel>
@@ -116,7 +118,7 @@ const { value: path } = useNamedNode({ subject: node, predicate: Shacl.SHACL('pa
           </div>
           <div class="grid grid-cols-subgrid col-span-2">
             <Input v-model="label" placeholder="My Node" />
-            <SelectLanguage v-model="labelLanguage" />
+            <LanguageSelect v-model="labelLanguage" />
           </div>
         </Field>
         <Field>
@@ -130,7 +132,7 @@ const { value: path } = useNamedNode({ subject: node, predicate: Shacl.SHACL('pa
           <Textarea v-model="description" placeholder="This is a node with a description" />
 
           <FieldLabel>Description Language </FieldLabel>
-          <SelectLanguage v-model="descriptionLanguage" />
+          <LanguageSelect v-model="descriptionLanguage" />
         </Field>
       </FieldGroup>
     </FieldSet>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ColoredSeparator } from '@/components/colored-separator'
-import { Button } from '@/components/ui/button'
-import { DownloadIcon, EyeIcon } from 'lucide-vue-next'
+import { injectHeaderProviderContext } from '@/components/sfe-header'
+
+const { actions } = injectHeaderProviderContext()
 </script>
 
 <template>
@@ -14,14 +15,7 @@ import { DownloadIcon, EyeIcon } from 'lucide-vue-next'
       <p class="leading-none tracking-wider">Build Validation Schemas Visually</p>
     </div>
     <div class="flex gap-2">
-      <Button color="background-highlighted" size="lg">
-        <EyeIcon />
-        Preview
-      </Button>
-      <Button size="lg">
-        <DownloadIcon />
-        Export Schema
-      </Button>
+      <component :is="actions" />
     </div>
   </header>
   <ColoredSeparator data-slot="header-separator" />

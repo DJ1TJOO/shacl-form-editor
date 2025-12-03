@@ -1,3 +1,6 @@
 packages:
-    - "app/*"
-    - "packages/*"
+  - app/*
+  - packages/*
+
+patchedDependencies:
+  rdflib@2.3.0: patches/rdflib@2.3.0.patch

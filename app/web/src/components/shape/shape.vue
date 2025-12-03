@@ -1,47 +1,70 @@
 <script setup lang="ts">
+import { AdditionalConstraints } from '@/components/constraints'
+import { LanguageSelect } from '@/components/form-ui/languages'
+import { injectFileContext, RDF, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
+import { useLiteral, useNamedNode } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { CircleIcon, DiamondIcon, InfoIcon, PanelRightOpenIcon, TypeIcon } from 'lucide-vue-next'
-import { ref, useId, watch } from 'vue'
+import { ref, watch } from 'vue'
 
 defineProps<{
   open: boolean
-  shape: 'node' | 'property'
 }>()
 defineEmits<{
   (e: 'update:open', payload: boolean): void
 }>()
+
+const { currentShape } = injectFileContext()
+const { value: type } = useNamedNode({ subject: currentShape.namedNode, predicate: RDF('type') })
+
+const iri = ref<string | undefined>(currentShape.value.value)
+watch(
+  () => currentShape.value.value,
+  (newVal) => {
+    iri.value = newVal
+  },
+  { immediate: true },
+)
 
 const {
   target,
   Define: DefineOptions,
   open: openOptions,
   isOpen,
-} = useOptionsSidebar(Symbol('shape-options'), 'Options for MyNode', { allowGrouping: false })
+} = useOptionsSidebar(
+  Symbol(
+    `shape-options-${currentShape.namedNode.value ? Shacl.getLocalName(currentShape.namedNode.value) : ''}`,
+  ),
+  `Options for ${currentShape.namedNode.value ? Shacl.getLocalName(currentShape.namedNode.value) : ''}`,
+  { allowGrouping: false },
+)
 
-const iriId = useId()
-const labelId = useId()
-const pathId = useId()
-const descriptionId = useId()
-
-const value = ref('')
-watch(value, (value) => {
-  console.log('input value', value)
+const { value: label, language: labelLanguage } = useLiteral({
+  subject: currentShape.namedNode,
+  predicate: Shacl.SHACL('name'),
+})
+const { value: description, language: descriptionLanguage } = useLiteral({
+  subject: currentShape.namedNode,
+  predicate: Shacl.SHACL('description'),
+})
+const { value: path } = useNamedNode({
+  subject: currentShape.namedNode,
+  predicate: Shacl.SHACL('path'),
 })
 </script>
 
 <template>
   <DefineOptions>
-    <Input v-model="value" />
+    <AdditionalConstraints />
   </DefineOptions>
   <div
     ref="target"
-    :id="shape === 'node' ? 'MyNode' : 'MyProperty'"
     :class="
       cn(
         'bg-background p-2 rounded-lg',
@@ -50,50 +73,66 @@ watch(value, (value) => {
     "
   >
     <FieldSet v-if="open">
-      <FieldLegend v-if="shape === 'property'" class="justify-center w-full font-normal text-text">
+      <FieldLegend
+        v-if="type === Shacl.SHACL('PropertyShape').value"
+        class="justify-center w-full font-normal text-text"
+      >
         <TypeIcon />
         Text field
       </FieldLegend>
       <FieldGroup>
         <Field>
-          <FieldLabel :for="iriId">
+          <FieldLabel>
             IRI
             <Tooltip>
               <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input :id="iriId" placeholder="ex:MyNode" />
+          <Input
+            v-model="iri"
+            placeholder="ex:MyNode"
+            @blur="currentShape.value.value = iri ?? undefined"
+          />
         </Field>
-        <Field v-if="shape === 'property'">
-          <FieldLabel :for="pathId">
+        <Field v-if="type === Shacl.SHACL('PropertyShape').value">
+          <FieldLabel>
             Path
             <Tooltip>
               <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input :id="pathId" placeholder="ex:path" />
+          <Input v-model="path" placeholder="ex:path" />
+        </Field>
+        <Field class="gap-0.5 grid grid-cols-[1fr_--spacing(20)]">
+          <div class="grid grid-cols-subgrid col-span-2">
+            <FieldLabel>
+              Label
+              <Tooltip>
+                <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+                <TooltipContent>This is content in a tooltip.</TooltipContent>
+              </Tooltip>
+            </FieldLabel>
+            <FieldLabel> Language </FieldLabel>
+          </div>
+          <div class="grid grid-cols-subgrid col-span-2">
+            <Input v-model="label" placeholder="My Node" />
+            <LanguageSelect v-model="labelLanguage" />
+          </div>
         </Field>
         <Field>
-          <FieldLabel :for="labelId">
-            Label
-            <Tooltip>
-              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
-              <TooltipContent>This is content in a tooltip.</TooltipContent>
-            </Tooltip>
-          </FieldLabel>
-          <Input :id="labelId" placeholder="My Node" />
-        </Field>
-        <Field>
-          <FieldLabel :for="descriptionId">
+          <FieldLabel>
             Description
             <Tooltip>
               <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Textarea :id="descriptionId" placeholder="This is a node with a description" />
+          <Textarea v-model="description" placeholder="This is a node with a description" />
+
+          <FieldLabel>Description Language </FieldLabel>
+          <LanguageSelect v-model="descriptionLanguage" />
         </Field>
       </FieldGroup>
     </FieldSet>
@@ -101,7 +140,7 @@ watch(value, (value) => {
       <PanelRightOpenIcon /> Additional options
     </Button>
     <Button color="background-blue" size="icon" @click="$emit('update:open', !open)" v-else>
-      <component :is="shape === 'node' ? DiamondIcon : CircleIcon" />
+      <component :is="type === Shacl.SHACL('NodeShape').value ? DiamondIcon : CircleIcon" />
     </Button>
   </div>
 </template>

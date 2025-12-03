@@ -64,14 +64,14 @@ const title = ref('')
     ref="target"
     :class="
       cn(
-        'mx-auto p-2 border-2 border-separator rounded-lg max-w-[calc(var(--container-md)+1rem)]',
+        'mx-auto p-2 border-2 border-separator rounded-lg max-w-[calc(var(--container-md)+1rem+4px)]',
         isOpenOptions && 'outline-solid outline-2 outline-complementary -outline-offset-2',
       )
     "
     v-model:open="isOpen"
     :unmountOnHide="false"
   >
-    <div class="flex justify-between items-center gap-2">
+    <div class="flex justify-between items-center gap-2 px-2">
       <Button variant="ghost" size="icon">
         <GripVerticalIcon />
       </Button>

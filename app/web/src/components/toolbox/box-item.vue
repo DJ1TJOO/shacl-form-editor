@@ -13,7 +13,7 @@ defineProps<Props>()
 
 <template>
   <button
-    class="group flex justify-between items-center gap-2 hover:bg-background-highlighted rounded-sm transition-colors"
+    class="group flex justify-between items-center gap-2 hover:bg-background-highlighted disabled:opacity-50 rounded-sm transition-colors disabled:pointer-events-none"
   >
     <span class="flex items-center gap-2">
       <span

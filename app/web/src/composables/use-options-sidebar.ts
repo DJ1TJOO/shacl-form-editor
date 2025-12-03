@@ -1,6 +1,6 @@
 import { injectOptionsSidebarProviderContext } from '@/components/options-bar'
 import { createReusableTemplate } from '@vueuse/core'
-import { ref, watch } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 import { useActive, type UseActiveOptions } from './use-active'
 
 export function useOptionsSidebar(id: symbol, title: string, options: UseActiveOptions = {}) {
@@ -33,6 +33,10 @@ export function useOptionsSidebar(id: symbol, title: string, options: UseActiveO
   watch(optionsSidebar.currentId, (newId, oldId) => {
     if (newId !== undefined || oldId !== id) return
     deactivate()
+  })
+
+  onUnmounted(() => {
+    close()
   })
 
   return {

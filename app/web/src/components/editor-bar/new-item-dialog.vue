@@ -89,6 +89,7 @@ function create() {
               <RovingFocusGroup class="gap-2 grid grid-cols-2">
                 <RovingFocusItem as-child>
                   <Button
+                    type="button"
                     :color="type === 'node' ? 'default' : 'background-highlighted'"
                     @click="type = 'node'"
                     @focus="type = 'node'"
@@ -98,6 +99,7 @@ function create() {
                 </RovingFocusItem>
                 <RovingFocusItem as-child>
                   <Button
+                    type="button"
                     :color="type === 'property' ? 'default' : 'background-highlighted'"
                     @click="type = 'property'"
                     @focus="type = 'property'"

@@ -96,35 +96,10 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
     return !!document.querySelector('[data-dismissable-layer]')
   }
 
-  function isInteractiveElement(element: EventTarget | HTMLElement | null | undefined) {
-    if (!(element instanceof HTMLElement)) return false
-
-    const interactiveSelectors = [
-      'button',
-      'a[href]',
-      '[role="button"]',
-      '[data-slot="button"]',
-      '[onclick]',
-    ]
-
-    for (const selector of interactiveSelectors) {
-      const closest = element.closest(selector)
-      if (closest && targetElement.value && targetElement.value.contains(closest)) {
-        return true
-      }
-    }
-
-    return false
-  }
-
   useMousePressed({
     target: targetElement,
     onPressed: (e) => {
       if (e instanceof MouseEvent && e.button !== 0) return
-
-      if (isInteractiveElement(e.target)) {
-        return
-      }
 
       if (getActivatableElement(e.target) !== targetElement.value) {
         setActive(false)
@@ -170,10 +145,6 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
   })
 
   watch(activeElement, (activeElement) => {
-    if (isInteractiveElement(activeElement)) {
-      return
-    }
-
     if (isInTarget(activeElement) && getActivatableElement(activeElement) === targetElement.value) {
       setActive(true, ctrlKey.value && !isNoGrouping.value)
       return

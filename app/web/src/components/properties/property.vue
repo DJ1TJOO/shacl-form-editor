@@ -79,7 +79,12 @@ const {
         size="icon"
         color="danger"
         class="justify-self-end"
-        @click="$emit('remove')"
+        @click="
+          () => {
+            console.log('remove')
+            $emit('remove')
+          }
+        "
       >
         <XIcon />
       </Button>

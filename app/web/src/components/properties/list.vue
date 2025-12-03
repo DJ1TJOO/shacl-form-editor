@@ -7,7 +7,7 @@ interface PropertiesListContext {
 }
 
 export const [injectPropertiesListContext, providePropertiesListContext] =
-  createContext<PropertiesListContext>('PropertiesListContext')
+  createContext<PropertiesListContext>('PropertiesList')
 </script>
 
 <script setup lang="ts">

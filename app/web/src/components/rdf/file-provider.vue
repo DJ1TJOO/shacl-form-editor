@@ -10,7 +10,7 @@ interface FileContext {
   currentShape: ReturnType<typeof useParentlessNamedNode>
 }
 
-export const [injectFileContext, provideFileContext] = createContext<FileContext>('FileContext')
+export const [injectFileContext, provideFileContext] = createContext<FileContext>('File')
 </script>
 
 <script setup lang="ts">

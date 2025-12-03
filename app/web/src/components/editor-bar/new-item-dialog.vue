@@ -121,7 +121,7 @@ function create() {
           </FieldGroup>
         </FieldSet>
         <DialogFooter>
-          <Button variant="ghost" @click="close">Close</Button>
+          <Button type="button" variant="ghost" @click="close">Close</Button>
           <Button type="submit">Create</Button>
         </DialogFooter>
       </form>

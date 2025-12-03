@@ -26,7 +26,16 @@ Build validation schemas visually
    pnpm dev
    ```
 
-3. Open your browser and navigate to the URL shown in the terminal (typically `http://localhost:5173`)
+3. Open your browser and navigate to http://localhost:5173/file/MyShaclFile/
+
+Current capabilities:
+
+1. Add/Remove node and property shapes, using the editor bar
+2. Set basic information for shapes, using shape bar
+3. Add/Remove text field, using toolbox and set basic information, such as path, name and description
+4. Preview ttl in dialog, export to console log or file, see `src/views/editor-view.vue#L100`
+
+For now IRI should be full, e.g.: http://example.com/MyNode, in the furture there will be a prefix manager, so you can type ex:MyNode
 
 ## Additional Information
 

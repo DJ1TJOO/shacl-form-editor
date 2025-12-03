@@ -1,12 +1,5 @@
 # SHACL Form Editor Web
 
-Current capabilities:
-
-1. Add/Remove node and property shapes, using the editor bar
-2. Set basic information for shapes, using shape bar
-3. Add/Remove text field, using toolbox and set basic information, such as path, name and description
-4. Preview ttl in dialog, export to console log or file, see `src/views/editor-view.vue#L100`
-
 ## Recommended IDE Setup
 
 [VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).

@@ -58,6 +58,7 @@ const { value: description, language: descriptionLanguage } = useLiteral({
   subject: node,
   predicate: Shacl.SHACL('description'),
 })
+const { value: path } = useNamedNode({ subject: node, predicate: Shacl.SHACL('path') })
 </script>
 
 <template>
@@ -100,7 +101,7 @@ const { value: description, language: descriptionLanguage } = useLiteral({
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input placeholder="ex:path" />
+          <Input v-model="path" placeholder="ex:path" />
         </Field>
         <Field class="gap-0.5 grid grid-cols-[1fr_--spacing(20)]">
           <div class="grid grid-cols-subgrid col-span-2">

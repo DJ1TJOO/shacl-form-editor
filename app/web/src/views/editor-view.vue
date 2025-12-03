@@ -63,7 +63,11 @@ const downloadTtl = () => {
       <EditorBar />
       <div class="gap-3 grid p-1" :style="{ gridTemplateColumns }">
         <SideBar :child-class="!isLeftSideBarOpen && 'h-full justify-center'">
-          <Shape :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
+          <Shape
+            :key="typeof route.params.shapeId === 'string' ? route.params.shapeId : undefined"
+            :open="isLeftSideBarOpen"
+            @update:open="isLeftSideBarOpen = $event"
+          />
           <Toolbox
             v-if="shape === 'node'"
             :open="isLeftSideBarOpen"

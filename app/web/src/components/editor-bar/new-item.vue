@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import BarItem from '@/components/editor-bar/bar-item.vue'
 import { injectFileContext, Shacl } from '@/components/rdf'
-import { getLocalName } from '@/components/rdf/shacl'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -47,7 +46,7 @@ function create() {
 
   type.value = 'node'
   iri.value = ''
-  router.push(`/file/MyShaclFile/${getLocalName(shapeIRINode)}`)
+  router.push(`/file/MyShaclFile/${encodeURIComponent(shapeIRINode.value)}`)
   close()
 }
 </script>

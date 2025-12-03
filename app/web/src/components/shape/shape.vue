@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { AdditionalConstraints } from '@/components/constraints'
-import { injectFileContext, Shacl } from '@/components/rdf'
+import { SelectLanguage, Shacl } from '@/components/rdf'
+import { RDF } from '@/components/rdf/shacl'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
-import { useLiteral } from '@/composables/use-rdf'
+import { useLiteral, useNamedNode } from '@/composables/use-rdf'
 import { cn } from '@/lib/cn'
+import { useDebounceFn } from '@vueuse/core'
 import { CircleIcon, DiamondIcon, InfoIcon, PanelRightOpenIcon, TypeIcon } from 'lucide-vue-next'
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 defineProps<{
   open: boolean
@@ -21,13 +23,25 @@ defineEmits<{
 }>()
 
 const route = useRoute()
-const { store } = injectFileContext()
-const shape = computed(() =>
-  store.value
-    ? Shacl.findShapes(store.value).find((shape) => shape.name === route.params.shapeId)
-    : undefined,
+const router = useRouter()
+
+const shapeIRI = computed(() =>
+  typeof route.params.shapeId === 'string' ? decodeURIComponent(route.params.shapeId) : undefined,
 )
-const node = computed(() => shape.value?.node)
+
+const { value: iri, namedNode: node } = useNamedNode({ initialValue: shapeIRI })
+const { value: type } = useNamedNode({ subject: node, predicate: RDF('type') })
+
+const updateRoute = useDebounceFn((iri: string | undefined) => {
+  if (!iri) return
+
+  const fileId = typeof route.params.fileId === 'string' ? route.params.fileId : 'MyShaclFile'
+  router.replace(`/file/${fileId}/${encodeURIComponent(iri)}`)
+}, 500)
+
+watch(iri, (iri) => {
+  updateRoute(iri)
+})
 
 const {
   target,
@@ -36,8 +50,14 @@ const {
   isOpen,
 } = useOptionsSidebar(Symbol('shape-options'), 'Options for MyNode', { allowGrouping: false })
 
-const label = useLiteral(node, Shacl.SHACL('name'))
-const description = useLiteral(node, Shacl.SHACL('description'))
+const { value: label, language: labelLanguage } = useLiteral({
+  subject: node,
+  predicate: Shacl.SHACL('name'),
+})
+const { value: description, language: descriptionLanguage } = useLiteral({
+  subject: node,
+  predicate: Shacl.SHACL('description'),
+})
 </script>
 
 <template>
@@ -45,10 +65,7 @@ const description = useLiteral(node, Shacl.SHACL('description'))
     <AdditionalConstraints />
   </DefineOptions>
   <div
-    v-if="shape"
-    :key="shape.name"
     ref="target"
-    :id="shape.name"
     :class="
       cn(
         'bg-background p-2 rounded-lg',
@@ -58,7 +75,7 @@ const description = useLiteral(node, Shacl.SHACL('description'))
   >
     <FieldSet v-if="open">
       <FieldLegend
-        v-if="shape.type === 'property'"
+        v-if="type === Shacl.SHACL('PropertyShape').value"
         class="justify-center w-full font-normal text-text"
       >
         <TypeIcon />
@@ -73,9 +90,9 @@ const description = useLiteral(node, Shacl.SHACL('description'))
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input :model-value="shape.node.value" placeholder="ex:MyNode" />
+          <Input v-model="iri" placeholder="ex:MyNode" />
         </Field>
-        <Field v-if="shape.type === 'property'">
+        <Field v-if="type === Shacl.SHACL('PropertyShape').value">
           <FieldLabel>
             Path
             <Tooltip>
@@ -85,15 +102,21 @@ const description = useLiteral(node, Shacl.SHACL('description'))
           </FieldLabel>
           <Input placeholder="ex:path" />
         </Field>
-        <Field>
-          <FieldLabel>
-            Label
-            <Tooltip>
-              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
-              <TooltipContent>This is content in a tooltip.</TooltipContent>
-            </Tooltip>
-          </FieldLabel>
-          <Input placeholder="My Node" v-model="label" />
+        <Field class="gap-0.5 grid grid-cols-[1fr_--spacing(20)]">
+          <div class="grid grid-cols-subgrid col-span-2">
+            <FieldLabel>
+              Label
+              <Tooltip>
+                <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+                <TooltipContent>This is content in a tooltip.</TooltipContent>
+              </Tooltip>
+            </FieldLabel>
+            <FieldLabel> Language </FieldLabel>
+          </div>
+          <div class="grid grid-cols-subgrid col-span-2">
+            <Input v-model="label" placeholder="My Node" />
+            <SelectLanguage v-model="labelLanguage" />
+          </div>
         </Field>
         <Field>
           <FieldLabel>
@@ -104,6 +127,9 @@ const description = useLiteral(node, Shacl.SHACL('description'))
             </Tooltip>
           </FieldLabel>
           <Textarea v-model="description" placeholder="This is a node with a description" />
+
+          <FieldLabel>Description Language </FieldLabel>
+          <SelectLanguage v-model="descriptionLanguage" />
         </Field>
       </FieldGroup>
     </FieldSet>
@@ -111,7 +137,7 @@ const description = useLiteral(node, Shacl.SHACL('description'))
       <PanelRightOpenIcon /> Additional options
     </Button>
     <Button color="background-blue" size="icon" @click="$emit('update:open', !open)" v-else>
-      <component :is="shape.type === 'node' ? DiamondIcon : CircleIcon" />
+      <component :is="type === Shacl.SHACL('NodeShape').value ? DiamondIcon : CircleIcon" />
     </Button>
   </div>
 </template>

@@ -18,8 +18,8 @@ export function addShape(store: IndexedFormula, iri: NamedNodeType) {
   store.add(iri, RDF('type'), SHACL('NodeShape'))
 }
 
-export function removeShape(store: IndexedFormula, iri: NamedNodeType) {
-  store.removeMany(iri)
+export function removeShape(store: IndexedFormula, iri: string | NamedNode) {
+  store.removeMany(iri instanceof NamedNode ? iri : new NamedNode(iri))
 }
 
 export function findShapes(store: IndexedFormula) {
@@ -28,7 +28,7 @@ export function findShapes(store: IndexedFormula) {
       .each(null, RDF('type'), SHACL('NodeShape'))
       .filter((shape) => shape instanceof NamedNode)
       .map((shape) => ({
-        node: shape as NamedNode,
+        value: shape.value,
         name: getLocalName(shape as NamedNode),
         type: 'node' as const,
       })),
@@ -36,7 +36,7 @@ export function findShapes(store: IndexedFormula) {
       .each(null, RDF('type'), SHACL('PropertyShape'))
       .filter((shape) => shape instanceof NamedNode)
       .map((shape) => ({
-        node: shape as NamedNode,
+        value: shape.value,
         name: getLocalName(shape as NamedNode),
         type: 'property' as const,
       })),

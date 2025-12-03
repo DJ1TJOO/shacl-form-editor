@@ -1,2 +1,5 @@
 export { default as FileProvider, injectFileContext, provideFileContext } from './file-provider.vue'
+export * from './languages'
+export { default as SelectLanguage } from './select-language.vue'
 export * as Shacl from './shacl'
+export * as XSD from './xsd'

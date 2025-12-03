@@ -15,10 +15,10 @@ const shapes = computed(() => (store.value ? Shacl.findShapes(store.value) : [])
     <ShapeItem
       v-for="shape in shapes"
       :key="shape.name"
-      :to="`/file/MyShaclFile/${shape.name}`"
+      :to="`/file/MyShaclFile/${encodeURIComponent(shape.value)}`"
       :label="shape.name"
       :type="shape.type"
-      @removeShape="() => Shacl.removeShape(store, shape.node)"
+      @removeShape="() => Shacl.removeShape(store, shape.value)"
     />
     <NewItem />
   </nav>

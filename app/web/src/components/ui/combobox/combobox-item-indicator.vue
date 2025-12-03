@@ -17,7 +17,7 @@ const forwarded = useForwardProps(delegatedProps)
   <ComboboxItemIndicator
     data-slot="combobox-item-indicator"
     v-bind="forwarded"
-    :class="cn('ml-auto text-branding', props.class)"
+    :class="cn('text-branding', props.class)"
   >
     <slot> <CheckIcon class="size-4" /></slot>
   </ComboboxItemIndicator>

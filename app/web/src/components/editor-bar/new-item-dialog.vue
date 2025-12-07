@@ -12,7 +12,7 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useShapes } from '@/composables/use-shacl'
-import { reactiveOmit } from '@vueuse/core'
+import { reactiveOmit, useVModel } from '@vueuse/core'
 import { CircleIcon, DiamondIcon, InfoIcon } from 'lucide-vue-next'
 import {
   RovingFocusGroup,
@@ -21,7 +21,7 @@ import {
   type DialogRootEmits,
   type DialogRootProps,
 } from 'reka-ui'
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps<DialogRootProps>()
@@ -37,7 +37,11 @@ const router = useRouter()
 const type = ref<'node' | 'property'>('node')
 const iri = ref('')
 
-const open = ref(!!props.defaultOpen)
+const open = useVModel(props, 'open', emits, {
+  passive: true,
+  defaultValue: !!props.defaultOpen,
+}) as Ref<boolean>
+
 function close() {
   open.value = false
 }
@@ -67,7 +71,7 @@ function create() {
 </script>
 <template>
   <Dialog v-bind="forward" v-model:open="open">
-    <DialogTrigger class="shrink-0">
+    <DialogTrigger class="shrink-0" v-if="$slots.default">
       <slot />
     </DialogTrigger>
     <DialogScrollContent :aria-describedby="undefined">

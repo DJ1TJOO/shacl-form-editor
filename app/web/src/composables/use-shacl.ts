@@ -1,5 +1,4 @@
-import { Dash, injectFileContext, RDF, Shacl, Xsd } from '@/components/rdf'
-import { getLocalName } from '@/components/rdf/shacl'
+import { Dash, injectFileContext, Shacl, Xsd } from '@/components/rdf'
 import { BlankNode, Literal, NamedNode, Node } from 'rdflib'
 import type { NamedNode as NamedNodeType, Quad_Predicate, Quad_Subject } from 'rdflib/lib/tf-types'
 import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
@@ -12,26 +11,7 @@ export function useFileStore() {
 
 export const useShapes = () => {
   const store = useFileStore()
-  const shapes = computed(() => {
-    return [
-      ...store.value
-        .each(null, RDF('type'), Shacl.SHACL('NodeShape'))
-        .filter((shape) => shape instanceof NamedNode)
-        .map((shape) => ({
-          value: shape.value,
-          name: getLocalName(shape),
-          type: 'node' as const,
-        })),
-      ...store.value
-        .each(null, RDF('type'), Shacl.SHACL('PropertyShape'))
-        .filter((shape) => shape instanceof NamedNode)
-        .map((shape) => ({
-          value: shape.value,
-          name: getLocalName(shape),
-          type: 'property' as const,
-        })),
-    ]
-  })
+  const shapes = computed(() => Shacl.getAllShapes(store.value))
 
   function addShape(iri: string | NamedNode, type: 'node' | 'property') {
     Shacl.addShape(store.value, iri, type)

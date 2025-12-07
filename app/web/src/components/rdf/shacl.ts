@@ -1,7 +1,7 @@
 import { Dash, RDF } from '@/components/rdf'
 import type { NamedNode as NamedNodeType } from '@rdfjs/types'
 import type { IndexedFormula } from 'rdflib'
-import { BlankNode, NamedNode, Namespace } from 'rdflib'
+import { BlankNode, graph, NamedNode, Namespace, parse } from 'rdflib'
 
 export const SHACL = Namespace('http://www.w3.org/ns/shacl#')
 
@@ -34,6 +34,34 @@ export function removeShape(store: IndexedFormula, iri: string | NamedNode) {
   store.removeMany(getNamedNode(iri))
 }
 
+export function getAllShapes(store: IndexedFormula) {
+  return [
+    ...store
+      .each(null, RDF('type'), SHACL('NodeShape'))
+      .filter((shape) => shape instanceof NamedNode)
+      .map((shape) => ({
+        value: shape.value,
+        name: getLocalName(shape),
+        type: 'node' as const,
+      })),
+    ...store
+      .each(null, RDF('type'), SHACL('PropertyShape'))
+      .filter((shape) => shape instanceof NamedNode)
+      .map((shape) => ({
+        value: shape.value,
+        name: getLocalName(shape),
+        type: 'property' as const,
+      })),
+  ]
+}
+
+export function shapeExists(store: IndexedFormula, iri: string | NamedNode) {
+  return Boolean(
+    store.holds(getNamedNode(iri), RDF('type'), SHACL('NodeShape')) ||
+      store.holds(getNamedNode(iri), RDF('type'), SHACL('PropertyShape')),
+  )
+}
+
 export function createProperty(
   store: IndexedFormula,
   shape: string | NamedNode,
@@ -46,14 +74,21 @@ export function createProperty(
   store.add(getNamedNode(shape), SHACL('property'), property)
 }
 
+export function removeProperty(store: IndexedFormula, property: BlankNode | NamedNode) {
+  store.removeMany(property)
+  store.removeMatches(null, SHACL('property'), property)
+}
+
 export function serialize(store: IndexedFormula) {
   const serialized = store.serialize(null, null, null)
-  if (!serialized) return
+  if (!serialized) return null
 
   return serialized
 }
 
-export function removeProperty(store: IndexedFormula, property: BlankNode | NamedNode) {
-  store.removeMany(property)
-  store.removeMatches(null, SHACL('property'), property)
+export function deserialize(serialized: string) {
+  const store = graph()
+  // @TODO: Handle base URI, what is this?
+  parse(serialized, store, 'http://localhost:3000/')
+  return store
 }

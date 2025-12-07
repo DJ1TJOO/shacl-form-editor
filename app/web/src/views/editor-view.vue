@@ -3,19 +3,17 @@ import { EditorBar, NewItemDialog } from '@/components/editor-bar'
 import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
 import { PreviewDialog } from '@/components/preview'
 import { PropertiesList } from '@/components/properties'
-import { FileProvider, RDF, Shacl } from '@/components/rdf'
+import { FileProvider, Shacl } from '@/components/rdf'
 import { HeaderActions } from '@/components/sfe-header'
 import { Shape } from '@/components/shape'
 import { SideBar } from '@/components/side-bar'
 import { Toolbox } from '@/components/toolbox'
 import { Button } from '@/components/ui/button'
 import { DownloadIcon, EyeIcon } from 'lucide-vue-next'
-import { NamedNode } from 'rdflib'
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const router = useRouter()
 const shapeIRI = computed(() =>
   typeof route.params.shapeId === 'string' ? decodeURIComponent(route.params.shapeId) : undefined,
 )
@@ -35,27 +33,22 @@ const gridTemplateColumns = computed(() => {
 })
 
 const fileProviderRef = ref<InstanceType<typeof FileProvider> | null>(null)
+
+const showNewItemDialog = ref(false)
+watch(
+  () => fileProviderRef.value?.showNewItemDialog,
+  (showNewItemDialogFileProvider) => {
+    showNewItemDialog.value = showNewItemDialogFileProvider ?? false
+  },
+  { immediate: true },
+)
+
 const shapeExists = ref(false)
 watch(
-  shapeIRI,
-  (iri) => {
-    const store = fileProviderRef.value?.store
-
-    let value = false
-    if (iri && iri.includes(':') && store) {
-      value = store
-        .each(new NamedNode(iri), RDF('type'))
-        .some(
-          (type) =>
-            type instanceof NamedNode &&
-            (type.equals(Shacl.SHACL('NodeShape')) || type.equals(Shacl.SHACL('PropertyShape'))),
-        )
-    }
-
-    shapeExists.value = value
-    if (!value && route.path !== '/file/MyShaclFile') {
-      router.replace(`/file/MyShaclFile/`)
-    }
+  () => [shapeIRI.value, fileProviderRef.value?.store] as const,
+  ([shapeIRI, store]) => {
+    if (!store) return false
+    shapeExists.value = shapeIRI ? Shacl.shapeExists(store, shapeIRI) : false
   },
   { immediate: true },
 )
@@ -105,11 +98,12 @@ const previewOpen = ref(false)
       </Button>
     </HeaderActions>
     <PreviewDialog v-model:open="previewOpen" />
+    <NewItemDialog v-model:open="showNewItemDialog" />
     <OptionsSidebarProvider ref="optionsSidebarProviderRef">
       <EditorBar />
       <div
-        v-if="shapeExists"
         :key="shapeIRI"
+        v-if="shapeExists"
         class="gap-3 grid p-1"
         :style="{ gridTemplateColumns }"
       >
@@ -143,9 +137,6 @@ const previewOpen = ref(false)
           </Property> -->
         </PropertiesList>
         <OptionsBar />
-      </div>
-      <div v-else>
-        <NewItemDialog default-open />
       </div>
     </OptionsSidebarProvider>
   </FileProvider>

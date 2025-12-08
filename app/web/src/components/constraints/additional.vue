@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { RDF, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
-import { InputGroupButton } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { booleanFromCheckboxValue, useLiteral, useNamedList } from '@/composables/use-shacl'
 import { InfoIcon, XIcon } from 'lucide-vue-next'
@@ -37,25 +37,10 @@ const ignoredProperties = useNamedList({ subject, predicate: Shacl.SHACL('ignore
             type.value !== Shacl.SHACL('PropertyShape').value
           "
         >
-          <InputGroupButton
-            size="icon-sm"
-            variant="ghost"
-            color="danger"
-            @click="types.splice(index, 1)"
-          >
-            <XIcon />
-          </InputGroupButton>
+          <RemoveButton @click="types.splice(index, 1)" />
         </PrefixInput>
       </template>
-      <Button
-        size="sm"
-        variant="outline"
-        color="background-blue"
-        class="w-fit!"
-        @click="types.push({ value: '', node: new NamedNode(':') })"
-      >
-        Add
-      </Button>
+      <AddButton @click="types.push({ value: '', node: new NamedNode(':') })" />
     </Field>
 
     <Field v-if="type === 'node'">
@@ -86,14 +71,14 @@ const ignoredProperties = useNamedList({ subject, predicate: Shacl.SHACL('ignore
 
       <template v-for="(property, index) in ignoredProperties" :key="index">
         <PrefixInput v-model="property.value">
-          <InputGroupButton
+          <Button
             size="icon-sm"
             variant="ghost"
             color="danger"
             @click="ignoredProperties.splice(index, 1)"
           >
             <XIcon />
-          </InputGroupButton>
+          </Button>
         </PrefixInput>
       </template>
       <Button

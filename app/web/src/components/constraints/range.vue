@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { InputOptional } from '@/components/ui/input-optional'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { InfoIcon, XIcon } from 'lucide-vue-next'
@@ -42,9 +38,9 @@ const showMaximumInclusive = computed(() => typeof maximum.value !== 'undefined'
           <InputGroup>
             <InputGroupInput v-model="minimum" type="number" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
+              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
           <Checkbox v-model="minimumInclusive" class="justify-self-center" />
@@ -69,9 +65,9 @@ const showMaximumInclusive = computed(() => typeof maximum.value !== 'undefined'
           <InputGroup>
             <InputGroupInput v-model="maximum" type="number" :min="minimum" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
+              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
           <Checkbox v-model="maximumInclusive" class="justify-self-center" />

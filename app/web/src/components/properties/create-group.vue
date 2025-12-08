@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { injectOptionsSidebarProviderContext } from '@/components/options-bar'
 import { Button } from '@/components/ui/button'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import {
   ADDED_TO_GROUP_EVENT,
   DEACTIVATE_GROUPED_EVENT,
@@ -75,9 +70,9 @@ function handleClear() {
         @keydown.enter="handleCreate"
       />
       <InputGroupAddon v-if="title" align="inline-end">
-        <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="handleClear">
+        <Button size="icon-sm" variant="ghost" color="danger" @click="handleClear">
           <XIcon />
-        </InputGroupButton>
+        </Button>
       </InputGroupAddon>
     </InputGroup>
     <Button class="w-full" :disabled="!title.trim()" @click="handleCreate">

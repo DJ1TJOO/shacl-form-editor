@@ -34,7 +34,6 @@ import { Input } from '@/components/ui/input'
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupComboboxInput,
   InputGroupInput,
   InputGroupSelectTrigger,
@@ -108,17 +107,17 @@ const classEntries = ref<ClassEntry[]>([createClassEntry()])
   <InputGroup>
     <InputGroupInput type="number" step="0.1" placeholder="ex:alice" />
     <InputGroupAddon align="inline-end">
-      <InputGroupButton size="icon-sm" variant="ghost" color="danger">
+      <Button size="icon-sm" variant="ghost" color="danger">
         <XIcon />
-      </InputGroupButton>
+      </Button>
     </InputGroupAddon>
   </InputGroup>
   <InputGroup>
     <InputGroupInput placeholder="ex:alice" />
     <InputGroupAddon align="inline-end">
-      <InputGroupButton size="icon-sm" variant="ghost" color="danger">
+      <Button size="icon-sm" variant="ghost" color="danger">
         <XIcon />
-      </InputGroupButton>
+      </Button>
     </InputGroupAddon>
   </InputGroup>
   <div class="flex gap-2">
@@ -149,9 +148,9 @@ const classEntries = ref<ClassEntry[]>([createClassEntry()])
     <InputGroupAddon align="inline-end">
       <Tooltip>
         <TooltipTrigger as-child>
-          <InputGroupButton class="rounded-full" size="icon-sm" variant="ghost">
+          <Button class="rounded-full" size="icon-sm" variant="ghost">
             <InfoIcon />
-          </InputGroupButton>
+          </Button>
         </TooltipTrigger>
         <TooltipContent>This is content in a tooltip.</TooltipContent>
       </Tooltip>
@@ -160,12 +159,12 @@ const classEntries = ref<ClassEntry[]>([createClassEntry()])
   <InputGroup>
     <InputGroupTextarea placeholder="Ask, Search or Chat..." />
     <InputGroupAddon align="block-end">
-      <InputGroupButton variant="outline" size="icon-sm" class="rounded-full">
+      <Button variant="outline" size="icon-sm" class="rounded-full">
         <PlusIcon />
-      </InputGroupButton>
+      </Button>
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
-          <InputGroupButton variant="ghost"> Auto </InputGroupButton>
+          <Button variant="ghost"> Auto </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="start" class="[--radius:0.95rem]">
           <DropdownMenuItem>Auto</DropdownMenuItem>
@@ -175,10 +174,10 @@ const classEntries = ref<ClassEntry[]>([createClassEntry()])
       </DropdownMenu>
       <InputGroupText class="ml-auto"> 52% used </InputGroupText>
       <Separator orientation="vertical" class="h-4!" />
-      <InputGroupButton variant="default" class="rounded-full" size="icon-sm">
+      <Button variant="default" class="rounded-full" size="icon-sm">
         <ArrowUpIcon />
         <span class="sr-only">Send</span>
-      </InputGroupButton>
+      </Button>
     </InputGroupAddon>
   </InputGroup>
   <InputGroup>
@@ -199,9 +198,9 @@ const classEntries = ref<ClassEntry[]>([createClassEntry()])
 
         <InputGroupAddon align="inline-end">
           <ComboboxTrigger />
-          <InputGroupButton size="icon-sm" variant="ghost" color="danger">
+          <Button size="icon-sm" variant="ghost" color="danger">
             <XIcon />
-          </InputGroupButton>
+          </Button>
         </InputGroupAddon>
       </InputGroup>
     </ComboboxAnchor>
@@ -237,9 +236,9 @@ const classEntries = ref<ClassEntry[]>([createClassEntry()])
       </InputGroupSelectTrigger>
       <InputGroupAddon align="inline-end">
         <InputGroupSelectTriggerIcon />
-        <InputGroupButton size="icon-sm" variant="ghost" color="danger">
+        <Button size="icon-sm" variant="ghost" color="danger">
           <XIcon />
-        </InputGroupButton>
+        </Button>
       </InputGroupAddon>
     </InputGroup>
     <SelectContent>
@@ -372,7 +371,7 @@ const classEntries = ref<ClassEntry[]>([createClassEntry()])
           <InputGroup>
             <InputGroupInput v-model="entry.class" placeholder="Class (e.g. Person)" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton
+              <Button
                 size="icon-sm"
                 variant="ghost"
                 color="danger"
@@ -380,7 +379,7 @@ const classEntries = ref<ClassEntry[]>([createClassEntry()])
                 @click="remove"
               >
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
         </InputList>
@@ -404,7 +403,7 @@ const classEntries = ref<ClassEntry[]>([createClassEntry()])
             <InputGroup>
               <InputGroupInput v-model="entry.pattern" placeholder="Pattern (e.g. [a-b])" />
               <InputGroupAddon align="inline-end">
-                <InputGroupButton
+                <Button
                   size="icon-sm"
                   variant="ghost"
                   color="danger"
@@ -413,7 +412,7 @@ const classEntries = ref<ClassEntry[]>([createClassEntry()])
                   @click="remove"
                 >
                   <XIcon />
-                </InputGroupButton>
+                </Button>
               </InputGroupAddon>
             </InputGroup>
             <Select v-model="entry.flags">

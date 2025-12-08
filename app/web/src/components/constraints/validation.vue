@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { Button } from '@/components/ui/button'
 import { Field, FieldLabel } from '@/components/ui/field'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { InputList } from '@/components/ui/input-list'
 import {
   Select,
@@ -122,7 +118,7 @@ const deactivatedOptions = ['Unset', 'True', 'False']
           <InputGroup>
             <InputGroupInput v-model="entry.text" placeholder="Validation message" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton
+              <Button
                 size="icon-sm"
                 variant="ghost"
                 color="danger"
@@ -131,7 +127,7 @@ const deactivatedOptions = ['Unset', 'True', 'False']
                 @click="remove"
               >
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
         </div>

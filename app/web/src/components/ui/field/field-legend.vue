@@ -15,7 +15,7 @@ const props = defineProps<{
     :class="
       cn(
         'flex items-center gap-1 mb-px font-bold text-branding',
-        '[&>svg]:shrink-0 [&>svg:not([class*=\'size-\'])]:size-4',
+        `[&>svg]:shrink-0 [&>svg:not([class*='size-'])]:size-4`,
         'data-[variant=legend]:text-base',
         'data-[variant=label]:text-sm',
         props.class,

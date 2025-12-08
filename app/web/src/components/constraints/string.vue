@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { InputList } from '@/components/ui/input-list'
 import { InputOptional } from '@/components/ui/input-optional'
 import {
@@ -63,9 +59,9 @@ const unique = ref<boolean | 'indeterminate'>(false)
           <InputGroup>
             <InputGroupInput v-model="minLength" type="number" :min="0" :max="maxLength" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
+              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
         </InputOptional>
@@ -83,9 +79,9 @@ const unique = ref<boolean | 'indeterminate'>(false)
           <InputGroup>
             <InputGroupInput v-model="maxLength" type="number" :min="minLength ?? 0" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
+              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
         </InputOptional>
@@ -118,7 +114,7 @@ const unique = ref<boolean | 'indeterminate'>(false)
           <InputGroup>
             <InputGroupInput v-model="entry.pattern" placeholder="Pattern (e.g. [a-b])" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton
+              <Button
                 size="icon-sm"
                 variant="ghost"
                 color="danger"
@@ -127,7 +123,7 @@ const unique = ref<boolean | 'indeterminate'>(false)
                 @click="remove"
               >
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
 
@@ -173,9 +169,9 @@ const unique = ref<boolean | 'indeterminate'>(false)
                 <SelectValue />
               </SelectTrigger>
               <InputGroupAddon align="inline-end">
-                <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
+                <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
                   <XIcon />
-                </InputGroupButton>
+                </Button>
               </InputGroupAddon>
             </InputGroup>
             <SelectContent>

@@ -1,10 +1,7 @@
-import type { ButtonVariants } from '@/components/ui/button'
 import type { VariantProps } from 'class-variance-authority'
 import { cva } from 'class-variance-authority'
-import type { HTMLAttributes } from 'vue'
 
 export { default as InputGroupAddon } from './input-group-addon.vue'
-export { default as InputGroupButton } from './input-group-button.vue'
 export { default as InputGroupComboboxInput } from './input-group-combobox-input.vue'
 export { default as InputGroupInput } from './input-group-input.vue'
 export { default as InputGroupSelectTriggerIcon } from './input-group-select-trigger-icon.vue'
@@ -40,10 +37,3 @@ export const inputGroupAddonVariants = cva(
 )
 
 export type InputGroupVariants = VariantProps<typeof inputGroupAddonVariants>
-
-export interface InputGroupButtonProps {
-  variant?: ButtonVariants['variant']
-  color?: ButtonVariants['color']
-  size?: ButtonVariants['size']
-  class?: HTMLAttributes['class']
-}

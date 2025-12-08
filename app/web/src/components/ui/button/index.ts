@@ -36,10 +36,22 @@ export const buttonVariants = cva(
           '[--button-accent:var(--color-success)] [--button-complementary:var(--color-light)] [--button-accent-lighter:var(--color-success-lighter)]',
           '[--button-outline:var(--color-success)]',
         ],
+        'danger-hover': [
+          '[--button-accent:var(--color-background-highlighted)] [--button-complementary:var(--color-text-light)] [--button-accent-lighter:var(--color-background-highlighted)]/70',
+          '[--button-outline:var(--color-danger)]',
+        ],
+        'warning-hover': [
+          '[--button-accent:var(--color-background-highlighted)] [--button-complementary:var(--color-text-light)] [--button-accent-lighter:var(--color-background-highlighted)]/70',
+          '[--button-outline:var(--color-warning)]',
+        ],
+        'success-hover': [
+          '[--button-accent:var(--color-background-highlighted)] [--button-complementary:var(--color-text-light)] [--button-accent-lighter:var(--color-background-highlighted)]/70',
+          '[--button-outline:var(--color-success)]',
+        ],
       },
       variant: {
         default:
-          'bg-(--button-accent) text-(--button-complementary) hover:bg-(--button-accent-lighter)',
+          'bg-(--button-accent) text-(--button-complementary) hover:bg-(--button-accent-lighter) hover:text-(--button-outline)',
         outline:
           'border-2 border-(--button-accent) text-(--button-outline) hover:text-(--button-complementary) hover:bg-(--button-accent)',
         ghost: 'hover:bg-background-highlighted hover:text-(--button-accent)',

@@ -40,23 +40,27 @@ const filteredLanguages = computed(() => {
 
     <ComboboxList align="end" class="w-48">
       <ComboboxEmpty> No language found. </ComboboxEmpty>
-      <ComboboxItem :value="null">
-        <ComboboxItemIndicator />
-        Unset
-      </ComboboxItem>
-      <ComboboxVirtualizer
-        v-slot="{ option, virtualizer }"
-        :options="filteredLanguages"
-        :text-content="(x: Language) => x.label"
-        :estimate-size="32"
-      >
-        <div :ref="(node) => virtualizer.measureElement(node as Element)" class="w-full">
-          <ComboboxItem :key="option.code" :value="option.code">
-            <ComboboxItemIndicator />
-            {{ option.label }}
-          </ComboboxItem>
-        </div>
-      </ComboboxVirtualizer>
+
+      <!-- @TODO: Breaks when using ComboboxGroup, why? -->
+      <div class="p-1">
+        <ComboboxItem :value="null">
+          <ComboboxItemIndicator />
+          Unset
+        </ComboboxItem>
+        <ComboboxVirtualizer
+          v-slot="{ option, virtualizer }"
+          :options="filteredLanguages"
+          :text-content="(x: Language) => x.label"
+          :estimate-size="32"
+        >
+          <div :ref="(node) => virtualizer.measureElement(node as Element)" class="w-full">
+            <ComboboxItem :key="option.code" :value="option.code">
+              <ComboboxItemIndicator />
+              {{ option.label }}
+            </ComboboxItem>
+          </div>
+        </ComboboxVirtualizer>
+      </div>
     </ComboboxList>
   </Combobox>
 </template>

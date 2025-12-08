@@ -20,7 +20,7 @@ const props = defineProps<{
         'has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border',
         '*:data-[slot=field]:p-4',
         'has-data-[state=checked]:bg-branding/5 has-data-[state=checked]:border-branding',
-        '[&_svg]:shrink-0 [&_svg:not([class*=\'text-\'])]:text-text-light [&_svg:not([class*=\'size-\'])]:size-3',
+        `[&_svg]:shrink-0 [&_svg:not([class*='text-'])]:text-text-lighter [&_svg:not([class*='size-'])]:size-3`,
         props.class,
       )
     "

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Combobox,
@@ -16,7 +17,6 @@ import { Field, FieldLabel } from '@/components/ui/field'
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupComboboxInput,
   InputGroupInput,
 } from '@/components/ui/input-group'
@@ -79,9 +79,9 @@ const shapeOptions = ['ex:MyNode', 'ex:MyNodeOther', 'ex:AddressShape', 'ex:Cont
                 />
                 <InputGroupAddon align="inline-end">
                   <ComboboxTrigger />
-                  <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
+                  <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
                     <XIcon />
-                  </InputGroupButton>
+                  </Button>
                 </InputGroupAddon>
               </InputGroup>
             </ComboboxAnchor>
@@ -121,9 +121,9 @@ const shapeOptions = ['ex:MyNode', 'ex:MyNodeOther', 'ex:AddressShape', 'ex:Cont
           <InputGroup>
             <InputGroupInput v-model="minQualified" type="number" :min="0" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
+              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
         </InputOptional>
@@ -144,9 +144,9 @@ const shapeOptions = ['ex:MyNode', 'ex:MyNodeOther', 'ex:AddressShape', 'ex:Cont
           <InputGroup>
             <InputGroupInput v-model="maxQualified" type="number" :min="minQualified ?? 0" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
+              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
         </InputOptional>

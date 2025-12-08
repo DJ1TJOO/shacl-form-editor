@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { Button } from '@/components/ui/button'
 import {
   Combobox,
   ComboboxAnchor,
@@ -12,12 +13,7 @@ import {
   ComboboxTrigger,
 } from '@/components/ui/combobox'
 import { Field, FieldLabel } from '@/components/ui/field'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupComboboxInput,
-} from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupComboboxInput } from '@/components/ui/input-group'
 import { InputList } from '@/components/ui/input-list'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { InfoIcon, XIcon } from 'lucide-vue-next'
@@ -100,7 +96,7 @@ const options = [
 
               <InputGroupAddon align="inline-end">
                 <ComboboxTrigger />
-                <InputGroupButton
+                <Button
                   size="icon-sm"
                   variant="ghost"
                   color="danger"
@@ -108,7 +104,7 @@ const options = [
                   @click="remove"
                 >
                   <XIcon />
-                </InputGroupButton>
+                </Button>
               </InputGroupAddon>
             </InputGroup>
           </ComboboxAnchor>
@@ -167,7 +163,7 @@ const options = [
 
               <InputGroupAddon align="inline-end">
                 <ComboboxTrigger />
-                <InputGroupButton
+                <Button
                   size="icon-sm"
                   variant="ghost"
                   color="danger"
@@ -175,7 +171,7 @@ const options = [
                   @click="remove"
                 >
                   <XIcon />
-                </InputGroupButton>
+                </Button>
               </InputGroupAddon>
             </InputGroup>
           </ComboboxAnchor>
@@ -237,7 +233,7 @@ const options = [
 
               <InputGroupAddon align="inline-end">
                 <ComboboxTrigger />
-                <InputGroupButton
+                <Button
                   size="icon-sm"
                   variant="ghost"
                   color="danger"
@@ -245,7 +241,7 @@ const options = [
                   @click="remove"
                 >
                   <XIcon />
-                </InputGroupButton>
+                </Button>
               </InputGroupAddon>
             </InputGroup>
           </ComboboxAnchor>
@@ -307,7 +303,7 @@ const options = [
 
               <InputGroupAddon align="inline-end">
                 <ComboboxTrigger />
-                <InputGroupButton
+                <Button
                   size="icon-sm"
                   variant="ghost"
                   color="danger"
@@ -315,7 +311,7 @@ const options = [
                   @click="remove"
                 >
                   <XIcon />
-                </InputGroupButton>
+                </Button>
               </InputGroupAddon>
             </InputGroup>
           </ComboboxAnchor>

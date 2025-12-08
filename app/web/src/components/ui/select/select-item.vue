@@ -22,8 +22,8 @@ const forwardedProps = useForwardProps(delegatedProps)
         'relative flex items-center gap-2 py-1.5 pr-8 pl-2 rounded-sm outline-hidden w-full text-sm cursor-default select-none',
         'focus:bg-background-highlighted focus:text-text',
         'data-disabled:pointer-events-none data-disabled:opacity-50',
-        '[&_svg:not([class*=\'text-\'])]:text-text-light',
-        '[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=\'size-\'])]:size-4',
+        `[&_svg:not([class*='text-'])]:text-text-lighter`,
+        `[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
         '*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
         props.class,
       )

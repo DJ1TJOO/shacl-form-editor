@@ -2,7 +2,7 @@ import { Shacl } from '@/components/rdf'
 
 export const knownPrefixes = [
   {
-    value: 'https://schema.org/',
+    value: 'http://schema.org/',
     label: 'schema',
   },
   {

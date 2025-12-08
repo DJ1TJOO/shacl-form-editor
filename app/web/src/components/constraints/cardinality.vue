@@ -1,18 +1,13 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { InputOptional } from '@/components/ui/input-optional'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { InfoIcon, XIcon } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
-
 defineProps<ConstraintProps>()
 
 const required = ref<boolean | 'indeterminate'>(false)
@@ -66,9 +61,9 @@ watch(
               type="number"
             />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
+              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
         </InputOptional>
@@ -85,9 +80,9 @@ watch(
           <InputGroup>
             <InputGroupInput v-model="maximum" :min="minimum" default-value="1" type="number" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
+              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
                 <XIcon />
-              </InputGroupButton>
+              </Button>
             </InputGroupAddon>
           </InputGroup>
         </InputOptional>

@@ -57,8 +57,6 @@ const prefix = defineModel<T>({ required: true })
             (e: FocusEvent) => {
               const target = e.target as HTMLInputElement
               prefix = prefixedToAbsolute(target.value) as T
-
-              console.log('blur', props)
               props.onBlur?.(e)
             }
           "

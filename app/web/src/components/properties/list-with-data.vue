@@ -23,7 +23,8 @@ const sortedProperties = computed(() =>
       <TextField
         v-if="
           property.value instanceof BlankNode &&
-          property.editor?.equals(Dash.DASH('TextFieldEditor'))
+          (property.editor?.equals(Dash.DASH('TextFieldEditor')) ||
+            property.editor?.equals(Dash.DASH('TextFieldWithLangEditor')))
         "
         :subject="property.value"
         @remove="removeProperty(property.value)"

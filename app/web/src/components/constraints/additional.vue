@@ -19,7 +19,7 @@ const ignoredProperties = useNamedList({ subject, predicate: Shacl.SHACL('ignore
 </script>
 
 <template>
-  <Constraint legend="Additional">
+  <Constraint legend="Additional" :collapsible="collapsible">
     <Field>
       <FieldLabel>
         Type

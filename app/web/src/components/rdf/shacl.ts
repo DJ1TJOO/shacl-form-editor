@@ -3,6 +3,14 @@ import type { IndexedFormula } from 'rdflib'
 import { BlankNode, graph, Literal, NamedNode, Namespace, Node, parse } from 'rdflib'
 
 export const SHACL = Namespace('http://www.w3.org/ns/shacl#')
+export const nodeKinds = [
+  SHACL('BlankNode'),
+  SHACL('IRI'),
+  SHACL('Literal'),
+  SHACL('BlankNodeOrIRI'),
+  SHACL('BlankNodeOrLiteral'),
+  SHACL('IRIOrLiteral'),
+] as const
 
 export function getLocalName(iri?: string | NamedNode) {
   if (!iri) return undefined

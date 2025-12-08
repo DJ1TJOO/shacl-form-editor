@@ -81,7 +81,6 @@ const {
         class="justify-self-end"
         @click="
           () => {
-            console.log('remove')
             $emit('remove')
           }
         "

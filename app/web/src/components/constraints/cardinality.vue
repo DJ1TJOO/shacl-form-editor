@@ -1,23 +1,24 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { Button } from '@/components/ui/button'
+import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { Shacl } from '@/components/rdf'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
-import { InputOptional } from '@/components/ui/input-optional'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { InfoIcon, XIcon } from 'lucide-vue-next'
+import { useLiteral } from '@/composables/use-shacl'
+import { InfoIcon } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
-defineProps<ConstraintProps>()
+const { subject } = defineProps<ConstraintProps>()
 
 const required = ref<boolean | 'indeterminate'>(false)
-const minimum = ref<number | undefined>(undefined)
-const maximum = ref<number | undefined>(undefined)
+const { value: minimum } = useLiteral<number>({ subject, predicate: Shacl.SHACL('minimum') })
+const { value: maximum } = useLiteral<number>({ subject, predicate: Shacl.SHACL('maximum') })
 
 watch(
   () => [minimum.value, maximum.value],
-  ([minimum, maximum]) => {
-    required.value = minimum === 1 && maximum === 1 ? true : minimum ? 'indeterminate' : false
+  ([minVal, maxVal]) => {
+    required.value = minVal === 1 && maxVal === 1 ? true : minVal ? 'indeterminate' : false
   },
 )
 </script>
@@ -51,22 +52,19 @@ watch(
             <TooltipContent>Minimum number of occurrences.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <InputOptional v-model="minimum" :create="() => 1" v-slot="{ remove }">
-          <InputGroup>
-            <InputGroupInput
-              v-model="minimum"
-              :min="1"
-              :max="maximum"
-              default-value="1"
-              type="number"
-            />
-            <InputGroupAddon align="inline-end">
-              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
-                <XIcon />
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </InputOptional>
+        <InputGroup v-if="minimum">
+          <InputGroupInput
+            v-model="minimum"
+            :min="1"
+            :max="maximum"
+            default-value="1"
+            type="number"
+          />
+          <InputGroupAddon align="inline-end">
+            <RemoveButton @click="minimum = undefined" />
+          </InputGroupAddon>
+        </InputGroup>
+        <AddButton v-else @click="minimum = 1" />
       </Field>
       <Field>
         <FieldLabel>
@@ -76,16 +74,13 @@ watch(
             <TooltipContent>Maximum number of occurrences.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <InputOptional v-model="maximum" :create="() => minimum ?? 1" v-slot="{ remove }">
-          <InputGroup>
-            <InputGroupInput v-model="maximum" :min="minimum" default-value="1" type="number" />
-            <InputGroupAddon align="inline-end">
-              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
-                <XIcon />
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </InputOptional>
+        <InputGroup v-if="maximum">
+          <InputGroupInput v-model="maximum" :min="minimum ?? 1" default-value="1" type="number" />
+          <InputGroupAddon align="inline-end">
+            <RemoveButton @click="maximum = undefined" />
+          </InputGroupAddon>
+        </InputGroup>
+        <AddButton v-else @click="maximum = minimum ?? 1" />
       </Field>
     </div>
   </Constraint>

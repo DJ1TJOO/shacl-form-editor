@@ -1,3 +1,5 @@
+import type { BlankNode, NamedNode } from 'rdflib/lib/tf-types'
+
 export { default as AdditionalConstraints } from './additional.vue'
 export { default as CardinalityConstraints } from './cardinality.vue'
 export { default as Constraint } from './constraint.vue'
@@ -12,4 +14,5 @@ export { default as ValueConstraints } from './value.vue'
 
 export type ConstraintProps = {
   collapsible?: boolean
+  subject?: BlankNode | NamedNode
 }

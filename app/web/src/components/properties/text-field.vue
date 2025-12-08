@@ -2,7 +2,7 @@
 import { Property } from '@/components/properties'
 import Base from '@/components/properties/base.vue'
 import { Shacl } from '@/components/rdf'
-import { useNamedNode } from '@/composables/use-shacl'
+import { useNamed } from '@/composables/use-shacl'
 import { TypeIcon } from 'lucide-vue-next'
 import type { BlankNode } from 'rdflib/lib/tf-types'
 
@@ -13,7 +13,7 @@ defineEmits<{
   (e: 'remove'): void
 }>()
 
-const { namedNode: path } = useNamedNode({ subject, predicate: Shacl.SHACL('path') })
+const { node: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })
 </script>
 
 <template>

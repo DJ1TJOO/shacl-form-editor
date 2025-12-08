@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { AdditionalConstraints } from '@/components/constraints'
 import { LanguageSelect } from '@/components/form-ui/languages'
+import { PrefixInput } from '@/components/form-ui/prefix'
 import { injectFileContext, RDF, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field'
@@ -8,10 +9,10 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
-import { useLiteral, useNamedNode } from '@/composables/use-shacl'
+import { useLiteral, useNamed, useNamedList } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { CircleIcon, DiamondIcon, InfoIcon, PanelRightOpenIcon, TypeIcon } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 defineProps<{
   open: boolean
@@ -21,7 +22,12 @@ defineEmits<{
 }>()
 
 const { currentShape } = injectFileContext()
-const { value: type } = useNamedNode({ subject: currentShape.namedNode, predicate: RDF('type') })
+const types = useNamedList({ subject: currentShape.namedNode, predicate: RDF('type') })
+const type = computed(() => {
+  if (types.some((type) => type.value === Shacl.SHACL('NodeShape').value)) return 'node'
+  if (types.some((type) => type.value === Shacl.SHACL('PropertyShape').value)) return 'property'
+  return undefined
+})
 
 const iri = ref<string | undefined>(currentShape.value.value)
 watch(
@@ -53,7 +59,7 @@ const { value: description, language: descriptionLanguage } = useLiteral({
   subject: currentShape.namedNode,
   predicate: Shacl.SHACL('description'),
 })
-const { value: path } = useNamedNode({
+const { value: path } = useNamed({
   subject: currentShape.namedNode,
   predicate: Shacl.SHACL('path'),
 })
@@ -61,7 +67,7 @@ const { value: path } = useNamedNode({
 
 <template>
   <DefineOptions>
-    <AdditionalConstraints />
+    <AdditionalConstraints v-if="type" :type="type" :subject="currentShape.namedNode.value" />
   </DefineOptions>
   <div
     ref="target"
@@ -73,10 +79,7 @@ const { value: path } = useNamedNode({
     "
   >
     <FieldSet v-if="open">
-      <FieldLegend
-        v-if="type === Shacl.SHACL('PropertyShape').value"
-        class="justify-center w-full font-normal text-text"
-      >
+      <FieldLegend v-if="type === 'property'" class="justify-center w-full font-normal text-text">
         <TypeIcon />
         Text field
       </FieldLegend>
@@ -89,13 +92,14 @@ const { value: path } = useNamedNode({
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input
+          <PrefixInput
+            v-if="iri"
             v-model="iri"
             placeholder="ex:MyNode"
             @blur="currentShape.value.value = iri ?? undefined"
           />
         </Field>
-        <Field v-if="type === Shacl.SHACL('PropertyShape').value">
+        <Field v-if="type === 'property'">
           <FieldLabel>
             Path
             <Tooltip>
@@ -140,7 +144,7 @@ const { value: path } = useNamedNode({
       <PanelRightOpenIcon /> Additional options
     </Button>
     <Button color="background-blue" size="icon" @click="$emit('update:open', !open)" v-else>
-      <component :is="type === Shacl.SHACL('NodeShape').value ? DiamondIcon : CircleIcon" />
+      <component :is="type === 'node' ? DiamondIcon : CircleIcon" />
     </Button>
   </div>
 </template>

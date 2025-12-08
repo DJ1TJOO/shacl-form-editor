@@ -1,17 +1,23 @@
 import { Dash, RDF } from '@/components/rdf'
-import type { NamedNode as NamedNodeType } from '@rdfjs/types'
 import type { IndexedFormula } from 'rdflib'
 import { BlankNode, graph, NamedNode, Namespace, parse } from 'rdflib'
 
 export const SHACL = Namespace('http://www.w3.org/ns/shacl#')
 
-export function getLocalName(iri?: NamedNodeType) {
-  const name = iri?.value.split('/').pop()
-  if (!name) {
-    return undefined
+export function getLocalName(iri?: string | NamedNode) {
+  if (!iri) return undefined
+  const iriNode = getNamedNode(iri)
+  const iriValue = iriNode.value
+
+  const hashIndex = iriValue.lastIndexOf('#')
+  const slashIndex = iriValue.lastIndexOf('/')
+  const separatorIndex = Math.max(hashIndex, slashIndex)
+
+  if (separatorIndex > 0) {
+    return iriValue.substring(separatorIndex + 1)
   }
 
-  return name
+  return undefined
 }
 
 function getNamedNode(iri: string | NamedNode) {

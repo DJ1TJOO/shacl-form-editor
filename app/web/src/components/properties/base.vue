@@ -4,7 +4,7 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useLiteral, useNamedNode } from '@/composables/use-shacl'
+import { useLiteral, useNamed } from '@/composables/use-shacl'
 import { InfoIcon } from 'lucide-vue-next'
 import type { BlankNode } from 'rdflib/lib/tf-types'
 
@@ -12,7 +12,7 @@ const { subject } = defineProps<{
   subject: BlankNode
 }>()
 
-const { value: path } = useNamedNode({ subject, predicate: Shacl.SHACL('path') })
+const { value: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })
 const { value: label } = useLiteral({ subject, predicate: Shacl.SHACL('name') })
 const { value: description } = useLiteral({
   subject,

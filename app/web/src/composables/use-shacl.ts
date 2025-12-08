@@ -1,7 +1,8 @@
 import { Dash, injectFileContext, Shacl, Xsd } from '@/components/rdf'
+import { watchIgnorable } from '@vueuse/core'
 import { BlankNode, Literal, NamedNode, Node } from 'rdflib'
 import type { NamedNode as NamedNodeType, Quad_Predicate, Quad_Subject } from 'rdflib/lib/tf-types'
-import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { computed, reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 
 export function useFileStore() {
   const { store } = injectFileContext()
@@ -145,13 +146,18 @@ export const useParentlessNamedNode = ({
   return { value, namedNode }
 }
 
-export const useNamedNode = ({
+function useRdfNode<T extends Node>({
   subject,
   predicate,
+  nodeClass,
+  onNodeFromStore,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
-}) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  nodeClass: new (...args: any[]) => T // Class constructor for a node type
+  onNodeFromStore?: (node: T) => void
+}) {
   const store = useFileStore()
 
   watch(
@@ -161,18 +167,18 @@ export const useNamedNode = ({
         return
       }
 
-      const currentNamedNode = store.value.any(oldSubject, oldPredicate)
-      if (currentNamedNode instanceof NamedNode) {
+      const currentNode = store.value.any(oldSubject, oldPredicate)
+      if (currentNode instanceof nodeClass) {
         store.value.removeMatches(oldSubject, oldPredicate, null)
 
         if (typeof subject !== 'undefined' && typeof predicate !== 'undefined') {
-          store.value.add(subject, predicate, currentNamedNode)
+          store.value.add(subject, predicate, currentNode)
         }
       }
     },
   )
 
-  const namedNode = computed({
+  const node = computed({
     get() {
       const subjectValue = toValue(subject)
       const predicateValue = toValue(predicate)
@@ -180,9 +186,10 @@ export const useNamedNode = ({
         return undefined
       }
 
-      const namedNode = store.value.any(subjectValue, predicateValue)
-      if (namedNode instanceof NamedNode) {
-        return namedNode
+      const foundNode = store.value.any(subjectValue, predicateValue)
+      if (foundNode instanceof nodeClass) {
+        onNodeFromStore?.(foundNode)
+        return foundNode
       }
       return undefined
     },
@@ -200,16 +207,43 @@ export const useNamedNode = ({
     },
   })
 
+  return node
+}
+
+export const useNamed = ({
+  subject,
+  predicate,
+}: {
+  subject?: MaybeRefOrGetter<Quad_Subject | undefined>
+  predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
+}) => {
+  const node = useRdfNode({
+    subject,
+    predicate,
+    nodeClass: NamedNode,
+  })
+
   const value = computed({
     get() {
-      return namedNode.value?.value
+      return node.value?.value
     },
     set(value) {
-      namedNode.value = value?.includes(':') ? new NamedNode(value) : undefined
+      node.value = value?.includes(':') ? new NamedNode(value) : undefined
     },
   })
 
-  return { value, namedNode }
+  return { value, node }
+}
+
+/**
+ * Converts a checkbox value to a true or unset value.
+ * @param value - The checkbox value.
+ * @returns The true or unset value.
+ */
+export const booleanFromCheckboxValue = (value: boolean | 'on' | 'off' | 'indeterminate') => {
+  const realValue =
+    typeof value === 'boolean' ? value : value === 'on' ? true : value === 'off' ? false : undefined
+  return realValue === true ? true : undefined
 }
 
 export const useLiteral = <T extends string | boolean | number | Date = string>({
@@ -219,6 +253,56 @@ export const useLiteral = <T extends string | boolean | number | Date = string>(
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
 }) => {
+  const language = ref<string | undefined>(undefined)
+  const datatype = ref<NamedNodeType>(Xsd.string)
+
+  const node = useRdfNode({
+    subject,
+    predicate,
+    nodeClass: Literal,
+    onNodeFromStore: (foundLiteral) => {
+      language.value = foundLiteral.language
+      datatype.value = foundLiteral.datatype
+    },
+  })
+
+  const value = computed({
+    get() {
+      return node.value ? (Node.toJS(node.value) as T) : undefined
+    },
+    set(value) {
+      node.value =
+        typeof value === 'string'
+          ? new Literal(value, language.value, datatype.value)
+          : typeof value !== 'undefined'
+            ? Literal.fromValue<Literal>(value)
+            : undefined
+    },
+  })
+
+  watch(
+    () => [language.value, datatype.value] as const,
+    ([language, datatype], [oldLanguage, oldDatatype]) => {
+      if (oldLanguage === language && oldDatatype === datatype) return
+      if (!node.value) return
+
+      node.value = new Literal(node.value.value, language, datatype)
+    },
+  )
+
+  return { value, node, language, datatype }
+}
+
+function useRdfNodeList<T extends Node>({
+  subject,
+  predicate,
+  nodeClass,
+}: {
+  subject?: MaybeRefOrGetter<Quad_Subject | undefined>
+  predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  nodeClass: new (...args: any[]) => T // Class constructor for a node type
+}) {
   const store = useFileStore()
 
   watch(
@@ -228,34 +312,42 @@ export const useLiteral = <T extends string | boolean | number | Date = string>(
         return
       }
 
-      const currentLiteral = store.value.any(oldSubject, oldPredicate)
-      if (currentLiteral instanceof Literal) {
+      const currentNodes = store.value
+        .statementsMatching(oldSubject, oldPredicate)
+        .filter((statement) => statement.object instanceof nodeClass)
+        .map((statement) => statement.object as T)
+
+      if (currentNodes.length > 0) {
         store.value.removeMatches(oldSubject, oldPredicate, null)
 
         if (typeof subject !== 'undefined' && typeof predicate !== 'undefined') {
-          store.value.add(subject, predicate, currentLiteral)
+          for (const node of currentNodes) {
+            store.value.add(subject, predicate, node)
+          }
         }
       }
     },
   )
 
-  const literal = computed({
+  const nodes = computed({
     get() {
       const subjectValue = toValue(subject)
       const predicateValue = toValue(predicate)
       if (typeof subjectValue === 'undefined' || typeof predicateValue === 'undefined') {
-        return undefined
+        return []
       }
 
-      const literal = store.value.any(subjectValue, predicateValue)
-      if (literal instanceof Literal) {
-        language.value = literal.language
-        datatype.value = literal.datatype
-        return literal
-      }
-      return undefined
+      const foundNodes = store.value
+        .statementsMatching(subjectValue, predicateValue)
+        .filter((statement) => statement.object instanceof nodeClass)
+        .map((statement) => {
+          const node = statement.object as T
+          return node
+        })
+
+      return foundNodes
     },
-    set(value) {
+    set(values) {
       const subjectValue = toValue(subject)
       const predicateValue = toValue(predicate)
       if (typeof subjectValue === 'undefined' || typeof predicateValue === 'undefined') {
@@ -263,34 +355,136 @@ export const useLiteral = <T extends string | boolean | number | Date = string>(
       }
 
       store.value.removeMatches(subjectValue, predicateValue, null)
-      if (value) {
-        store.value.add(subjectValue, predicateValue, value)
+      if (values && values.length > 0) {
+        for (const value of values) {
+          store.value.add(subjectValue, predicateValue, value)
+        }
       }
     },
   })
 
-  const value = computed({
-    get() {
-      return literal.value ? (Node.toJS(literal.value) as T) : undefined
-    },
-    set(value) {
-      literal.value = value
-        ? new Literal(Literal.fromValue<Literal>(value).value, language.value, datatype.value)
-        : undefined
-    },
+  return nodes
+}
+
+export const useNamedList = ({
+  subject,
+  predicate,
+}: {
+  subject?: MaybeRefOrGetter<Quad_Subject | undefined>
+  predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
+}) => {
+  const nodes = useRdfNodeList({
+    subject,
+    predicate,
+    nodeClass: NamedNode,
   })
 
-  const language = ref<string | undefined>(undefined)
-  const datatype = ref<NamedNodeType>(Xsd.string)
-  watch(
-    () => [language.value, datatype.value] as const,
-    ([language, datatype], [oldLanguage, oldDatatype]) => {
-      if (oldLanguage === language && oldDatatype === datatype) return
-      if (!literal.value) return
+  const items = reactive<{ value: string; node: NamedNode }[]>([])
 
-      literal.value = new Literal(literal.value.value, language, datatype)
+  const { ignoreUpdates: ignoreItemUpdates } = watchIgnorable(
+    items,
+    (newItems) => {
+      if (!newItems || newItems.length === 0) {
+        nodes.value = []
+        return
+      }
+
+      ignoreNodeUpdates(() => {
+        nodes.value = newItems
+          .filter((item) => item.value?.includes(':'))
+          .map((item) => new NamedNode(item.value))
+      })
     },
+    { deep: true },
   )
 
-  return { value, literal, language, datatype }
+  const { ignoreUpdates: ignoreNodeUpdates } = watchIgnorable(
+    () => nodes.value,
+    (newNodes) => {
+      const newItems = newNodes.map((node) => ({
+        value: node.value,
+        node,
+      }))
+
+      ignoreItemUpdates(() => {
+        items.splice(0, items.length, ...newItems)
+      })
+    },
+    { immediate: true },
+  )
+
+  return items
+}
+
+export const useLiteralList = <T extends string | boolean | number | Date = string>({
+  subject,
+  predicate,
+}: {
+  subject?: MaybeRefOrGetter<Quad_Subject | undefined>
+  predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
+}) => {
+  const nodes = useRdfNodeList({
+    subject,
+    predicate,
+    nodeClass: Literal,
+  })
+
+  type LiteralItem = {
+    value: T
+    node: Literal
+    language: string | undefined
+    datatype: NamedNodeType
+  }
+
+  // Cast because of this issue: https://github.com/vuejs/core/issues/2136
+  const items = reactive<LiteralItem[]>([]) as LiteralItem[]
+
+  const { ignoreUpdates: ignoreItemUpdates } = watchIgnorable(
+    items,
+    (newItems) => {
+      if (!newItems || newItems.length === 0) {
+        nodes.value = []
+        return
+      }
+
+      const newNodes: Literal[] = []
+
+      for (const item of newItems) {
+        if (typeof item.value === 'undefined') continue
+
+        let literal: Literal
+        if (typeof item.value === 'string') {
+          literal = new Literal(item.value, item.language, item.datatype ?? Xsd.string)
+        } else {
+          literal = Literal.fromValue<Literal>(item.value)
+        }
+
+        newNodes.push(literal)
+      }
+
+      ignoreNodeUpdates(() => {
+        nodes.value = newNodes
+      })
+    },
+    { deep: true },
+  )
+
+  const { ignoreUpdates: ignoreNodeUpdates } = watchIgnorable(
+    () => nodes.value,
+    (newNodes) => {
+      const newItems: LiteralItem[] = newNodes.map((node) => ({
+        value: Node.toJS(node) as T,
+        node,
+        language: node.language,
+        datatype: node.datatype,
+      }))
+
+      ignoreItemUpdates(() => {
+        items.splice(0, items.length, ...newItems)
+      })
+    },
+    { immediate: true },
+  )
+
+  return items
 }

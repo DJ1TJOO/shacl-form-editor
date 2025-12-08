@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { Shacl } from '@/components/rdf'
+import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { LanguageSelect } from '@/components/form-ui/languages'
+import { PrefixInput } from '@/components/form-ui/prefix'
+import { Shacl, Xsd } from '@/components/rdf'
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useLiteral, useNamed } from '@/composables/use-shacl'
+import { useLiteral, useLiteralList, useNamed } from '@/composables/use-shacl'
 import { InfoIcon } from 'lucide-vue-next'
+import { Literal } from 'rdflib'
 import type { BlankNode } from 'rdflib/lib/tf-types'
 
 const { subject } = defineProps<{
@@ -13,8 +17,8 @@ const { subject } = defineProps<{
 }>()
 
 const { value: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })
-const { value: label } = useLiteral({ subject, predicate: Shacl.SHACL('name') })
-const { value: description } = useLiteral({
+const labels = useLiteralList({ subject, predicate: Shacl.SHACL('name') })
+const descriptions = useLiteralList({
   subject,
   predicate: Shacl.SHACL('description'),
 })
@@ -35,17 +39,43 @@ const { value: defaultValue } = useLiteral({
             <TooltipContent>This is content in a tooltip.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <Input v-model="path" placeholder="ex:path" />
+        <PrefixInput v-model="path" placeholder="ex:path" />
       </Field>
-      <Field>
-        <FieldLabel>
-          Label
-          <Tooltip>
-            <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
-            <TooltipContent>This is content in a tooltip.</TooltipContent>
-          </Tooltip>
-        </FieldLabel>
-        <Input v-model="label" />
+      <Field class="gap-0.5 grid grid-cols-[1fr_--spacing(20)]">
+        <div class="grid grid-cols-subgrid col-span-2">
+          <FieldLabel>
+            Label
+            <Tooltip>
+              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipContent>This is content in a tooltip.</TooltipContent>
+            </Tooltip>
+          </FieldLabel>
+          <FieldLabel v-if="labels.length > 0"> Language </FieldLabel>
+        </div>
+        <div
+          class="grid grid-cols-subgrid col-span-2"
+          v-for="(label, index) in labels"
+          :key="index"
+        >
+          <InputGroup>
+            <InputGroupInput v-model="label.value" placeholder="My Node" />
+            <InputGroupAddon align="inline-end">
+              <RemoveButton @click="labels.splice(index, 1)" />
+            </InputGroupAddon>
+          </InputGroup>
+          <!-- @TODO: show we show error when the same language is used for multiple times -->
+          <LanguageSelect v-model="label.language" />
+        </div>
+        <AddButton
+          @click="
+            labels.push({
+              value: '',
+              language: undefined,
+              datatype: Xsd.string,
+              node: new Literal(''),
+            })
+          "
+        />
       </Field>
       <Field>
         <FieldLabel>
@@ -55,7 +85,29 @@ const { value: defaultValue } = useLiteral({
             <TooltipContent>This is content in a tooltip.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <Textarea v-model="description" />
+        <div
+          v-for="(description, index) in descriptions"
+          :key="index"
+          class="space-y-0.5 has-[+div]:mb-2"
+        >
+          <Textarea v-model="description.value" placeholder="This is a node with a description" />
+          <div class="flex items-center gap-0.5">
+            <div class="flex-1">
+              <LanguageSelect v-model="description.language" />
+            </div>
+            <RemoveButton standalone @click="descriptions.splice(index, 1)" />
+          </div>
+        </div>
+        <AddButton
+          @click="
+            descriptions.push({
+              value: '',
+              language: undefined,
+              datatype: Xsd.string,
+              node: new Literal(''),
+            })
+          "
+        />
       </Field>
 
       <Field>
@@ -66,7 +118,13 @@ const { value: defaultValue } = useLiteral({
             <TooltipContent>This is content in a tooltip.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <Input v-model="defaultValue" />
+        <InputGroup v-if="typeof defaultValue === 'string'">
+          <InputGroupInput v-model="defaultValue" />
+          <InputGroupAddon align="inline-end">
+            <RemoveButton @click="defaultValue = undefined" />
+          </InputGroupAddon>
+        </InputGroup>
+        <AddButton v-else @click="defaultValue = ''" />
       </Field>
     </FieldGroup>
   </FieldSet>

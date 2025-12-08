@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends string | undefined">
 import { absoluteToPrefixed, prefixedToAbsolute, tmpPrefixOptions } from '@/components/tmp-prefixes'
 import {
   Combobox,
@@ -10,20 +10,56 @@ import {
   ComboboxTrigger,
 } from '@/components/ui/combobox'
 import { InputGroup, InputGroupAddon, InputGroupComboboxInput } from '@/components/ui/input-group'
+import { reactiveOmit } from '@vueuse/core'
+import type { ComboboxRootEmits, ComboboxRootProps } from 'reka-ui'
+import { useForwardPropsEmits } from 'reka-ui'
+import type { HTMLAttributes, InputHTMLAttributes } from 'vue'
 
-const prefix = defineModel<string>({ required: true })
+const props = defineProps<
+  ComboboxRootProps & {
+    onBlur?: HTMLAttributes['onBlur']
+  } & /* @vue-ignore */ InputHTMLAttributes
+>()
+const emits = defineEmits<ComboboxRootEmits>()
+
+const comboboxPropsWithoutModel = reactiveOmit(props, 'modelValue')
+const comboboxProps = useForwardPropsEmits(comboboxPropsWithoutModel, emits)
+
+const inputProps = reactiveOmit(
+  props,
+  'open',
+  'defaultOpen',
+  'resetSearchTermOnBlur',
+  'resetSearchTermOnSelect',
+  'openOnFocus',
+  'openOnClick',
+  'ignoreFilter',
+  'resetModelValueOnClear',
+  'modelValue',
+  'defaultValue',
+  'multiple',
+  'dir',
+  'disabled',
+  'by',
+  'onBlur',
+)
+const prefix = defineModel<T>({ required: true })
 </script>
 
 <template>
-  <Combobox v-model="prefix">
+  <Combobox v-model="prefix" v-bind="comboboxProps">
     <ComboboxAnchor>
       <InputGroup>
         <InputGroupComboboxInput
-          :display-value="(prefix) => absoluteToPrefixed(prefix)"
+          v-bind="inputProps"
+          :display-value="(prefix: T) => (prefix ? absoluteToPrefixed(prefix) : '')"
           @blur="
-            (e: Event) => {
+            (e: FocusEvent) => {
               const target = e.target as HTMLInputElement
-              prefix = prefixedToAbsolute(target.value)
+              prefix = prefixedToAbsolute(target.value) as T
+
+              console.log('blur', props)
+              props.onBlur?.(e)
             }
           "
         />

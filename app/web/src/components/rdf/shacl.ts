@@ -1,6 +1,6 @@
 import { Dash, RDF } from '@/components/rdf'
 import type { IndexedFormula } from 'rdflib'
-import { BlankNode, graph, NamedNode, Namespace, parse } from 'rdflib'
+import { BlankNode, graph, Literal, NamedNode, Namespace, Node, parse } from 'rdflib'
 
 export const SHACL = Namespace('http://www.w3.org/ns/shacl#')
 
@@ -53,11 +53,37 @@ export function getAllShapes(store: IndexedFormula) {
     ...store
       .each(null, RDF('type'), SHACL('PropertyShape'))
       .filter((shape) => shape instanceof NamedNode)
-      .map((shape) => ({
-        value: shape.value,
-        name: getLocalName(shape),
-        type: 'property' as const,
-      })),
+      .map((shape) => {
+        let editor = store.anyStatementMatching(shape, Dash.DASH('editor'))?.object
+        if (!(editor instanceof NamedNode)) {
+          editor = undefined
+        }
+
+        let viewer = store.anyStatementMatching(shape, Dash.DASH('viewer'))?.object
+        if (!(viewer instanceof NamedNode)) {
+          viewer = undefined
+        }
+
+        let order = store.anyStatementMatching(shape, SHACL('order'))?.object
+        if (!(order instanceof Literal)) {
+          order = undefined
+        }
+
+        let group = store.anyStatementMatching(shape, SHACL('group'))?.object
+        if (!(group instanceof NamedNode)) {
+          group = undefined
+        }
+
+        return {
+          value: shape.value,
+          name: getLocalName(shape),
+          order,
+          group,
+          editor,
+          viewer,
+          type: 'property' as const,
+        }
+      }),
   ]
 }
 
@@ -73,11 +99,24 @@ export function createProperty(
   shape: string | NamedNode,
   editor: keyof typeof Dash.editors,
   viewer: keyof typeof Dash.viewers,
+  order?: number,
 ) {
   const property = new BlankNode()
   store.add(property, Dash.DASH('editor'), Dash.editors[editor])
   store.add(property, Dash.DASH('viewer'), Dash.viewers[viewer])
   store.add(getNamedNode(shape), SHACL('property'), property)
+
+  if (order !== undefined) {
+    store.add(property, SHACL('order'), Literal.fromValue<Literal>(order))
+  } else {
+    const maxOrder = Math.max(
+      ...store
+        .statementsMatching(null, SHACL('order'))
+        .map(({ object }) => Node.toJS(object) as number),
+      0,
+    )
+    store.add(property, SHACL('order'), Literal.fromValue<Literal>(maxOrder + 1))
+  }
 }
 
 export function removeProperty(store: IndexedFormula, property: BlankNode | NamedNode) {

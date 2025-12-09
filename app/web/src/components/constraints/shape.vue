@@ -38,6 +38,7 @@ const disjoint = ref<boolean | 'indeterminate'>(false)
 const shapeOptions = ['ex:MyNode', 'ex:MyNodeOther', 'ex:AddressShape', 'ex:ContactShape']
 </script>
 
+<!-- @TODO: implementation when creating subshape property -->
 <template>
   <Constraint legend="Shape constraints" :collapsible="collapsible">
     <Field class="gap-1 grid grid-cols-[1fr_auto]">

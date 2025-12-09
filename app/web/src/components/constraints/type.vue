@@ -20,7 +20,7 @@ import { NamedNode } from 'rdflib'
 const { subject } = defineProps<ConstraintProps>()
 
 const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype') })
-const classes = useNamedList({ subject, predicate: Shacl.SHACL('class') })
+const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
 const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind') })
 </script>
 

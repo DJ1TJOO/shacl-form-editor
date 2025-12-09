@@ -39,7 +39,7 @@ defineEmits<{
 }>()
 
 const { currentShape, store } = injectFileContext()
-const types = useNamedList({
+const { items: types } = useNamedList({
   subject: currentShape.namedNode,
   predicate: RDF('type'),
 })

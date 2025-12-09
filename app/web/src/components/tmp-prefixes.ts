@@ -35,27 +35,27 @@ export const knownPrefixes = [
 export const tmpPrefixOptions = [
   {
     value: 'http://www.w3.org/ns/shacl#BlankNode',
-    label: 'sh:BlankNode',
+    label: 'shacl:BlankNode',
   },
   {
     value: 'http://www.w3.org/ns/shacl#IRI',
-    label: 'sh:IRI',
+    label: 'shacl:IRI',
   },
   {
     value: 'http://www.w3.org/ns/shacl#Literal',
-    label: 'sh:Literal',
+    label: 'shacl:Literal',
   },
   {
     value: 'http://www.w3.org/ns/shacl#BlankNodeOrIRI',
-    label: 'sh:BlankNodeOrIRI',
+    label: 'shacl:BlankNodeOrIRI',
   },
   {
     value: 'http://www.w3.org/ns/shacl#BlankNodeOrLiteral',
-    label: 'sh:BlankNodeOrLiteral',
+    label: 'shacl:BlankNodeOrLiteral',
   },
   {
     value: 'http://www.w3.org/ns/shacl#IRIOrLiteral',
-    label: 'sh:IRIOrLiteral',
+    label: 'shacl:IRIOrLiteral',
   },
   {
     value: 'http://schema.org/Person',

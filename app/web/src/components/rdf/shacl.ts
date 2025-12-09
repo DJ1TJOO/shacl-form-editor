@@ -1,4 +1,4 @@
-import { Dash, RDF } from '@/components/rdf'
+import { Dash, getNamedNode, RDF } from '@/components/rdf'
 import type { IndexedFormula } from 'rdflib'
 import { BlankNode, graph, Literal, NamedNode, Namespace, Node, parse } from 'rdflib'
 
@@ -26,10 +26,6 @@ export function getLocalName(iri?: string | NamedNode) {
   }
 
   return undefined
-}
-
-function getNamedNode(iri: string | NamedNode) {
-  return iri instanceof NamedNode ? iri : new NamedNode(iri)
 }
 
 export function addShape(

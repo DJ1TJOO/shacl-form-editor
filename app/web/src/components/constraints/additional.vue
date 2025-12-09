@@ -14,8 +14,11 @@ import { NamedNode } from 'rdflib'
 const { subject } = defineProps<ConstraintProps & { type: 'node' | 'property' }>()
 
 const { value: closed } = useLiteral<boolean>({ subject, predicate: Shacl.SHACL('closed') })
-const types = useNamedList({ subject, predicate: RDF('type') })
-const ignoredProperties = useNamedList({ subject, predicate: Shacl.SHACL('ignoredProperties') })
+const { items: types } = useNamedList({ subject, predicate: RDF('type') })
+const { items: ignoredProperties } = useNamedList({
+  subject,
+  predicate: Shacl.SHACL('ignoredProperties'),
+})
 </script>
 
 <template>

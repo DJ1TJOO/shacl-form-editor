@@ -17,8 +17,8 @@ const { subject } = defineProps<{
 }>()
 
 const { value: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })
-const labels = useLiteralList({ subject, predicate: Shacl.SHACL('name') })
-const descriptions = useLiteralList({
+const { items: labels } = useLiteralList({ subject, predicate: Shacl.SHACL('name') })
+const { items: descriptions } = useLiteralList({
   subject,
   predicate: Shacl.SHACL('description'),
 })

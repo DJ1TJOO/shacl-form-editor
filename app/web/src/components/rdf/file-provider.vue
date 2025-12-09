@@ -24,6 +24,7 @@ const storedStore = useStorage<string | null>('file-store', null)
 const isStoreLoaded = ref(false)
 const showNewItemDialog = ref(false)
 
+// @TODO: use watchIgnorable on store and storedStore to immediately update the store when the storedStore changes
 function watchStore(store: IndexedFormula) {
   store.addDataCallback((quad) => {
     storedStore.value = Shacl.serialize(store)

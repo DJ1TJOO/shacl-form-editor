@@ -23,9 +23,27 @@ const forwarded = useForwardPropsEmits(props, emits)
 const filter = ref('')
 const { contains } = useFilter({ sensitivity: 'base' })
 const filteredLanguages = computed(() => {
-  return languages.filter((language) =>
+  const filtered = languages.filter((language) =>
     contains(`${language.label} (${language.code})`, filter.value),
   )
+
+  const forwardedValue = forwarded.value
+  const modelValue = forwardedValue.modelValue
+  const selectedCodes = forwardedValue.multiple
+    ? Array.isArray(modelValue)
+      ? modelValue
+      : []
+    : modelValue
+      ? [modelValue]
+      : []
+
+  return filtered.sort((a, b) => {
+    const aSelected = selectedCodes.includes(a.code)
+    const bSelected = selectedCodes.includes(b.code)
+    if (aSelected && !bSelected) return -1
+    if (!aSelected && bSelected) return 1
+    return 0
+  })
 })
 </script>
 
@@ -33,7 +51,16 @@ const filteredLanguages = computed(() => {
   <Combobox v-bind="forwarded">
     <ComboboxAnchor>
       <div class="relative items-center">
-        <ComboboxInput placeholder="Unset" v-model="filter" />
+        <ComboboxInput
+          :placeholder="
+            forwarded.multiple
+              ? Array.isArray(forwarded.modelValue) && forwarded.modelValue.length > 0
+                ? forwarded.modelValue.join(', ')
+                : 'Unset'
+              : 'Unset'
+          "
+          v-model="filter"
+        />
         <ComboboxTrigger class="absolute inset-y-0 flex justify-center items-center px-3 end-0" />
       </div>
     </ComboboxAnchor>
@@ -42,8 +69,9 @@ const filteredLanguages = computed(() => {
       <ComboboxEmpty> No language found. </ComboboxEmpty>
 
       <!-- @TODO: Breaks when using ComboboxGroup, why? -->
+      <!-- @TODO: opens and closes very slowly, even with virtualizer -->
       <div class="p-1">
-        <ComboboxItem :value="null">
+        <ComboboxItem :value="null" v-if="!forwarded.multiple">
           <ComboboxItemIndicator />
           Unset
         </ComboboxItem>

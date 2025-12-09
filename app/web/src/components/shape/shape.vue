@@ -1,11 +1,22 @@
 <script setup lang="ts">
-import { AdditionalConstraints } from '@/components/constraints'
+import {
+  AdditionalConstraints,
+  TargetConstraints,
+  ValidationConstraints,
+} from '@/components/constraints'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { injectFileContext, RDF, Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
-import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field'
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Textarea } from '@/components/ui/textarea'
@@ -25,7 +36,7 @@ defineEmits<{
 }>()
 
 const { currentShape } = injectFileContext()
-const types = useNamedList({ subject: currentShape.namedNode, predicate: RDF('type') })
+const { items: types } = useNamedList({ subject: currentShape.namedNode, predicate: RDF('type') })
 const type = computed(() => {
   if (types.some((type) => type.value === Shacl.SHACL('NodeShape').value)) return 'node'
   if (types.some((type) => type.value === Shacl.SHACL('PropertyShape').value)) return 'property'
@@ -54,11 +65,11 @@ const {
   { allowGrouping: false },
 )
 
-const labels = useLiteralList({
+const { items: labels } = useLiteralList({
   subject: currentShape.namedNode,
   predicate: Shacl.SHACL('name'),
 })
-const descriptions = useLiteralList({
+const { items: descriptions } = useLiteralList({
   subject: currentShape.namedNode,
   predicate: Shacl.SHACL('description'),
 })
@@ -71,6 +82,14 @@ const { value: path } = useNamed({
 <template>
   <DefineOptions>
     <AdditionalConstraints v-if="type" :type="type" :subject="currentShape.namedNode.value" />
+    <FieldSeparator v-if="type === 'node'" />
+    <TargetConstraints v-if="type === 'node'" :subject="currentShape.namedNode.value" collapsible />
+    <FieldSeparator v-if="type === 'node'" />
+    <ValidationConstraints
+      v-if="type === 'node'"
+      :subject="currentShape.namedNode.value"
+      collapsible
+    />
   </DefineOptions>
   <div
     ref="target"

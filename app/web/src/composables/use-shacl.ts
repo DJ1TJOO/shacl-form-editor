@@ -399,7 +399,7 @@ export const useNamedList = ({
   )
 
   const { ignoreUpdates: ignoreNodeUpdates } = watchIgnorable(
-    () => nodes.value,
+    nodes,
     (newNodes) => {
       const newItems = newNodes.map((node) => ({
         value: node.value,
@@ -413,7 +413,7 @@ export const useNamedList = ({
     { immediate: true },
   )
 
-  return items
+  return { items, ignoreNodeUpdates, ignoreItemUpdates }
 }
 
 export const useLiteralList = <T extends string | boolean | number | Date = string>({
@@ -432,7 +432,7 @@ export const useLiteralList = <T extends string | boolean | number | Date = stri
   type LiteralItem = {
     value: T
     node: Literal
-    language: string | undefined
+    language?: string | null
     datatype: NamedNodeType
   }
 
@@ -470,7 +470,7 @@ export const useLiteralList = <T extends string | boolean | number | Date = stri
   )
 
   const { ignoreUpdates: ignoreNodeUpdates } = watchIgnorable(
-    () => nodes.value,
+    nodes,
     (newNodes) => {
       const newItems: LiteralItem[] = newNodes.map((node) => ({
         value: Node.toJS(node) as T,
@@ -486,5 +486,5 @@ export const useLiteralList = <T extends string | boolean | number | Date = stri
     { immediate: true },
   )
 
-  return items
+  return { items, ignoreNodeUpdates, ignoreItemUpdates }
 }

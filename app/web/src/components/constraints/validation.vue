@@ -1,44 +1,54 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { Button } from '@/components/ui/button'
+import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { LanguageSelect } from '@/components/form-ui/languages'
+import { Shacl, Xsd } from '@/components/rdf'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
-import { InputList } from '@/components/ui/input-list'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupSelectTrigger,
+  InputGroupSelectTriggerIcon,
+} from '@/components/ui/input-group'
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { InfoIcon, XIcon } from 'lucide-vue-next'
-import { ref } from 'vue'
+import {
+  booleanFromCheckboxValue,
+  useLiteral,
+  useLiteralList,
+  useNamed,
+} from '@/composables/use-shacl'
+import { InfoIcon } from 'lucide-vue-next'
+import { Literal } from 'rdflib'
 
-defineProps<ConstraintProps>()
+const { subject } = defineProps<ConstraintProps>()
 
-const severity = ref<string | undefined>()
-const deactivated = ref<string | undefined>()
-
-type MessageEntry = {
-  id: number
-  language: string
-  text: string
-}
-
-let nextMessageId = 0
-
-const createMessageEntry = (): MessageEntry => ({
-  id: nextMessageId++,
-  language: 'en',
-  text: '',
+const { value: severity } = useNamed({ subject, predicate: Shacl.SHACL('severity') })
+const { value: deactivated } = useLiteral<boolean>({
+  subject,
+  predicate: Shacl.SHACL('deactivated'),
+})
+const { items: messages } = useLiteralList({
+  subject,
+  predicate: Shacl.SHACL('message'),
 })
 
-const messages = ref<MessageEntry[]>([createMessageEntry()])
-
-const languageOptions = ['en', 'nl', 'de', 'fr']
-const severityOptions = ['Unset', 'Violation', 'Warning', 'Info']
-const deactivatedOptions = ['Unset', 'True', 'False']
+const severityOptions = [
+  {
+    value: Shacl.SHACL('Violation').value,
+    label: 'Violation',
+  },
+  {
+    value: Shacl.SHACL('Warning').value,
+    label: 'Warning',
+  },
+  {
+    value: Shacl.SHACL('Info').value,
+    label: 'Info',
+  },
+] as const
 </script>
 
 <template>
@@ -51,16 +61,66 @@ const deactivatedOptions = ['Unset', 'True', 'False']
           <TooltipContent> The severity of this constraint when it is violated. </TooltipContent>
         </Tooltip>
       </FieldLabel>
-      <Select v-model="severity">
-        <SelectTrigger class="w-full">
-          <SelectValue placeholder="Unset" />
-        </SelectTrigger>
+
+      <AddButton
+        v-if="typeof severity === 'undefined'"
+        @click="severity = severityOptions[0].value"
+      />
+      <Select v-model="severity" v-else>
+        <InputGroup>
+          <InputGroupSelectTrigger>
+            <SelectValue />
+          </InputGroupSelectTrigger>
+          <InputGroupAddon align="inline-end">
+            <InputGroupSelectTriggerIcon />
+            <RemoveButton @click="severity = undefined" />
+          </InputGroupAddon>
+        </InputGroup>
         <SelectContent>
-          <SelectItem v-for="option in severityOptions" :key="option" :value="option">
-            {{ option }}
+          <SelectItem v-for="option in severityOptions" :key="option.value" :value="option.value">
+            {{ option.label }}
           </SelectItem>
         </SelectContent>
       </Select>
+    </Field>
+
+    <Field class="gap-0.5 grid grid-cols-[1fr_--spacing(20)]">
+      <div class="grid grid-cols-subgrid col-span-2">
+        <FieldLabel>
+          Message
+          <Tooltip>
+            <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+            <TooltipContent
+              >Human-readable validation messages in one or more languages.</TooltipContent
+            >
+          </Tooltip>
+        </FieldLabel>
+        <FieldLabel v-if="messages.length > 0"> Language </FieldLabel>
+      </div>
+      <div
+        class="grid grid-cols-subgrid col-span-2"
+        v-for="(message, index) in messages"
+        :key="index"
+      >
+        <InputGroup>
+          <InputGroupInput v-model="message.value" placeholder="My Node" />
+          <InputGroupAddon align="inline-end">
+            <RemoveButton @click="messages.splice(index, 1)" />
+          </InputGroupAddon>
+        </InputGroup>
+        <!-- @TODO: show we show error when the same language is used for multiple times -->
+        <LanguageSelect v-model="message.language" />
+      </div>
+      <AddButton
+        @click="
+          messages.push({
+            value: '',
+            language: undefined,
+            datatype: Xsd.string,
+            node: new Literal(''),
+          })
+        "
+      />
     </Field>
 
     <Field>
@@ -71,67 +131,10 @@ const deactivatedOptions = ['Unset', 'True', 'False']
           <TooltipContent> Whether this constraint is currently deactivated. </TooltipContent>
         </Tooltip>
       </FieldLabel>
-      <Select v-model="deactivated">
-        <SelectTrigger class="w-full">
-          <SelectValue placeholder="Unset" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem v-for="option in deactivatedOptions" :key="option" :value="option">
-            {{ option }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
-    </Field>
-
-    <Field class="gap-1 grid grid-cols-[auto_1fr]">
-      <div class="grid grid-cols-subgrid col-span-2">
-        <FieldLabel>
-          Message
-          <Tooltip>
-            <TooltipTrigger><InfoIcon /></TooltipTrigger>
-            <TooltipContent>
-              Human-readable validation messages in one or more languages.
-            </TooltipContent>
-          </Tooltip>
-        </FieldLabel>
-      </div>
-
-      <InputList
-        v-model="messages"
-        :min="1"
-        :create="createMessageEntry"
-        :get-key="(entry: MessageEntry) => entry.id"
-        v-slot="{ entry, remove, isRemovable }"
-      >
-        <div class="grid grid-cols-subgrid col-span-2">
-          <Select v-model="entry.language">
-            <SelectTrigger class="w-full max-w-24">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="option in languageOptions" :key="option" :value="option">
-                {{ option }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-
-          <InputGroup>
-            <InputGroupInput v-model="entry.text" placeholder="Validation message" />
-            <InputGroupAddon align="inline-end">
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                color="danger"
-                type="button"
-                v-if="isRemovable"
-                @click="remove"
-              >
-                <XIcon />
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </div>
-      </InputList>
+      <Checkbox
+        :model-value="deactivated"
+        @update:model-value="(value) => (deactivated = booleanFromCheckboxValue(value))"
+      />
     </Field>
   </Constraint>
 </template>

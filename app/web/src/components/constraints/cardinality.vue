@@ -11,8 +11,8 @@ import { InfoIcon } from 'lucide-vue-next'
 import { computed } from 'vue'
 const { subject } = defineProps<ConstraintProps>()
 
-const { value: minimum } = useLiteral<number>({ subject, predicate: Shacl.SHACL('minimum') })
-const { value: maximum } = useLiteral<number>({ subject, predicate: Shacl.SHACL('maximum') })
+const { value: minimum } = useLiteral<number>({ subject, predicate: Shacl.SHACL('minCount') })
+const { value: maximum } = useLiteral<number>({ subject, predicate: Shacl.SHACL('maxCount') })
 
 const required = computed<boolean | 'indeterminate'>({
   get: () => {
@@ -48,7 +48,8 @@ const required = computed<boolean | 'indeterminate'>({
             <TooltipContent>Minimum number of occurrences.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <InputGroup v-if="minimum">
+        <AddButton v-if="typeof minimum === 'undefined'" @click="minimum = 1" />
+        <InputGroup v-else>
           <InputGroupInput
             v-model="minimum"
             :min="1"
@@ -60,7 +61,6 @@ const required = computed<boolean | 'indeterminate'>({
             <RemoveButton @click="minimum = undefined" />
           </InputGroupAddon>
         </InputGroup>
-        <AddButton v-else @click="minimum = 1" />
       </Field>
       <Field>
         <FieldLabel>
@@ -70,13 +70,13 @@ const required = computed<boolean | 'indeterminate'>({
             <TooltipContent>Maximum number of occurrences.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <InputGroup v-if="maximum">
+        <AddButton v-if="typeof maximum === 'undefined'" @click="maximum = minimum ?? 1" />
+        <InputGroup v-else>
           <InputGroupInput v-model="maximum" :min="minimum ?? 1" default-value="1" type="number" />
           <InputGroupAddon align="inline-end">
             <RemoveButton @click="maximum = undefined" />
           </InputGroupAddon>
         </InputGroup>
-        <AddButton v-else @click="maximum = minimum ?? 1" />
       </Field>
     </div>
   </Constraint>

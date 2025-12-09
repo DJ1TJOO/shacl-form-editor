@@ -62,7 +62,20 @@ const items: ToolboxItem[] = [
       )
     },
   },
-  { icon: FileTextIcon, label: 'Text area', tooltip: 'Add to library' },
+  {
+    icon: FileTextIcon,
+    label: 'Text area',
+    tooltip: 'Add to library',
+    create: () => {
+      if (!store.value || !currentShape.namedNode.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.namedNode.value,
+        'TextAreaEditor',
+        'LiteralViewer',
+      )
+    },
+  },
   { icon: TextCursorInputIcon, label: 'Combobox', tooltip: 'Add to library' },
   { icon: ListTodoIcon, label: 'True / False', tooltip: 'Add to library' },
   { icon: CalendarIcon, label: 'Date', tooltip: 'Add to library' },

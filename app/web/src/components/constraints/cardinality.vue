@@ -8,19 +8,23 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useLiteral } from '@/composables/use-shacl'
 import { InfoIcon } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { computed } from 'vue'
 const { subject } = defineProps<ConstraintProps>()
 
-const required = ref<boolean | 'indeterminate'>(false)
 const { value: minimum } = useLiteral<number>({ subject, predicate: Shacl.SHACL('minimum') })
 const { value: maximum } = useLiteral<number>({ subject, predicate: Shacl.SHACL('maximum') })
 
-watch(
-  () => [minimum.value, maximum.value],
-  ([minVal, maxVal]) => {
-    required.value = minVal === 1 && maxVal === 1 ? true : minVal ? 'indeterminate' : false
+const required = computed<boolean | 'indeterminate'>({
+  get: () => {
+    const minVal = minimum.value
+    const maxVal = maximum.value
+    return minVal === 1 && maxVal === 1 ? true : minVal ? 'indeterminate' : false
   },
-)
+  set: (value) => {
+    minimum.value = value ? 1 : undefined
+    maximum.value = value ? 1 : undefined
+  },
+})
 </script>
 
 <template>
@@ -34,15 +38,7 @@ watch(
             <TooltipContent>Minimum and maximum will set to 1.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <Checkbox
-          v-model="required"
-          @update:model-value="
-            (value) => {
-              minimum = value ? 1 : undefined
-              maximum = value ? 1 : undefined
-            }
-          "
-        />
+        <Checkbox v-model="required" />
       </Field>
       <Field>
         <FieldLabel>

@@ -28,7 +28,7 @@ interface ToolboxItem {
   icon: Component
   label: string
   tooltip: string
-  create?: () => void
+  create?: (order?: number) => void
 }
 
 defineProps<{
@@ -52,13 +52,14 @@ const items: ToolboxItem[] = [
     icon: TypeIcon,
     label: 'Text field',
     tooltip: 'Add to library',
-    create: () => {
+    create: (order?: number) => {
       if (!store.value || !currentShape.namedNode.value) return
       Shacl.createProperty(
         store.value,
         currentShape.namedNode.value,
         'TextFieldEditor',
         'LiteralViewer',
+        order,
       )
     },
   },
@@ -66,13 +67,14 @@ const items: ToolboxItem[] = [
     icon: FileTextIcon,
     label: 'Text area',
     tooltip: 'Add to library',
-    create: () => {
+    create: (order?: number) => {
       if (!store.value || !currentShape.namedNode.value) return
       Shacl.createProperty(
         store.value,
         currentShape.namedNode.value,
         'TextAreaEditor',
         'LiteralViewer',
+        order,
       )
     },
   },
@@ -118,7 +120,7 @@ const filteredItems = computed(() => {
         :icon="item.icon"
         :label="item.label"
         :disabled="!item.create"
-        @click="item.create?.()"
+        :create="item.create"
       >
         {{ item.tooltip }}
       </BoxItem>

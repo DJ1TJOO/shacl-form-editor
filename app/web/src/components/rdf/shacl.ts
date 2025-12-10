@@ -1,6 +1,8 @@
+import { recalculateOrders } from '@/components/properties/ordering'
 import { Dash, getNamedNode, RDF } from '@/components/rdf'
 import type { IndexedFormula } from 'rdflib'
 import { BlankNode, graph, Literal, NamedNode, Namespace, Node, parse } from 'rdflib'
+import type { Quad_Subject } from 'rdflib/lib/tf-types'
 
 export const SHACL = Namespace('http://www.w3.org/ns/shacl#')
 export const nodeKinds = [
@@ -91,6 +93,45 @@ export function getAllShapes(store: IndexedFormula) {
   ]
 }
 
+export function getNodeProperties(store: IndexedFormula, shape: Quad_Subject) {
+  return store
+    .statementsMatching(shape, SHACL('property'))
+    .filter(
+      (statement) => statement.object instanceof BlankNode || statement.object instanceof NamedNode,
+    )
+    .map((statement) => {
+      const object = statement.object as BlankNode | NamedNode
+
+      let editor = store.anyStatementMatching(object, Dash.DASH('editor'))?.object
+      if (!(editor instanceof NamedNode)) {
+        editor = undefined
+      }
+
+      let viewer = store.anyStatementMatching(object, Dash.DASH('viewer'))?.object
+      if (!(viewer instanceof NamedNode)) {
+        viewer = undefined
+      }
+
+      let order = store.anyStatementMatching(object, SHACL('order'))?.object
+      if (!(order instanceof Literal)) {
+        order = undefined
+      }
+
+      let group = store.anyStatementMatching(object, SHACL('group'))?.object
+      if (!(group instanceof NamedNode)) {
+        group = undefined
+      }
+
+      return {
+        value: object,
+        editor,
+        viewer,
+        order,
+        group,
+      }
+    })
+}
+
 export function shapeExists(store: IndexedFormula, iri: string | NamedNode) {
   return Boolean(
     store.holds(getNamedNode(iri), RDF('type'), SHACL('NodeShape')) ||
@@ -125,7 +166,15 @@ export function createProperty(
 
 export function removeProperty(store: IndexedFormula, property: BlankNode | NamedNode) {
   store.removeMany(property)
+
+  const shapes = store
+    .each(null, SHACL('property'), property)
+    .filter((node) => node instanceof NamedNode)
   store.removeMatches(null, SHACL('property'), property)
+
+  for (const shape of shapes) {
+    recalculateOrders(store, shape)
+  }
 }
 
 export function serialize(store: IndexedFormula) {

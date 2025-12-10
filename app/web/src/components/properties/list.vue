@@ -17,7 +17,6 @@ import { ChevronDownIcon, ChevronUpIcon } from 'lucide-vue-next'
 import { Primitive, type PrimitiveProps } from 'reka-ui'
 import { ref, type HTMLAttributes, type Ref } from 'vue'
 import CreateGroup from './create-group.vue'
-import Empty from './empty.vue'
 
 const props = withDefaults(defineProps<PrimitiveProps & { class?: HTMLAttributes['class'] }>(), {
   as: 'div',
@@ -34,8 +33,8 @@ providePropertiesListContext({
 </script>
 
 <template>
-  <Primitive v-bind="props" :class="cn('space-y-2', props.class)">
-    <div class="flex gap-2 mx-auto max-w-md">
+  <Primitive v-bind="props" :class="cn('space-y-2 mx-auto max-w-md w-full', props.class)">
+    <div class="flex gap-2">
       <Button color="background-blue" class="bg-transparent" @click="listOpen = false">
         Collapse all <ChevronUpIcon />
       </Button>
@@ -45,6 +44,5 @@ providePropertiesListContext({
     </div>
     <CreateGroup />
     <slot />
-    <Empty />
   </Primitive>
 </template>

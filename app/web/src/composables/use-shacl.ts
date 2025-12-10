@@ -64,43 +64,7 @@ export const useNodeProperties = ({
       return []
     }
 
-    return store.value
-      .statementsMatching(subjectValue, Shacl.SHACL('property'))
-      .filter(
-        (statement) =>
-          statement.object instanceof BlankNode || statement.object instanceof NamedNode,
-      )
-      .map((statement) => {
-        const object = statement.object as BlankNode | NamedNode
-
-        let editor = store.value.anyStatementMatching(object, Dash.DASH('editor'))?.object
-        if (!(editor instanceof NamedNode)) {
-          editor = undefined
-        }
-
-        let viewer = store.value.anyStatementMatching(object, Dash.DASH('viewer'))?.object
-        if (!(viewer instanceof NamedNode)) {
-          viewer = undefined
-        }
-
-        let order = store.value.anyStatementMatching(object, Shacl.SHACL('order'))?.object
-        if (!(order instanceof Literal)) {
-          order = undefined
-        }
-
-        let group = store.value.anyStatementMatching(object, Shacl.SHACL('group'))?.object
-        if (!(group instanceof NamedNode)) {
-          group = undefined
-        }
-
-        return {
-          value: object,
-          editor,
-          viewer,
-          order,
-          group,
-        }
-      })
+    return Shacl.getNodeProperties(store.value, subjectValue)
   })
 
   function removeProperty(property: BlankNode | NamedNode) {

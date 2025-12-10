@@ -2,7 +2,7 @@
 import { injectFileContext, RDF, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useNamedNode } from '@/composables/use-shacl'
+import { useNamedList } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import {
   CalendarClockIcon,
@@ -39,9 +39,12 @@ defineEmits<{
 }>()
 
 const { currentShape, store } = injectFileContext()
-const { value: type } = useNamedNode({
+const { items: types } = useNamedList({
   subject: currentShape.namedNode,
   predicate: RDF('type'),
+})
+const isNodeShape = computed(() => {
+  return types.some((type) => type.value === Shacl.SHACL('NodeShape').value)
 })
 
 const items: ToolboxItem[] = [
@@ -59,7 +62,20 @@ const items: ToolboxItem[] = [
       )
     },
   },
-  { icon: FileTextIcon, label: 'Text area', tooltip: 'Add to library' },
+  {
+    icon: FileTextIcon,
+    label: 'Text area',
+    tooltip: 'Add to library',
+    create: () => {
+      if (!store.value || !currentShape.namedNode.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.namedNode.value,
+        'TextAreaEditor',
+        'LiteralViewer',
+      )
+    },
+  },
   { icon: TextCursorInputIcon, label: 'Combobox', tooltip: 'Add to library' },
   { icon: ListTodoIcon, label: 'True / False', tooltip: 'Add to library' },
   { icon: CalendarIcon, label: 'Date', tooltip: 'Add to library' },
@@ -85,7 +101,7 @@ const filteredItems = computed(() => {
 
 <template>
   <div
-    v-if="type === Shacl.SHACL('NodeShape').value"
+    v-if="isNodeShape"
     :class="cn('gap-2 grid bg-background p-2 rounded-lg', open ? 'w-full' : 'w-fit')"
   >
     <div class="flex gap-1">

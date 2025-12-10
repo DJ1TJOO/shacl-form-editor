@@ -1,62 +1,27 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import {
-  Combobox,
-  ComboboxAnchor,
-  ComboboxEmpty,
-  ComboboxGroup,
-  ComboboxItem,
-  ComboboxItemIndicator,
-  ComboboxList,
-  ComboboxSeparator,
-  ComboboxTrigger,
-} from '@/components/ui/combobox'
+import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { PrefixInput } from '@/components/form-ui/prefix'
+import { Shacl } from '@/components/rdf'
 import { Field, FieldLabel } from '@/components/ui/field'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupComboboxInput,
-} from '@/components/ui/input-group'
-import { InputList } from '@/components/ui/input-list'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { InfoIcon, XIcon } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { useNamedList } from '@/composables/use-shacl'
+import { InfoIcon } from 'lucide-vue-next'
+import { NamedNode } from 'rdflib'
 
-defineProps<ConstraintProps>()
+const { subject } = defineProps<ConstraintProps>()
 
-type TargetEntry = {
-  id: number
-  value: string
-}
-
-let nextId = 0
-
-const createEntry = (): TargetEntry => ({
-  id: nextId++,
-  value: '',
+const { items: targetClass } = useNamedList({ subject, predicate: Shacl.SHACL('targetClass') })
+// @TODO: targetNode should also allow for literals
+const { items: targetNode } = useNamedList({ subject, predicate: Shacl.SHACL('targetNode') })
+const { items: targetSubjectsOf } = useNamedList({
+  subject,
+  predicate: Shacl.SHACL('targetSubjectsOf'),
 })
-
-const targetClass = ref<TargetEntry[]>([])
-const targetNode = ref<TargetEntry[]>([])
-const targetSubjectsOf = ref<TargetEntry[]>([])
-const targetObjectsOf = ref<TargetEntry[]>([])
-
-// Example options; users can always type custom values as well.
-const options = [
-  'ex:Person',
-  'ex:Employee',
-  'ex:Manager',
-  'ex:Project',
-  'ex:Task',
-  'ex:Department',
-  'ex:Location',
-  'ex:Node1',
-  'ex:Node2',
-  'ex:createdBy',
-  'ex:assignedTo',
-  'ex:memberOf',
-]
+const { items: targetObjectsOf } = useNamedList({
+  subject,
+  predicate: Shacl.SHACL('targetObjectsOf'),
+})
 </script>
 
 <template>
@@ -66,68 +31,18 @@ const options = [
         Target class
         <Tooltip>
           <TooltipTrigger><InfoIcon /></TooltipTrigger>
-          <TooltipContent
-            >All instances of the given class are targeted by this shape.</TooltipContent
-          >
+          <TooltipContent>
+            All instances of the given class are targeted by this shape.
+          </TooltipContent>
         </Tooltip>
       </FieldLabel>
 
-      <InputList
-        v-model="targetClass"
-        :min="0"
-        :create="createEntry"
-        :get-key="(entry: TargetEntry) => entry.id"
-        v-slot="{ entry, remove, isRemovable }"
-      >
-        <Combobox v-model="entry.value" :reset-search-term-on-blur="false">
-          <ComboboxAnchor>
-            <InputGroup>
-              <InputGroupComboboxInput
-                placeholder="ex:Person"
-                @input="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    entry.value = target.value
-                  }
-                "
-                @blur="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    entry.value = target.value
-                  }
-                "
-              />
-
-              <InputGroupAddon align="inline-end">
-                <ComboboxTrigger />
-                <InputGroupButton
-                  size="icon-sm"
-                  variant="ghost"
-                  color="danger"
-                  v-if="isRemovable"
-                  @click="remove"
-                >
-                  <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </ComboboxAnchor>
-
-          <ComboboxList>
-            <ComboboxEmpty>No results.</ComboboxEmpty>
-
-            <ComboboxGroup>
-              <ComboboxItem v-for="option in options" :key="option" :value="option">
-                <div class="flex items-center gap-2">
-                  <ComboboxItemIndicator />
-                  <span>{{ option }}</span>
-                </div>
-              </ComboboxItem>
-            </ComboboxGroup>
-            <ComboboxSeparator />
-          </ComboboxList>
-        </Combobox>
-      </InputList>
+      <template v-for="(classEntry, index) in targetClass" :key="index">
+        <PrefixInput v-model="classEntry.value">
+          <RemoveButton @click="targetClass.splice(index, 1)" />
+        </PrefixInput>
+      </template>
+      <AddButton @click="targetClass.push({ value: '', node: new NamedNode(':') })" />
     </Field>
 
     <Field>
@@ -139,62 +54,12 @@ const options = [
         </Tooltip>
       </FieldLabel>
 
-      <InputList
-        v-model="targetNode"
-        :min="0"
-        :create="createEntry"
-        :get-key="(entry: TargetEntry) => entry.id"
-        v-slot="{ entry, remove, isRemovable }"
-      >
-        <Combobox v-model="entry.value" :reset-search-term-on-blur="false">
-          <ComboboxAnchor>
-            <InputGroup>
-              <InputGroupComboboxInput
-                placeholder="ex:Alice"
-                @input="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    entry.value = target.value
-                  }
-                "
-                @blur="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    entry.value = target.value
-                  }
-                "
-              />
-
-              <InputGroupAddon align="inline-end">
-                <ComboboxTrigger />
-                <InputGroupButton
-                  size="icon-sm"
-                  variant="ghost"
-                  color="danger"
-                  v-if="isRemovable"
-                  @click="remove"
-                >
-                  <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </ComboboxAnchor>
-
-          <ComboboxList>
-            <ComboboxEmpty>No results.</ComboboxEmpty>
-
-            <ComboboxGroup>
-              <ComboboxItem v-for="option in options" :key="option" :value="option">
-                <div class="flex items-center gap-2">
-                  <ComboboxItemIndicator />
-                  <span>{{ option }}</span>
-                </div>
-              </ComboboxItem>
-            </ComboboxGroup>
-            <ComboboxSeparator />
-          </ComboboxList>
-        </Combobox>
-      </InputList>
+      <template v-for="(nodeEntry, index) in targetNode" :key="index">
+        <PrefixInput v-model="nodeEntry.value">
+          <RemoveButton @click="targetNode.splice(index, 1)" />
+        </PrefixInput>
+      </template>
+      <AddButton @click="targetNode.push({ value: '', node: new NamedNode(':') })" />
     </Field>
 
     <Field>
@@ -202,69 +67,18 @@ const options = [
         Target subjects of
         <Tooltip>
           <TooltipTrigger><InfoIcon /></TooltipTrigger>
-          <TooltipContent
-            >All subjects of triples with the given predicate are targeted by this
-            shape.</TooltipContent
-          >
+          <TooltipContent>
+            All subjects of triples with the given predicate are targeted by this shape.
+          </TooltipContent>
         </Tooltip>
       </FieldLabel>
 
-      <InputList
-        v-model="targetSubjectsOf"
-        :min="0"
-        :create="createEntry"
-        :get-key="(entry: TargetEntry) => entry.id"
-        v-slot="{ entry, remove, isRemovable }"
-      >
-        <Combobox v-model="entry.value" :reset-search-term-on-blur="false">
-          <ComboboxAnchor>
-            <InputGroup>
-              <InputGroupComboboxInput
-                placeholder="ex:createdBy"
-                @input="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    entry.value = target.value
-                  }
-                "
-                @blur="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    entry.value = target.value
-                  }
-                "
-              />
-
-              <InputGroupAddon align="inline-end">
-                <ComboboxTrigger />
-                <InputGroupButton
-                  size="icon-sm"
-                  variant="ghost"
-                  color="danger"
-                  v-if="isRemovable"
-                  @click="remove"
-                >
-                  <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </ComboboxAnchor>
-
-          <ComboboxList>
-            <ComboboxEmpty>No results.</ComboboxEmpty>
-
-            <ComboboxGroup>
-              <ComboboxItem v-for="option in options" :key="option" :value="option">
-                <div class="flex items-center gap-2">
-                  <ComboboxItemIndicator />
-                  <span>{{ option }}</span>
-                </div>
-              </ComboboxItem>
-            </ComboboxGroup>
-            <ComboboxSeparator />
-          </ComboboxList>
-        </Combobox>
-      </InputList>
+      <template v-for="(subjectEntry, index) in targetSubjectsOf" :key="index">
+        <PrefixInput v-model="subjectEntry.value">
+          <RemoveButton @click="targetSubjectsOf.splice(index, 1)" />
+        </PrefixInput>
+      </template>
+      <AddButton @click="targetSubjectsOf.push({ value: '', node: new NamedNode(':') })" />
     </Field>
 
     <Field>
@@ -272,69 +86,18 @@ const options = [
         Target objects of
         <Tooltip>
           <TooltipTrigger><InfoIcon /></TooltipTrigger>
-          <TooltipContent
-            >All objects of triples with the given predicate are targeted by this
-            shape.</TooltipContent
-          >
+          <TooltipContent>
+            All objects of triples with the given predicate are targeted by this shape.
+          </TooltipContent>
         </Tooltip>
       </FieldLabel>
 
-      <InputList
-        v-model="targetObjectsOf"
-        :min="0"
-        :create="createEntry"
-        :get-key="(entry: TargetEntry) => entry.id"
-        v-slot="{ entry, remove, isRemovable }"
-      >
-        <Combobox v-model="entry.value" :reset-search-term-on-blur="false">
-          <ComboboxAnchor>
-            <InputGroup>
-              <InputGroupComboboxInput
-                placeholder="ex:assignedTo"
-                @input="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    entry.value = target.value
-                  }
-                "
-                @blur="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    entry.value = target.value
-                  }
-                "
-              />
-
-              <InputGroupAddon align="inline-end">
-                <ComboboxTrigger />
-                <InputGroupButton
-                  size="icon-sm"
-                  variant="ghost"
-                  color="danger"
-                  v-if="isRemovable"
-                  @click="remove"
-                >
-                  <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </ComboboxAnchor>
-
-          <ComboboxList>
-            <ComboboxEmpty>No results.</ComboboxEmpty>
-
-            <ComboboxGroup>
-              <ComboboxItem v-for="option in options" :key="option" :value="option">
-                <div class="flex items-center gap-2">
-                  <ComboboxItemIndicator />
-                  <span>{{ option }}</span>
-                </div>
-              </ComboboxItem>
-            </ComboboxGroup>
-            <ComboboxSeparator />
-          </ComboboxList>
-        </Combobox>
-      </InputList>
+      <template v-for="(objectEntry, index) in targetObjectsOf" :key="index">
+        <PrefixInput v-model="objectEntry.value">
+          <RemoveButton @click="targetObjectsOf.splice(index, 1)" />
+        </PrefixInput>
+      </template>
+      <AddButton @click="targetObjectsOf.push({ value: '', node: new NamedNode(':') })" />
     </Field>
   </Constraint>
 </template>

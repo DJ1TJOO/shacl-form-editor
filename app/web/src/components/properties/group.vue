@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { injectPropertiesListContext } from '@/components/properties/list.vue'
 import { Button } from '@/components/ui/button'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
 import { cn } from '@/lib/cn'
 import { ChevronDownIcon, GripVerticalIcon, UngroupIcon, XIcon } from 'lucide-vue-next'
@@ -44,15 +39,9 @@ const title = ref('')
     <InputGroup>
       <InputGroupInput v-model="title" placeholder="Group title" />
       <InputGroupAddon align="inline-end">
-        <InputGroupButton
-          v-if="title"
-          size="icon-sm"
-          variant="ghost"
-          color="danger"
-          @click="title = ''"
-        >
+        <Button v-if="title" size="icon-sm" variant="ghost" color="danger" @click="title = ''">
           <XIcon />
-        </InputGroupButton>
+        </Button>
       </InputGroupAddon>
     </InputGroup>
     <Button class="w-full" color="danger">

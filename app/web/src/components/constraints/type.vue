@@ -1,73 +1,27 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import {
-  Combobox,
-  ComboboxAnchor,
-  ComboboxEmpty,
-  ComboboxGroup,
-  ComboboxItem,
-  ComboboxItemIndicator,
-  ComboboxList,
-  ComboboxSeparator,
-  ComboboxTrigger,
-} from '@/components/ui/combobox'
+import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { PrefixInput } from '@/components/form-ui/prefix'
+import { Shacl } from '@/components/rdf'
+import { absoluteToPrefixed } from '@/components/tmp-prefixes'
 import { Field, FieldLabel } from '@/components/ui/field'
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
-  InputGroupComboboxInput,
+  InputGroupSelectTrigger,
+  InputGroupSelectTriggerIcon,
 } from '@/components/ui/input-group'
-import { InputList } from '@/components/ui/input-list'
-import { InputOptional } from '@/components/ui/input-optional'
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { InfoIcon, XIcon } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { useNamed, useNamedList } from '@/composables/use-shacl'
+import { InfoIcon } from 'lucide-vue-next'
+import { NamedNode } from 'rdflib'
 
-defineProps<ConstraintProps>()
+const { subject } = defineProps<ConstraintProps>()
 
-const datatype = ref<string | undefined>(undefined)
-// @TODO: This does not work until we fix the InputList component
-const classes = ref<Class[]>([])
-const node = ref<string | undefined>(undefined)
-
-type Class = {
-  id: number
-  value: string
-}
-
-let nextId = 0
-
-const createClass = (): Class => ({
-  id: nextId++,
-  value: '',
-})
-
-const dataTypeOptions = [
-  'xsd:string',
-  'xsd:integer',
-  'xsd:decimal',
-  'xsd:float',
-  'xsd:double',
-  'xsd:boolean',
-  'xsd:date',
-  'xsd:time',
-  'xsd:dateTime',
-  'xsd:duration',
-  'xsd:gYear',
-  'xsd:gYearMonth',
-  'xsd:gMonth',
-  'xsd:gDay',
-]
-
-const classOptions = [
-  'schema:Person',
-  'schema:Organization',
-  'schema:Place',
-  'schema:Event',
-  'schema:Thing',
-  'schema:Object',
-]
+const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype') })
+const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
+const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind') })
 </script>
 
 <template>
@@ -80,49 +34,15 @@ const classOptions = [
           <TooltipContent>The type of data the property can hold.</TooltipContent>
         </Tooltip>
       </FieldLabel>
-      <InputOptional v-model="datatype" :create="() => ''" v-slot="{ remove }">
-        <Combobox v-model="datatype" :reset-search-term-on-blur="false">
-          <ComboboxAnchor>
-            <InputGroup>
-              <InputGroupComboboxInput
-                @input="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    datatype = target.value
-                  }
-                "
-                @blur="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    datatype = target.value
-                  }
-                "
-              />
 
-              <InputGroupAddon align="inline-end">
-                <ComboboxTrigger />
-                <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
-                  <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </ComboboxAnchor>
-
-          <ComboboxList>
-            <ComboboxEmpty> No results. </ComboboxEmpty>
-
-            <ComboboxGroup>
-              <ComboboxItem v-for="option in dataTypeOptions" :key="option" :value="option">
-                <div class="flex items-center gap-2">
-                  <ComboboxItemIndicator />
-                  <span> {{ option }}</span>
-                </div>
-              </ComboboxItem>
-            </ComboboxGroup>
-            <ComboboxSeparator />
-          </ComboboxList>
-        </Combobox>
-      </InputOptional>
+      <AddButton
+        v-if="typeof datatype === 'undefined'"
+        @click="datatype = 'http://www.w3.org/2001/XMLSchema#string'"
+      />
+      <!-- @TODO: fix when on blur is called in the prefix input the value is set to undefined, this also happens when a user tries to click a option from the list -->
+      <PrefixInput v-model="datatype" v-else>
+        <RemoveButton @click="datatype = undefined" />
+      </PrefixInput>
     </Field>
 
     <Field>
@@ -133,113 +53,45 @@ const classOptions = [
           <TooltipContent>The property value must be a instance of the given class.</TooltipContent>
         </Tooltip>
       </FieldLabel>
-      <InputList
-        v-model="classes"
-        :min="0"
-        :create="createClass"
-        :get-key="(entry: Class) => entry.id"
-        v-slot="{ entry, remove, isRemovable }"
-      >
-        <Combobox v-model="entry.value" :reset-search-term-on-blur="false">
-          <ComboboxAnchor>
-            <InputGroup>
-              <InputGroupComboboxInput
-                @input="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    entry.value = target.value
-                  }
-                "
-                @blur="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    entry.value = target.value
-                  }
-                "
-              />
 
-              <InputGroupAddon align="inline-end">
-                <ComboboxTrigger />
-                <InputGroupButton
-                  size="icon-sm"
-                  variant="ghost"
-                  color="danger"
-                  v-if="isRemovable"
-                  @click="remove"
-                >
-                  <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </ComboboxAnchor>
-
-          <ComboboxList>
-            <ComboboxEmpty> No results. </ComboboxEmpty>
-
-            <ComboboxGroup>
-              <ComboboxItem v-for="option in classOptions" :key="option" :value="option">
-                <div class="flex items-center gap-2">
-                  <ComboboxItemIndicator />
-                  <span> {{ option }}</span>
-                </div>
-              </ComboboxItem>
-            </ComboboxGroup>
-            <ComboboxSeparator />
-          </ComboboxList>
-        </Combobox>
-      </InputList>
+      <PrefixInput v-for="(classEntry, index) in classes" :key="index" v-model="classEntry.value">
+        <RemoveButton @click="classes.splice(index, 1)" />
+      </PrefixInput>
+      <AddButton @click="classes.push({ value: '', node: new NamedNode(':') })" />
     </Field>
     <Field>
       <FieldLabel>
-        Node
+        Node kind
         <Tooltip>
           <TooltipTrigger><InfoIcon /></TooltipTrigger>
           <TooltipContent>The property value must a specific node.</TooltipContent>
         </Tooltip>
       </FieldLabel>
-      <InputOptional v-model="node" :create="() => ''" v-slot="{ remove }">
-        <Combobox v-model="node" :reset-search-term-on-blur="false">
-          <ComboboxAnchor>
-            <InputGroup>
-              <InputGroupComboboxInput
-                @input="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    node = target.value
-                  }
-                "
-                @blur="
-                  (e: Event) => {
-                    const target = e.target as HTMLInputElement
-                    node = target.value
-                  }
-                "
-              />
 
-              <InputGroupAddon align="inline-end">
-                <ComboboxTrigger />
-                <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
-                  <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </ComboboxAnchor>
-
-          <ComboboxList>
-            <ComboboxEmpty> No results. </ComboboxEmpty>
-
-            <ComboboxGroup>
-              <ComboboxItem v-for="option in classOptions" :key="option" :value="option">
-                <div class="flex items-center gap-2">
-                  <ComboboxItemIndicator />
-                  <span> {{ option }}</span>
-                </div>
-              </ComboboxItem>
-            </ComboboxGroup>
-            <ComboboxSeparator />
-          </ComboboxList>
-        </Combobox>
-      </InputOptional>
+      <AddButton
+        v-if="typeof nodeKind === 'undefined'"
+        @click="nodeKind = Shacl.nodeKinds[0].value"
+      />
+      <Select v-model="nodeKind" v-else>
+        <InputGroup>
+          <InputGroupSelectTrigger>
+            <SelectValue />
+          </InputGroupSelectTrigger>
+          <InputGroupAddon align="inline-end">
+            <InputGroupSelectTriggerIcon />
+            <RemoveButton @click="nodeKind = undefined" />
+          </InputGroupAddon>
+        </InputGroup>
+        <SelectContent>
+          <SelectItem
+            v-for="nodeKind in Shacl.nodeKinds"
+            :key="nodeKind.value"
+            :value="nodeKind.value"
+          >
+            {{ absoluteToPrefixed(nodeKind.value) }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
     </Field>
   </Constraint>
 </template>

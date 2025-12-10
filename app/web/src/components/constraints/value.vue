@@ -1,35 +1,19 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { Shacl, Xsd } from '@/components/rdf'
 import { Field, FieldLabel } from '@/components/ui/field'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group'
-import { InputList } from '@/components/ui/input-list'
-import { InputOptional } from '@/components/ui/input-optional'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { InfoIcon, XIcon } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { useLiteral, useLiteralList } from '@/composables/use-shacl'
+import { InfoIcon } from 'lucide-vue-next'
+import { Literal } from 'rdflib'
 
-defineProps<ConstraintProps>()
+const { subject } = defineProps<ConstraintProps>()
 
-const hasValue = ref(undefined)
-// @TODO: This does not work until we fix the InputList component
-const inValues = ref<InValue[]>([])
-
-type InValue = {
-  id: number
-  value: string
-}
-
-let nextId = 0
-
-const createInValue = (): InValue => ({
-  id: nextId++,
-  value: '',
-})
+// @TODO: Input type for value should be based on the datatype, class and/or nodekind. It could be a named node or a literal.
+const { value: hasValue } = useLiteral<string>({ subject, predicate: Shacl.SHACL('hasValue') })
+const { items: inValues } = useLiteralList({ subject, predicate: Shacl.SHACL('in') })
 </script>
 
 <template>
@@ -42,50 +26,36 @@ const createInValue = (): InValue => ({
           <TooltipContent>Wether the property matches the given value.</TooltipContent>
         </Tooltip>
       </FieldLabel>
-      <InputOptional v-model="hasValue" :create="() => ''" v-slot="{ remove }">
-        <InputGroup>
-          <!-- @TODO: Input type for value should be based on the datatype or a iri -->
-          <InputGroupInput v-model="hasValue" />
-          <InputGroupAddon align="inline-end">
-            <InputGroupButton size="icon-sm" variant="ghost" color="danger" @click="remove">
-              <XIcon />
-            </InputGroupButton>
-          </InputGroupAddon>
-        </InputGroup>
-      </InputOptional>
+
+      <InputGroup v-if="typeof hasValue === 'string'">
+        <InputGroupInput v-model="hasValue" />
+        <InputGroupAddon align="inline-end">
+          <RemoveButton @click="hasValue = undefined" />
+        </InputGroupAddon>
+      </InputGroup>
+      <AddButton v-else @click="hasValue = ''" />
     </Field>
 
     <Field>
-      <FieldLabel
-        >In
+      <FieldLabel>
+        In
         <Tooltip>
           <TooltipTrigger><InfoIcon /></TooltipTrigger>
           <TooltipContent>The property value must be in the given list of values.</TooltipContent>
-        </Tooltip></FieldLabel
-      >
-      <InputList
-        v-model="inValues"
-        :min="0"
-        :create="createInValue"
-        :get-key="(entry: InValue) => entry.id"
-        v-slot="{ entry, remove, isRemovable }"
-      >
+        </Tooltip>
+      </FieldLabel>
+
+      <template v-for="(inValue, index) in inValues" :key="index">
         <InputGroup>
-          <!-- @TODO: Input type for value should be based on the datatype or a iri -->
-          <InputGroupInput v-model="entry.value" />
+          <InputGroupInput v-model="inValue.value" />
           <InputGroupAddon align="inline-end">
-            <InputGroupButton
-              size="icon-sm"
-              variant="ghost"
-              color="danger"
-              v-if="isRemovable"
-              @click="remove"
-            >
-              <XIcon />
-            </InputGroupButton>
+            <RemoveButton @click="inValues.splice(index, 1)" />
           </InputGroupAddon>
         </InputGroup>
-      </InputList>
+      </template>
+      <AddButton
+        @click="inValues.push({ value: '', node: new Literal(''), datatype: Xsd.string })"
+      />
     </Field>
   </Constraint>
 </template>

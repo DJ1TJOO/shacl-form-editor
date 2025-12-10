@@ -1,17 +1,32 @@
 <script setup lang="ts">
-import { AdditionalConstraints } from '@/components/constraints'
+import {
+  AdditionalConstraints,
+  TargetConstraints,
+  ValidationConstraints,
+} from '@/components/constraints'
+import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { LanguageSelect } from '@/components/form-ui/languages'
-import { injectFileContext, RDF, Shacl } from '@/components/rdf'
+import { PrefixInput } from '@/components/form-ui/prefix'
+import { injectFileContext, RDF, Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
-import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field'
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
-import { useLiteral, useNamedNode } from '@/composables/use-shacl'
+import { useLiteralList, useNamed, useNamedList } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { CircleIcon, DiamondIcon, InfoIcon, PanelRightOpenIcon, TypeIcon } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { Literal } from 'rdflib'
+import { computed, ref, watch } from 'vue'
 
 defineProps<{
   open: boolean
@@ -21,7 +36,12 @@ defineEmits<{
 }>()
 
 const { currentShape } = injectFileContext()
-const { value: type } = useNamedNode({ subject: currentShape.namedNode, predicate: RDF('type') })
+const { items: types } = useNamedList({ subject: currentShape.namedNode, predicate: RDF('type') })
+const type = computed(() => {
+  if (types.some((type) => type.value === Shacl.SHACL('NodeShape').value)) return 'node'
+  if (types.some((type) => type.value === Shacl.SHACL('PropertyShape').value)) return 'property'
+  return undefined
+})
 
 const iri = ref<string | undefined>(currentShape.value.value)
 watch(
@@ -45,15 +65,15 @@ const {
   { allowGrouping: false },
 )
 
-const { value: label, language: labelLanguage } = useLiteral({
+const { items: labels } = useLiteralList({
   subject: currentShape.namedNode,
   predicate: Shacl.SHACL('name'),
 })
-const { value: description, language: descriptionLanguage } = useLiteral({
+const { items: descriptions } = useLiteralList({
   subject: currentShape.namedNode,
   predicate: Shacl.SHACL('description'),
 })
-const { value: path } = useNamedNode({
+const { value: path } = useNamed({
   subject: currentShape.namedNode,
   predicate: Shacl.SHACL('path'),
 })
@@ -61,7 +81,15 @@ const { value: path } = useNamedNode({
 
 <template>
   <DefineOptions>
-    <AdditionalConstraints />
+    <AdditionalConstraints v-if="type" :type="type" :subject="currentShape.namedNode.value" />
+    <FieldSeparator v-if="type === 'node'" />
+    <TargetConstraints v-if="type === 'node'" :subject="currentShape.namedNode.value" collapsible />
+    <FieldSeparator v-if="type === 'node'" />
+    <ValidationConstraints
+      v-if="type === 'node'"
+      :subject="currentShape.namedNode.value"
+      collapsible
+    />
   </DefineOptions>
   <div
     ref="target"
@@ -73,10 +101,7 @@ const { value: path } = useNamedNode({
     "
   >
     <FieldSet v-if="open">
-      <FieldLegend
-        v-if="type === Shacl.SHACL('PropertyShape').value"
-        class="justify-center w-full font-normal text-text"
-      >
+      <FieldLegend v-if="type === 'property'" class="justify-center w-full font-normal text-text">
         <TypeIcon />
         Text field
       </FieldLegend>
@@ -89,13 +114,14 @@ const { value: path } = useNamedNode({
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input
+          <PrefixInput
+            v-if="iri"
             v-model="iri"
             placeholder="ex:MyNode"
             @blur="currentShape.value.value = iri ?? undefined"
           />
         </Field>
-        <Field v-if="type === Shacl.SHACL('PropertyShape').value">
+        <Field v-if="type === 'property'">
           <FieldLabel>
             Path
             <Tooltip>
@@ -114,12 +140,32 @@ const { value: path } = useNamedNode({
                 <TooltipContent>This is content in a tooltip.</TooltipContent>
               </Tooltip>
             </FieldLabel>
-            <FieldLabel> Language </FieldLabel>
+            <FieldLabel v-if="labels.length > 0"> Language </FieldLabel>
           </div>
-          <div class="grid grid-cols-subgrid col-span-2">
-            <Input v-model="label" placeholder="My Node" />
-            <LanguageSelect v-model="labelLanguage" />
+          <div
+            class="grid grid-cols-subgrid col-span-2"
+            v-for="(label, index) in labels"
+            :key="index"
+          >
+            <InputGroup>
+              <InputGroupInput v-model="label.value" placeholder="My Node" />
+              <InputGroupAddon align="inline-end">
+                <RemoveButton @click="labels.splice(index, 1)" />
+              </InputGroupAddon>
+            </InputGroup>
+            <!-- @TODO: show we show error when the same language is used for multiple times -->
+            <LanguageSelect v-model="label.language" />
           </div>
+          <AddButton
+            @click="
+              labels.push({
+                value: '',
+                language: undefined,
+                datatype: Xsd.string,
+                node: new Literal(''),
+              })
+            "
+          />
         </Field>
         <Field>
           <FieldLabel>
@@ -129,10 +175,29 @@ const { value: path } = useNamedNode({
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Textarea v-model="description" placeholder="This is a node with a description" />
-
-          <FieldLabel>Description Language </FieldLabel>
-          <LanguageSelect v-model="descriptionLanguage" />
+          <div
+            v-for="(description, index) in descriptions"
+            :key="index"
+            class="space-y-0.5 has-[+div]:mb-2"
+          >
+            <Textarea v-model="description.value" placeholder="This is a node with a description" />
+            <div class="flex items-center gap-0.5">
+              <div class="flex-1">
+                <LanguageSelect v-model="description.language" />
+              </div>
+              <RemoveButton standalone @click="descriptions.splice(index, 1)" />
+            </div>
+          </div>
+          <AddButton
+            @click="
+              descriptions.push({
+                value: '',
+                language: undefined,
+                datatype: Xsd.string,
+                node: new Literal(''),
+              })
+            "
+          />
         </Field>
       </FieldGroup>
     </FieldSet>
@@ -140,7 +205,7 @@ const { value: path } = useNamedNode({
       <PanelRightOpenIcon /> Additional options
     </Button>
     <Button color="background-blue" size="icon" @click="$emit('update:open', !open)" v-else>
-      <component :is="type === Shacl.SHACL('NodeShape').value ? DiamondIcon : CircleIcon" />
+      <component :is="type === 'node' ? DiamondIcon : CircleIcon" />
     </Button>
   </div>
 </template>

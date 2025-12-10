@@ -1,21 +1,31 @@
-import { Dash, RDF } from '@/components/rdf'
-import type { NamedNode as NamedNodeType } from '@rdfjs/types'
+import { Dash, getNamedNode, RDF } from '@/components/rdf'
 import type { IndexedFormula } from 'rdflib'
-import { BlankNode, graph, NamedNode, Namespace, parse } from 'rdflib'
+import { BlankNode, graph, Literal, NamedNode, Namespace, Node, parse } from 'rdflib'
 
 export const SHACL = Namespace('http://www.w3.org/ns/shacl#')
+export const nodeKinds = [
+  SHACL('BlankNode'),
+  SHACL('IRI'),
+  SHACL('Literal'),
+  SHACL('BlankNodeOrIRI'),
+  SHACL('BlankNodeOrLiteral'),
+  SHACL('IRIOrLiteral'),
+] as const
 
-export function getLocalName(iri?: NamedNodeType) {
-  const name = iri?.value.split('/').pop()
-  if (!name) {
-    return undefined
+export function getLocalName(iri?: string | NamedNode) {
+  if (!iri) return undefined
+  const iriNode = getNamedNode(iri)
+  const iriValue = iriNode.value
+
+  const hashIndex = iriValue.lastIndexOf('#')
+  const slashIndex = iriValue.lastIndexOf('/')
+  const separatorIndex = Math.max(hashIndex, slashIndex)
+
+  if (separatorIndex > 0) {
+    return iriValue.substring(separatorIndex + 1)
   }
 
-  return name
-}
-
-function getNamedNode(iri: string | NamedNode) {
-  return iri instanceof NamedNode ? iri : new NamedNode(iri)
+  return undefined
 }
 
 export function addShape(
@@ -47,11 +57,37 @@ export function getAllShapes(store: IndexedFormula) {
     ...store
       .each(null, RDF('type'), SHACL('PropertyShape'))
       .filter((shape) => shape instanceof NamedNode)
-      .map((shape) => ({
-        value: shape.value,
-        name: getLocalName(shape),
-        type: 'property' as const,
-      })),
+      .map((shape) => {
+        let editor = store.anyStatementMatching(shape, Dash.DASH('editor'))?.object
+        if (!(editor instanceof NamedNode)) {
+          editor = undefined
+        }
+
+        let viewer = store.anyStatementMatching(shape, Dash.DASH('viewer'))?.object
+        if (!(viewer instanceof NamedNode)) {
+          viewer = undefined
+        }
+
+        let order = store.anyStatementMatching(shape, SHACL('order'))?.object
+        if (!(order instanceof Literal)) {
+          order = undefined
+        }
+
+        let group = store.anyStatementMatching(shape, SHACL('group'))?.object
+        if (!(group instanceof NamedNode)) {
+          group = undefined
+        }
+
+        return {
+          value: shape.value,
+          name: getLocalName(shape),
+          order,
+          group,
+          editor,
+          viewer,
+          type: 'property' as const,
+        }
+      }),
   ]
 }
 
@@ -67,11 +103,24 @@ export function createProperty(
   shape: string | NamedNode,
   editor: keyof typeof Dash.editors,
   viewer: keyof typeof Dash.viewers,
+  order?: number,
 ) {
   const property = new BlankNode()
   store.add(property, Dash.DASH('editor'), Dash.editors[editor])
   store.add(property, Dash.DASH('viewer'), Dash.viewers[viewer])
   store.add(getNamedNode(shape), SHACL('property'), property)
+
+  if (order !== undefined) {
+    store.add(property, SHACL('order'), Literal.fromValue<Literal>(order))
+  } else {
+    const maxOrder = Math.max(
+      ...store
+        .statementsMatching(null, SHACL('order'))
+        .map(({ object }) => Node.toJS(object) as number),
+      0,
+    )
+    store.add(property, SHACL('order'), Literal.fromValue<Literal>(maxOrder + 1))
+  }
 }
 
 export function removeProperty(store: IndexedFormula, property: BlankNode | NamedNode) {

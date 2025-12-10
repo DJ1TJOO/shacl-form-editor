@@ -12,7 +12,7 @@ const props = defineProps<{
     :class="
       cn(
         'flex items-center gap-2 text-text-lighter text-sm',
-        '[&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4',
+        `[&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4`,
         props.class,
       )
     "

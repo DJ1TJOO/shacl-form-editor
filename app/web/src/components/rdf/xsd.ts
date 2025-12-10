@@ -1,4 +1,5 @@
-import { Namespace } from 'rdflib'
+import { getNamedNode, RDF } from '@/components/rdf'
+import { NamedNode, Namespace } from 'rdflib'
 
 export const XSD = Namespace('http://www.w3.org/2001/XMLSchema#')
 
@@ -11,3 +12,32 @@ export const boolean = XSD('boolean')
 export const date = XSD('date')
 export const time = XSD('time')
 export const dateTime = XSD('dateTime')
+
+export function isString(iri: string | NamedNode): boolean {
+  const iriNode = getNamedNode(iri)
+  const stringDataTypes = [XSD('string'), RDF('langString')]
+  return stringDataTypes.some((type) => iriNode.equals(type))
+}
+
+export function isBoolean(iri: string | NamedNode): boolean {
+  const iriNode = getNamedNode(iri)
+  return iriNode.equals(XSD('boolean'))
+}
+
+export function isDate(iri: string | NamedNode): boolean {
+  const iriNode = getNamedNode(iri)
+  const dateDataTypes = [XSD('dateTime'), XSD('date')]
+  return dateDataTypes.some((type) => iriNode.equals(type))
+}
+
+export function isInteger(iri: string | NamedNode): boolean {
+  const iriNode = getNamedNode(iri)
+  const integerDataTypes = [XSD('integer'), XSD('long'), XSD('short')]
+  return integerDataTypes.some((type) => iriNode.equals(type))
+}
+
+export function isDecimal(iri: string | NamedNode): boolean {
+  const iriNode = getNamedNode(iri)
+  const decimalDataTypes = [XSD('decimal'), XSD('double'), XSD('float')]
+  return decimalDataTypes.some((type) => iriNode.equals(type))
+}

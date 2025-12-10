@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { injectPropertiesListContext } from '@/components/properties/list.vue'
+import { moveProperty } from '@/components/properties/ordering'
 import { Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
-import { useNamed } from '@/composables/use-shacl'
+import { useFileStore, useNamed } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { useDraggable } from '@vue-dnd-kit/core'
 import { ChevronDownIcon, GripVerticalIcon, type LucideIcon, XIcon } from 'lucide-vue-next'
 import type { BlankNode } from 'rdflib/lib/tf-types'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 const { inGroup, subject, order } = defineProps<{
   icon: LucideIcon
@@ -23,6 +24,7 @@ defineEmits<{
   (e: 'remove'): void
 }>()
 
+const store = useFileStore()
 const { node: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })
 const localName = computed(() => Shacl.getLocalName(path.value))
 
@@ -45,6 +47,7 @@ const {
   allowGrouping: !inGroup,
 })
 
+const gripButton = ref<HTMLButtonElement | null>(null)
 const { elementRef: draggableRef, handleDragStart } = useDraggable({
   id: `property-${path.value?.value}`,
   data: computed(() => ({
@@ -56,13 +59,14 @@ const { elementRef: draggableRef, handleDragStart } = useDraggable({
   },
 })
 
-// function setRef(ref: Element | import('vue').ComponentPublicInstance | null) {
-//   const element = unrefElement(ref as Parameters<typeof unrefElement>[0])
-//   if (element instanceof HTMLElement) {
-//     target.value = element
-//     elementRef.value = element
-//   }
-// }
+async function handleMoveProperty(offset: number) {
+  moveProperty(store.value, subject, offset)
+  await nextTick()
+  const propertyId = `property-${path.value?.value}`
+  const propertyElement = document.getElementById(propertyId)
+  const button = propertyElement?.querySelector('button[data-grip-button]') as HTMLButtonElement
+  button?.focus()
+}
 </script>
 
 <template>
@@ -84,7 +88,15 @@ const { elementRef: draggableRef, handleDragStart } = useDraggable({
       "
     >
       <div class="relative flex justify-between items-center gap-2">
-        <Button variant="ghost" size="icon" @pointerdown="handleDragStart">
+        <Button
+          ref="gripButton"
+          variant="ghost"
+          size="icon"
+          data-grip-button
+          @pointerdown="handleDragStart"
+          @keydown.up.left.stop.prevent="() => handleMoveProperty(-1)"
+          @keydown.down.right.stop.prevent="() => handleMoveProperty(1)"
+        >
           <GripVerticalIcon />
         </Button>
         <p v-if="localName" class="left-8 absolute text-text-lighter text-sm">

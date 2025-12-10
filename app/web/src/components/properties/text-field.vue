@@ -18,15 +18,13 @@ import { TypeIcon } from 'lucide-vue-next'
 import type { BlankNode } from 'rdflib/lib/tf-types'
 import { computed, watch } from 'vue'
 
-const { subject } = defineProps<{
+const { subject, order } = defineProps<{
   subject: BlankNode
+  order: number
 }>()
 defineEmits<{
   (e: 'remove'): void
 }>()
-
-const { node: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })
-const localName = computed(() => Shacl.getLocalName(path.value))
 
 const { value: editor } = useNamed({ subject, predicate: Dash.DASH('editor') })
 const { value: viewer } = useNamed({ subject, predicate: Dash.DASH('viewer') })
@@ -50,7 +48,13 @@ const canHaveStringConstraints = computed(() => {
 </script>
 
 <template>
-  <Property :icon="TypeIcon" label="Text Field" :path="localName" @remove="$emit('remove')">
+  <Property
+    :icon="TypeIcon"
+    label="Text Field"
+    :subject="subject"
+    :order="order"
+    @remove="$emit('remove')"
+  >
     <template #options>
       <CardinalityConstraints :subject="subject" />
       <FieldSeparator />

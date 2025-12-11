@@ -3,6 +3,8 @@ import { SFEFooter } from '@/components/sfe-footer'
 import { HeaderProvider, SFEHeader } from '@/components/sfe-header'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { RouterView } from 'vue-router'
+import { Toaster } from 'vue-sonner'
+import 'vue-sonner/style.css'
 </script>
 
 <template>
@@ -17,6 +19,7 @@ import { RouterView } from 'vue-router'
 
         <SFEFooter />
       </div>
+      <Toaster richColors />
     </HeaderProvider>
   </TooltipProvider>
 </template>

@@ -6,6 +6,8 @@ import { graph, type IndexedFormula } from 'rdflib'
 import { createContext } from 'reka-ui'
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
+import { tryCatch } from '../../lib/try-catch'
 
 interface FileContext {
   store: Ref<IndexedFormula>
@@ -13,19 +15,19 @@ interface FileContext {
   currentShape: ReturnType<typeof useParentlessNamedNode>
   showNewItemDialog: Ref<boolean>
   storedStore: Ref<string | null>
+  isStoredStoreValid: Ref<boolean>
 }
 
 export const [injectFileContext, provideFileContext] = createContext<FileContext>('File')
 </script>
 
 <script setup lang="ts">
-// @TODO: Test if this assertion is correct
 const store = ref(graph()) as Ref<IndexedFormula>
 const storedStore = useStorage<string | null>('file-store', null)
 const isStoreLoaded = ref(false)
+const isStoredStoreValid = ref(true)
 const showNewItemDialog = ref(false)
 
-// @TODO: use watchIgnorable on store and storedStore to immediately update the store when the storedStore changes
 function watchStore(store: IndexedFormula) {
   store.addDataCallback(() => {
     ignoreStoredStoreUpdates(() => {
@@ -43,10 +45,23 @@ const { ignoreUpdates: ignoreStoredStoreUpdates } = watchIgnorable(
   storedStore,
   (newStoredStore) => {
     if (!newStoredStore) return
-    const newStore = Shacl.deserialize(newStoredStore)
+
+    const [error, newStore] = tryCatch(Shacl.deserialize, newStoredStore)
+    if (error) {
+      isStoredStoreValid.value = false
+      toast.error('Failed to load file', {
+        description: error.message,
+      })
+      return
+    }
+
     watchStore(newStore)
     store.value = newStore
     isStoreLoaded.value = true
+    if (!isStoredStoreValid.value) {
+      isStoredStoreValid.value = true
+      toast.success('File loaded successfully')
+    }
   },
   { immediate: true },
 )
@@ -124,6 +139,7 @@ provideFileContext({
   resetFile,
   showNewItemDialog,
   storedStore,
+  isStoredStoreValid,
 })
 
 defineExpose({

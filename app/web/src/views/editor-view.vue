@@ -10,11 +10,15 @@ import { absoluteToPrefixed } from '@/components/tmp-prefixes'
 import { Toolbox } from '@/components/toolbox'
 import { scrollToShape, TurtleEditorProvider, TurtleFileEditor } from '@/components/turtle-editor'
 import { Button } from '@/components/ui/button'
+import { useUrlSearchParams } from '@vueuse/core'
 import { CodeIcon, DownloadIcon, FormIcon, LayoutTemplateIcon } from 'lucide-vue-next'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
-const tab = ref<'editor' | 'turtle'>('editor')
+const params = useUrlSearchParams<{ tab: 'editor' | 'turtle' }>('history', {
+  initialValue: { tab: 'editor' },
+  writeMode: 'replace',
+})
 
 const route = useRoute()
 const shapeIRI = computed(() =>
@@ -82,7 +86,7 @@ const downloadTtl = (debug: boolean = false) => {
 }
 
 async function goToTurtle() {
-  tab.value = 'turtle'
+  params.tab = 'turtle'
   await nextTick()
   if (shapeIRI.value && turtleEditorProviderRef.value?.editor) {
     const prefixedShape = absoluteToPrefixed(shapeIRI.value)
@@ -97,15 +101,15 @@ async function goToTurtle() {
       <HeaderActions>
         <div class="flex gap-2">
           <Button
-            :color="tab === 'editor' ? 'complementary' : 'background-highlighted'"
+            :color="params.tab === 'editor' ? 'complementary' : 'background-highlighted'"
             size="lg"
-            @click="tab = 'editor'"
+            @click="params.tab = 'editor'"
           >
             <LayoutTemplateIcon />
             Editor
           </Button>
           <Button
-            :color="tab === 'turtle' ? 'complementary' : 'background-highlighted'"
+            :color="params.tab === 'turtle' ? 'complementary' : 'background-highlighted'"
             size="lg"
             @click="goToTurtle"
           >
@@ -137,10 +141,10 @@ async function goToTurtle() {
       <NewItemDialog v-model:open="showNewItemDialog" />
 
       <OptionsSidebarProvider ref="optionsSidebarProviderRef">
-        <EditorBar :activeTab="tab" />
+        <EditorBar :activeTab="params.tab" />
         <div
           :key="shapeIRI"
-          v-if="shapeExists && tab === 'editor'"
+          v-if="shapeExists && params.tab === 'editor'"
           class="gap-3 grid p-1"
           :style="{ gridTemplateColumns }"
         >
@@ -167,7 +171,7 @@ async function goToTurtle() {
           </PropertiesList>
           <OptionsBar />
         </div>
-        <main v-else-if="tab === 'turtle'" class="bg-background-highlighted p-1">
+        <main v-else-if="params.tab === 'turtle'" class="bg-background-highlighted p-1">
           <TurtleFileEditor />
         </main>
       </OptionsSidebarProvider>

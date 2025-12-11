@@ -6,7 +6,6 @@ import { graph, type IndexedFormula } from 'rdflib'
 import { createContext } from 'reka-ui'
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { toast } from 'vue-sonner'
 import { tryCatch } from '../../lib/try-catch'
 
 interface FileContext {
@@ -15,7 +14,7 @@ interface FileContext {
   currentShape: ReturnType<typeof useParentlessNamedNode>
   showNewItemDialog: Ref<boolean>
   storedStore: Ref<string | null>
-  isStoredStoreValid: Ref<boolean>
+  isStoredStoreInvalid: Ref<string | null>
 }
 
 export const [injectFileContext, provideFileContext] = createContext<FileContext>('File')
@@ -25,7 +24,7 @@ export const [injectFileContext, provideFileContext] = createContext<FileContext
 const store = ref(graph()) as Ref<IndexedFormula>
 const storedStore = useStorage<string | null>('file-store', null)
 const isStoreLoaded = ref(false)
-const isStoredStoreValid = ref(true)
+const isStoredStoreInvalid = ref<string | null>(null)
 const showNewItemDialog = ref(false)
 
 function watchStore(store: IndexedFormula) {
@@ -48,20 +47,14 @@ const { ignoreUpdates: ignoreStoredStoreUpdates } = watchIgnorable(
 
     const [error, newStore] = tryCatch(Shacl.deserialize, newStoredStore)
     if (error) {
-      isStoredStoreValid.value = false
-      toast.error('Failed to load file', {
-        description: error.message,
-      })
+      isStoredStoreInvalid.value = error.message
       return
     }
 
     watchStore(newStore)
     store.value = newStore
     isStoreLoaded.value = true
-    if (!isStoredStoreValid.value) {
-      isStoredStoreValid.value = true
-      toast.success('File loaded successfully')
-    }
+    isStoredStoreInvalid.value = null
   },
   { immediate: true },
 )
@@ -139,7 +132,7 @@ provideFileContext({
   resetFile,
   showNewItemDialog,
   storedStore,
-  isStoredStoreValid,
+  isStoredStoreInvalid,
 })
 
 defineExpose({

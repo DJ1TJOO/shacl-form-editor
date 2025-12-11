@@ -5,13 +5,14 @@ import ShapeItem from '@/components/editor-bar/shape-item.vue'
 import { absoluteToPrefixed } from '@/components/tmp-prefixes'
 import { injectTurtleEditorContext, scrollToShape } from '@/components/turtle-editor'
 import { useShapes } from '@/composables/use-shacl'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 defineProps<{
   activeTab: 'editor' | 'turtle'
 }>()
 
 const router = useRouter()
+const route = useRoute()
 const { shapes, removeShape } = useShapes()
 const { editor } = injectTurtleEditorContext()
 </script>
@@ -38,6 +39,7 @@ const { editor } = injectTurtleEditorContext()
       @removeShape="
         () => {
           removeShape(shape.value)
+          if (!route.path.includes(encodeURIComponent(shape.value))) return
 
           const nextShape = shapes[0]
           if (nextShape) {

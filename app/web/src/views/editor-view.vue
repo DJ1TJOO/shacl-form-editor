@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { EditorBar, NewItemDialog } from '@/components/editor-bar'
 import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
-import { PreviewDialog } from '@/components/preview'
 import { PropertiesList } from '@/components/properties'
 import { FileProvider, Shacl } from '@/components/rdf'
 import { HeaderActions } from '@/components/sfe-header'
 import { Shape } from '@/components/shape'
 import { SideBar } from '@/components/side-bar'
+import { absoluteToPrefixed } from '@/components/tmp-prefixes'
 import { Toolbox } from '@/components/toolbox'
+import { scrollToShape, TurtleEditorProvider, TurtleFileEditor } from '@/components/turtle-editor'
 import { Button } from '@/components/ui/button'
-import { DownloadIcon, EyeIcon } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { CodeIcon, DownloadIcon, FormIcon, LayoutTemplateIcon } from 'lucide-vue-next'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+
+const tab = ref<'editor' | 'turtle'>('editor')
 
 const route = useRoute()
 const shapeIRI = computed(() =>
@@ -33,7 +36,7 @@ const gridTemplateColumns = computed(() => {
 })
 
 const fileProviderRef = ref<InstanceType<typeof FileProvider> | null>(null)
-
+const turtleEditorProviderRef = ref<InstanceType<typeof TurtleEditorProvider> | null>(null)
 const showNewItemDialog = ref(false)
 watch(
   () => fileProviderRef.value?.showNewItemDialog,
@@ -78,41 +81,75 @@ const downloadTtl = (debug: boolean = false) => {
   URL.revokeObjectURL(url)
 }
 
-const previewOpen = ref(false)
+async function goToTurtle() {
+  tab.value = 'turtle'
+  await nextTick()
+  if (shapeIRI.value && turtleEditorProviderRef.value?.editor) {
+    const prefixedShape = absoluteToPrefixed(shapeIRI.value)
+    scrollToShape(prefixedShape, turtleEditorProviderRef.value.editor)
+  }
+}
 </script>
 
 <template>
-  <FileProvider ref="fileProviderRef">
-    <HeaderActions>
-      <Button color="background-highlighted" size="lg" @click="previewOpen = true">
-        <EyeIcon />
-        Preview
-      </Button>
-      <Button
-        size="lg"
-        @click="() => downloadTtl(true)"
-        title="Log the serialized data to the console, to download edit the downloadTtl function"
-      >
-        <DownloadIcon />
-        Export Schema
-      </Button>
-    </HeaderActions>
-    <PreviewDialog v-model:open="previewOpen" />
-    <NewItemDialog v-model:open="showNewItemDialog" />
-    <OptionsSidebarProvider ref="optionsSidebarProviderRef">
-      <EditorBar />
-      <div
-        :key="shapeIRI"
-        v-if="shapeExists"
-        class="gap-3 grid p-1"
-        :style="{ gridTemplateColumns }"
-      >
-        <SideBar :child-class="!isLeftSideBarOpen && 'h-full justify-center'">
-          <Shape :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
-          <Toolbox :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
-        </SideBar>
-        <PropertiesList as="main">
-          <!-- <Group label="Name">
+  <TurtleEditorProvider ref="turtleEditorProviderRef">
+    <FileProvider ref="fileProviderRef">
+      <HeaderActions>
+        <div class="flex gap-2">
+          <Button
+            :color="tab === 'editor' ? 'complementary' : 'background-highlighted'"
+            size="lg"
+            @click="tab = 'editor'"
+          >
+            <LayoutTemplateIcon />
+            Editor
+          </Button>
+          <Button
+            :color="tab === 'turtle' ? 'complementary' : 'background-highlighted'"
+            size="lg"
+            @click="goToTurtle"
+          >
+            <CodeIcon />
+            Turtle
+          </Button>
+          <Button
+            color="background-highlighted"
+            size="lg"
+            disabled
+            title="Future feature to test forms generated from the schema"
+          >
+            <FormIcon />
+            Form
+          </Button>
+        </div>
+        <div class="flex gap-2">
+          <Button
+            size="lg"
+            @click="downloadTtl"
+            title="Log the serialized data to the console, to download edit the downloadTtl function"
+          >
+            <DownloadIcon />
+            Export Schema
+          </Button>
+        </div>
+      </HeaderActions>
+
+      <NewItemDialog v-model:open="showNewItemDialog" />
+
+      <OptionsSidebarProvider ref="optionsSidebarProviderRef">
+        <EditorBar :activeTab="tab" />
+        <div
+          :key="shapeIRI"
+          v-if="shapeExists && tab === 'editor'"
+          class="gap-3 grid p-1"
+          :style="{ gridTemplateColumns }"
+        >
+          <SideBar :child-class="!isLeftSideBarOpen && 'h-full justify-center'">
+            <Shape :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
+            <Toolbox :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
+          </SideBar>
+          <PropertiesList as="main">
+            <!-- <Group label="Name">
             <Property :icon="TypeIcon" label="Text Field" path="firstName" in-group>
               <template #options>
                 <Input v-model="value" />
@@ -126,18 +163,14 @@ const previewOpen = ref(false)
                 <ExampleFormElements />
               </template>
             </Property>
-          </Group>
-          <Property :icon="TypeIcon" label="Text Field" path="email">
-            hoi
-            <template #options> doei </template>
-          </Property>
-          <Property :icon="TypeIcon" label="Text Field" path="other path">
-            hoi
-            <template #options> doei </template>
-          </Property> -->
-        </PropertiesList>
-        <OptionsBar />
-      </div>
-    </OptionsSidebarProvider>
-  </FileProvider>
+          </Group>-->
+          </PropertiesList>
+          <OptionsBar />
+        </div>
+        <main v-else-if="tab === 'turtle'" class="bg-background-highlighted p-1">
+          <TurtleFileEditor />
+        </main>
+      </OptionsSidebarProvider>
+    </FileProvider>
+  </TurtleEditorProvider>
 </template>

@@ -2,20 +2,37 @@
 import FileItem from '@/components/editor-bar/file-item.vue'
 import NewItem from '@/components/editor-bar/new-item.vue'
 import ShapeItem from '@/components/editor-bar/shape-item.vue'
+import { absoluteToPrefixed } from '@/components/tmp-prefixes'
+import { injectTurtleEditorContext, scrollToShape } from '@/components/turtle-editor'
 import { useShapes } from '@/composables/use-shacl'
 import { useRouter } from 'vue-router'
 
+defineProps<{
+  activeTab: 'editor' | 'turtle'
+}>()
+
 const router = useRouter()
 const { shapes, removeShape } = useShapes()
+const { editor } = injectTurtleEditorContext()
 </script>
 
 <template>
-  <nav data-slot="editor-bar" class="top-0 sticky flex bg-background w-full h-10 overflow-x-auto">
+  <nav
+    data-slot="editor-bar"
+    class="top-0 z-10 sticky flex bg-background w-full h-10 overflow-x-auto"
+  >
     <FileItem />
     <ShapeItem
       v-for="shape in shapes"
       :key="shape.value"
       :to="`/file/MyShaclFile/${encodeURIComponent(shape.value)}`"
+      @click="
+        () => {
+          if (activeTab !== 'turtle' || !editor) return
+          const prefixedShape = absoluteToPrefixed(shape.value)
+          scrollToShape(prefixedShape, editor)
+        }
+      "
       :label="shape.name"
       :type="shape.type"
       @removeShape="

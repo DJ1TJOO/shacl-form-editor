@@ -24,6 +24,10 @@ export const buttonVariants = cva(
           '[--button-accent:var(--color-background-blue)] [--button-complementary:var(--color-branding)] [--button-accent-lighter:var(--color-background-blue)]/70',
           '[--button-outline:var(--color-branding)]',
         ],
+        complementary: [
+          '[--button-accent:var(--color-complementary)] [--button-complementary:var(--color-text)] [--button-accent-lighter:var(--color-complementary)]/70',
+          '[--button-outline:var(--color-complementary)]',
+        ],
         danger: [
           '[--button-accent:var(--color-danger)] [--button-complementary:var(--color-light)] [--button-accent-lighter:var(--color-danger-lighter)]',
           '[--button-outline:var(--color-danger)]',
@@ -38,20 +42,20 @@ export const buttonVariants = cva(
         ],
         'danger-hover': [
           '[--button-accent:var(--color-background-highlighted)] [--button-complementary:var(--color-text-light)] [--button-accent-lighter:var(--color-background-highlighted)]/70',
-          '[--button-outline:var(--color-danger)]',
+          '[--button-outline:var(--color-danger)] [--button-text-hover:var(--color-danger)]',
         ],
         'warning-hover': [
           '[--button-accent:var(--color-background-highlighted)] [--button-complementary:var(--color-text-light)] [--button-accent-lighter:var(--color-background-highlighted)]/70',
-          '[--button-outline:var(--color-warning)]',
+          '[--button-outline:var(--color-warning)] [--button-text-hover:var(--color-warning)]',
         ],
         'success-hover': [
           '[--button-accent:var(--color-background-highlighted)] [--button-complementary:var(--color-text-light)] [--button-accent-lighter:var(--color-background-highlighted)]/70',
-          '[--button-outline:var(--color-success)]',
+          '[--button-outline:var(--color-success)] [--button-text-hover:var(--color-success)]',
         ],
       },
       variant: {
         default:
-          'bg-(--button-accent) text-(--button-complementary) hover:bg-(--button-accent-lighter) hover:text-(--button-outline)',
+          'bg-(--button-accent) text-(--button-complementary) hover:bg-(--button-accent-lighter) hover:text-(--button-text-hover,var(--button-complementary))',
         outline:
           'border-2 border-(--button-accent) text-(--button-outline) hover:text-(--button-complementary) hover:bg-(--button-accent)',
         ghost: 'hover:bg-background-highlighted hover:text-(--button-accent)',

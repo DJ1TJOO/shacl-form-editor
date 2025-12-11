@@ -1,10 +1,10 @@
 <script lang="ts">
 import { Shacl } from '@/components/rdf'
 import { useParentlessNamedNode } from '@/composables/use-shacl'
-import { useStorage } from '@vueuse/core'
+import { useStorage, watchIgnorable } from '@vueuse/core'
 import { graph, type IndexedFormula } from 'rdflib'
 import { createContext } from 'reka-ui'
-import { computed, onMounted, ref, watch, type Ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 interface FileContext {
@@ -12,6 +12,7 @@ interface FileContext {
   resetFile: () => void
   currentShape: ReturnType<typeof useParentlessNamedNode>
   showNewItemDialog: Ref<boolean>
+  storedStore: Ref<string | null>
 }
 
 export const [injectFileContext, provideFileContext] = createContext<FileContext>('File')
@@ -26,31 +27,40 @@ const showNewItemDialog = ref(false)
 
 // @TODO: use watchIgnorable on store and storedStore to immediately update the store when the storedStore changes
 function watchStore(store: IndexedFormula) {
-  store.addDataCallback((quad) => {
-    storedStore.value = Shacl.serialize(store)
+  store.addDataCallback(() => {
+    ignoreStoredStoreUpdates(() => {
+      storedStore.value = Shacl.serialize(store)
+    })
   })
-  store.addDataRemovalCallback((quad) => {
-    storedStore.value = Shacl.serialize(store)
+  store.addDataRemovalCallback(() => {
+    ignoreStoredStoreUpdates(() => {
+      storedStore.value = Shacl.serialize(store)
+    })
   })
 }
 
-watchStore(store.value)
-onMounted(() => {
-  if (storedStore.value) {
-    const newStore = Shacl.deserialize(storedStore.value)
+const { ignoreUpdates: ignoreStoredStoreUpdates } = watchIgnorable(
+  storedStore,
+  (newStoredStore) => {
+    if (!newStoredStore) return
+    const newStore = Shacl.deserialize(newStoredStore)
     watchStore(newStore)
     store.value = newStore
-  }
-
-  isStoreLoaded.value = true
-})
+    isStoreLoaded.value = true
+  },
+  { immediate: true },
+)
 
 function resetFile() {
   const newStore = graph()
   watchStore(newStore)
   store.value = newStore
-  storedStore.value = Shacl.serialize(newStore)
+  ignoreStoredStoreUpdates(() => {
+    storedStore.value = Shacl.serialize(newStore)
+  })
 }
+
+watchStore(store.value)
 
 const route = useRoute()
 const router = useRouter()
@@ -113,6 +123,7 @@ provideFileContext({
   currentShape: shape,
   resetFile,
   showNewItemDialog,
+  storedStore,
 })
 
 defineExpose({

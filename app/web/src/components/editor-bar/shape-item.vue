@@ -19,6 +19,7 @@ defineProps<{
 
 defineEmits<{
   (e: 'removeShape'): void
+  (e: 'click'): void
 }>()
 
 const route = useRoute()
@@ -33,7 +34,7 @@ const isConfirmDialogOpen = ref(false)
 <template>
   <ContextMenu>
     <ContextMenuTrigger>
-      <RouterLink :to="to" class="shrink-0">
+      <RouterLink :to="to" class="shrink-0" @click="$emit('click')">
         <BarItem :active="isActive(to)" text-color="text">
           <component :is="type === 'node' ? DiamondIcon : CircleIcon" class="size-4" />
           {{ label }}

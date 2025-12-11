@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { PrefixInput } from '@/components/form-ui/prefix'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,7 +10,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useShapes } from '@/composables/use-shacl'
 import { reactiveOmit, useVModel } from '@vueuse/core'
@@ -122,7 +122,7 @@ function create() {
                   <TooltipContent>The IRI of the node or property.</TooltipContent>
                 </Tooltip>
               </FieldLabel>
-              <Input v-model="iri" placeholder="ex:MyNode" />
+              <PrefixInput v-model="iri" placeholder="ex:MyNode" />
             </Field>
           </FieldGroup>
         </FieldSet>

@@ -15,6 +15,10 @@ import type { ComboboxRootEmits, ComboboxRootProps } from 'reka-ui'
 import { useForwardPropsEmits } from 'reka-ui'
 import type { HTMLAttributes, InputHTMLAttributes } from 'vue'
 
+defineOptions({
+  inheritAttrs: false,
+})
+
 const props = defineProps<
   ComboboxRootProps & {
     onBlur?: HTMLAttributes['onBlur']
@@ -25,24 +29,6 @@ const emits = defineEmits<ComboboxRootEmits>()
 const comboboxPropsWithoutModel = reactiveOmit(props, 'modelValue')
 const comboboxProps = useForwardPropsEmits(comboboxPropsWithoutModel, emits)
 
-const inputProps = reactiveOmit(
-  props,
-  'open',
-  'defaultOpen',
-  'resetSearchTermOnBlur',
-  'resetSearchTermOnSelect',
-  'openOnFocus',
-  'openOnClick',
-  'ignoreFilter',
-  'resetModelValueOnClear',
-  'modelValue',
-  'defaultValue',
-  'multiple',
-  'dir',
-  'disabled',
-  'by',
-  'onBlur',
-)
 const prefix = defineModel<T>({ required: true })
 </script>
 
@@ -51,7 +37,7 @@ const prefix = defineModel<T>({ required: true })
     <ComboboxAnchor>
       <InputGroup>
         <InputGroupComboboxInput
-          v-bind="inputProps"
+          v-bind="{ ...$attrs }"
           :display-value="(prefix: T) => (prefix ? absoluteToPrefixed(prefix) : '')"
           @blur="
             (e: FocusEvent) => {

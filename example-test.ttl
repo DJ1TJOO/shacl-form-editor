@@ -1,8 +1,11 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 @prefix schema: <http://schema.org/>.
 @prefix exa: <http://example.com/>.
 @prefix shacl: <http://www.w3.org/ns/shacl#>.
 @prefix dash: <http://datashapes.org/dash#>.
+
+exa:Name a shacl:PropertyGroup; rdfs:label "Name"; shacl:order 1.
 
 exa:Person
     a schema:Person, shacl:NodeShape;
@@ -10,7 +13,13 @@ exa:Person
             [
                 dash:editor dash:TextAreaEditor;
                 dash:viewer dash:LiteralViewer;
-                shacl:order 3;
+                shacl:order 0;
+                shacl:path exa:Address
+            ],
+            [
+                dash:editor dash:TextAreaEditor;
+                dash:viewer dash:LiteralViewer;
+                shacl:order 2;
                 shacl:path exa:Address
             ],
             [
@@ -20,94 +29,18 @@ exa:Person
                 shacl:description "First name of the person";
                 shacl:disjoint exa:fullName;
                 shacl:equals exa:givenName;
+                shacl:group exa:Name;
                 shacl:maxCount 1;
                 shacl:minCount 1;
                 shacl:name "First Name";
-                shacl:order 1;
+                shacl:order 0;
                 shacl:path exa:FirstName
             ],
             [
                 dash:editor dash:TextFieldEditor;
                 dash:viewer dash:LiteralViewer;
                 shacl:description "";
-                shacl:order 2;
+                shacl:group exa:Name;
+                shacl:order 1;
                 shacl:path exa:LastName
             ].
-[
-    dash:editor dash:TextAreaEditor;
-    dash:viewer dash:LiteralViewer;
-    shacl:order 3;
-    shacl:path exa:Address
-].
-[
-    dash:editor dash:TextAreaEditor;
-    dash:viewer dash:LiteralViewer;
-    shacl:order 3;
-    shacl:path exa:Address
-].
-[
-    dash:editor dash:TextAreaEditor;
-    dash:viewer dash:LiteralViewer;
-    shacl:order 3;
-    shacl:path exa:Address
-].
-[
-    dash:editor dash:TextFieldEditor;
-    dash:viewer dash:LiteralViewer;
-    shacl:datatype xsd:string;
-    shacl:description "First name of the person";
-    shacl:disjoint exa:fullName;
-    shacl:equals exa:givenName;
-    shacl:maxCount 1;
-    shacl:minCount 1;
-    shacl:name "First Name";
-    shacl:order 1;
-    shacl:path exa:FirstName
-].
-[
-    dash:editor dash:TextFieldEditor;
-    dash:viewer dash:LiteralViewer;
-    shacl:datatype xsd:string;
-    shacl:description "First name of the person";
-    shacl:disjoint exa:fullName;
-    shacl:equals exa:givenName;
-    shacl:maxCount 1;
-    shacl:minCount 1;
-    shacl:name "First Name";
-    shacl:order 1;
-    shacl:path exa:FirstName
-].
-[
-    dash:editor dash:TextFieldEditor;
-    dash:viewer dash:LiteralViewer;
-    shacl:datatype xsd:string;
-    shacl:description "First name of the person";
-    shacl:disjoint exa:fullName;
-    shacl:equals exa:givenName;
-    shacl:maxCount 1;
-    shacl:minCount 1;
-    shacl:name "First Name";
-    shacl:order 1;
-    shacl:path exa:FirstName
-].
-[
-    dash:editor dash:TextFieldEditor;
-    dash:viewer dash:LiteralViewer;
-    shacl:description "";
-    shacl:order 2;
-    shacl:path exa:LastName
-].
-[
-    dash:editor dash:TextFieldEditor;
-    dash:viewer dash:LiteralViewer;
-    shacl:description "";
-    shacl:order 2;
-    shacl:path exa:LastName
-].
-[
-    dash:editor dash:TextFieldEditor;
-    dash:viewer dash:LiteralViewer;
-    shacl:description "";
-    shacl:order 2;
-    shacl:path exa:LastName
-].

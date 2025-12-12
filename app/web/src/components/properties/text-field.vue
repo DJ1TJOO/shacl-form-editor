@@ -9,19 +9,15 @@ import {
   ValidationConstraints,
   ValueConstraints,
 } from '@/components/constraints'
-import { Property } from '@/components/properties'
+import { Property, type PropertyProps } from '@/components/properties'
 import Base from '@/components/properties/base.vue'
 import { Dash, RDF, Shacl, Xsd } from '@/components/rdf'
 import { FieldSeparator } from '@/components/ui/field'
 import { useNamed } from '@/composables/use-shacl'
 import { TypeIcon } from 'lucide-vue-next'
-import type { BlankNode } from 'rdflib/lib/tf-types'
 import { computed, watch } from 'vue'
 
-const { subject, order } = defineProps<{
-  subject: BlankNode
-  order: number
-}>()
+const { subject, order, groupOrder, groupSubject } = defineProps<PropertyProps>()
 defineEmits<{
   (e: 'remove'): void
 }>()
@@ -53,6 +49,8 @@ const canHaveStringConstraints = computed(() => {
     label="Text Field"
     :subject="subject"
     :order="order"
+    :groupOrder="groupOrder"
+    :groupSubject="groupSubject"
     @remove="$emit('remove')"
   >
     <template #options>

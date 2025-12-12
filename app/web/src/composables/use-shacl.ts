@@ -1,7 +1,8 @@
 import { Dash, injectFileContext, Shacl, Xsd } from '@/components/rdf'
 import { watchIgnorable } from '@vueuse/core'
-import { BlankNode, Literal, NamedNode, Node } from 'rdflib'
+import { BlankNode, IndexedFormula, Literal, NamedNode, Node } from 'rdflib'
 import type { NamedNode as NamedNodeType, Quad_Predicate, Quad_Subject } from 'rdflib/lib/tf-types'
+import type { Ref } from 'vue'
 import { computed, reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 
 export function useFileStore() {
@@ -82,19 +83,46 @@ export const useNodeProperties = ({
   return { properties, removeProperty, createProperty }
 }
 
-export const useParentlessNamedNode = ({
+export const useGlobalName = ({
   initialValue,
+  store: customStore,
 }: {
   initialValue?: MaybeRefOrGetter<string | undefined>
+  store?: Ref<IndexedFormula>
 }) => {
-  const namedNode = ref<NamedNode | undefined>()
+  const store = customStore ?? useFileStore()
+  const node = ref<NamedNode | undefined>()
 
   const value = computed({
     get() {
-      return namedNode.value?.value
+      return node.value?.value
     },
     set(value) {
-      namedNode.value = value ? new NamedNode(value) : undefined
+      const oldNode = node.value
+      const newNode = value ? new NamedNode(value) : undefined
+
+      if (oldNode && newNode && oldNode.value !== newNode.value) {
+        const statementsAsSubject = [...store.value.statementsMatching(oldNode, null, null)]
+        const statementsAsPredicate = [...store.value.statementsMatching(null, oldNode, null)]
+        const statementsAsObject = [...store.value.statementsMatching(null, null, oldNode)]
+
+        for (const st of statementsAsSubject) {
+          store.value.remove(st)
+          store.value.add(newNode, st.predicate, st.object, st.graph)
+        }
+
+        for (const st of statementsAsPredicate) {
+          store.value.remove(st)
+          store.value.add(st.subject, newNode, st.object, st.graph)
+        }
+
+        for (const st of statementsAsObject) {
+          store.value.remove(st)
+          store.value.add(st.subject, st.predicate, newNode, st.graph)
+        }
+      }
+
+      node.value = newNode
     },
   })
 
@@ -107,7 +135,7 @@ export const useParentlessNamedNode = ({
     { immediate: true },
   )
 
-  return { value, namedNode }
+  return { value, node }
 }
 
 function useRdfNode<T extends Node>({

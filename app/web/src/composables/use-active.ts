@@ -26,12 +26,13 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
   const { allowGrouping = true } = options
   const targetElement = computed(() => unrefElement(target))
 
-  const isActive = ref(false)
+  const activatedAt = ref<number | undefined>(undefined)
+  const isActive = computed(() => typeof activatedAt.value === 'number')
   const isGrouped = ref(false)
   const isNoGrouping = computed(() => isNoGroupingElement(targetElement.value))
 
   function setActive(value: boolean, grouped?: boolean | null) {
-    isActive.value = value
+    activatedAt.value = value ? (activatedAt.value ?? Date.now()) : undefined
     if (value) {
       targetElement.value?.setAttribute(ACTIVE_ATTRIBUTE, 'true')
 
@@ -43,6 +44,7 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
             // @TODO: change to something useful when components are based on data
             detail: {
               id: targetElement.value?.id,
+              activatedAt: activatedAt.value,
             },
           }),
         )

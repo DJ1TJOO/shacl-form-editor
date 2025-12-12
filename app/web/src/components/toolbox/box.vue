@@ -20,6 +20,7 @@ import {
   TypeIcon,
   TypeOutlineIcon,
 } from 'lucide-vue-next'
+import type { BlankNode, NamedNode } from 'rdflib'
 import type { Component } from 'vue'
 import { computed, ref } from 'vue'
 import BoxItem from './box-item.vue'
@@ -28,7 +29,7 @@ interface ToolboxItem {
   icon: Component
   label: string
   tooltip: string
-  create?: (order?: number) => void
+  create?: (order?: number, group?: BlankNode | NamedNode) => void
 }
 
 defineProps<{
@@ -40,7 +41,7 @@ defineEmits<{
 
 const { currentShape, store } = injectFileContext()
 const { items: types } = useNamedList({
-  subject: currentShape.namedNode,
+  subject: currentShape.node,
   predicate: RDF('type'),
 })
 const isNodeShape = computed(() => {
@@ -52,14 +53,15 @@ const items: ToolboxItem[] = [
     icon: TypeIcon,
     label: 'Text field',
     tooltip: 'Add to library',
-    create: (order?: number) => {
-      if (!store.value || !currentShape.namedNode.value) return
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
       Shacl.createProperty(
         store.value,
-        currentShape.namedNode.value,
+        currentShape.node.value,
         'TextFieldEditor',
         'LiteralViewer',
         order,
+        group,
       )
     },
   },
@@ -67,14 +69,15 @@ const items: ToolboxItem[] = [
     icon: FileTextIcon,
     label: 'Text area',
     tooltip: 'Add to library',
-    create: (order?: number) => {
-      if (!store.value || !currentShape.namedNode.value) return
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
       Shacl.createProperty(
         store.value,
-        currentShape.namedNode.value,
+        currentShape.node.value,
         'TextAreaEditor',
         'LiteralViewer',
         order,
+        group,
       )
     },
   },

@@ -4,15 +4,27 @@ import { BlankNode, IndexedFormula, Literal, NamedNode, Node } from 'rdflib'
 import type { Quad_Subject } from 'rdflib/lib/tf-types'
 
 export type DraggingNewProperties = {
-  create: (order?: number) => void
+  create: (order?: number, group?: BlankNode | NamedNode) => void
 }
 
 export type DraggingExistingProperties = {
   subject: Quad_Subject
   order: number
+  groupOrder?: number | undefined
+  groupSubject?: Quad_Subject | undefined
 }
 
-export type propertiesList = {
+export type DraggingExistingPropertiesInGroup = DraggingExistingProperties & {
+  groupSubject: Quad_Subject
+  groupOrder: number
+}
+
+export type DraggingExistingPropertiesNotInGroup = DraggingExistingProperties & {
+  groupSubject: undefined
+  groupOrder: undefined
+}
+
+export type PropertiesList = {
   order?: Literal
   value: BlankNode | NamedNode
 }[]
@@ -30,6 +42,8 @@ export function getDraggingExistingProperties(dropStore: IDnDStore) {
     .map((element) => ({
       subject: element.data?.subject,
       order: element.data?.order,
+      ...(element.data?.groupOrder !== undefined && { groupOrder: element.data.groupOrder }),
+      ...(element.data?.groupSubject !== undefined && { groupSubject: element.data.groupSubject }),
     }))
     .filter(
       (element): element is DraggingExistingProperties =>
@@ -41,7 +55,7 @@ export function getDraggingExistingProperties(dropStore: IDnDStore) {
 }
 
 export function isDraggingElement(
-  prop: propertiesList[number],
+  prop: PropertiesList[number],
   draggingElements: DraggingExistingProperties[],
 ) {
   return draggingElements.some(
@@ -49,7 +63,7 @@ export function isDraggingElement(
   )
 }
 
-export function getPropertyOrder(prop: propertiesList[number]) {
+export function getPropertyOrder(prop: { order?: Literal }) {
   if (!prop.order) return undefined
   try {
     return Node.toJS(prop.order) as number
@@ -64,25 +78,32 @@ export function getTargetOrder(dropStore: IDnDStore) {
   return dropStore.elementsMap.value.get(hoveredElement)?.data?.order
 }
 
-export function getMaxOrder(propertiesList: propertiesList) {
+export function getMaxOrder(propertiesList: PropertiesList) {
   return Math.max(...propertiesList.map((prop) => Node.toJS(prop.order) as number), 0)
 }
 
 export function addNewPropertiesAtTarget(
   targetOrder: number,
   newProperties: DraggingNewProperties[],
+  group?: BlankNode | NamedNode,
 ) {
-  newProperties.forEach((element, index) => element.create?.(targetOrder + index))
+  newProperties.forEach((element, index) => element.create?.(targetOrder + index, group))
 }
 
 export function addExistingPropertiesAtTarget(
   store: IndexedFormula,
   targetOrder: number,
   existingProperties: DraggingExistingProperties[],
+  group?: BlankNode | NamedNode,
 ) {
-  existingProperties.forEach((element, index) =>
-    updatePropertyOrder(store, element.subject, element.order, targetOrder + index),
-  )
+  existingProperties.forEach((element, index) => {
+    store.removeMatches(element.subject, Shacl.SHACL('group'))
+    if (group !== undefined) {
+      store.add(element.subject, Shacl.SHACL('group'), group)
+    }
+
+    updatePropertyOrder(store, element.subject, element.order, targetOrder + index)
+  })
 }
 
 export function updatePropertyOrder(
@@ -92,13 +113,14 @@ export function updatePropertyOrder(
   newOrder: number,
 ) {
   if (oldOrder === newOrder) return
+
   store.removeMatches(property, Shacl.SHACL('order'), Literal.fromValue<Literal>(oldOrder))
   store.add(property, Shacl.SHACL('order'), Literal.fromValue<Literal>(newOrder))
 }
 
 export function createOrderingGapAtTarget(
   store: IndexedFormula,
-  propertiesList: propertiesList,
+  propertiesList: PropertiesList,
   targetOrder: number,
   numNewProperties: number,
 ) {
@@ -115,7 +137,7 @@ export function createOrderingGapAtTarget(
 
 export function createOrderingGapForExisting(
   store: IndexedFormula,
-  propertiesList: propertiesList,
+  propertiesList: PropertiesList,
   draggingElements: DraggingExistingProperties[],
   targetOrder: number,
 ) {
@@ -179,7 +201,7 @@ export function moveProperty(store: IndexedFormula, property: Quad_Subject, offs
   updatePropertyOrder(store, swapProperty.prop.value, swapProperty.order, currentOrder)
 }
 
-export function recalculateOrders(store: IndexedFormula, shape: Quad_Subject) {
+export function recalculateOrdersForShape(store: IndexedFormula, shape: Quad_Subject) {
   const propertiesList = Shacl.getNodeProperties(store, shape)
   const propertyOrders = propertiesList
     .map((prop) => ({ prop, order: getPropertyOrder(prop) }))
@@ -188,6 +210,22 @@ export function recalculateOrders(store: IndexedFormula, shape: Quad_Subject) {
     )
 
   for (const [index, prop] of propertyOrders.entries()) {
-    updatePropertyOrder(store, prop.prop.value, prop.order, index + 1)
+    updatePropertyOrder(store, prop.prop.value, prop.order, index)
+
+    if (prop.prop.type === 'group') {
+      recalculateOrdersForGroup(store, prop.prop.properties)
+    }
+  }
+}
+
+export function recalculateOrdersForGroup(
+  store: IndexedFormula,
+  group: Quad_Subject | ReturnType<typeof Shacl.getGroupProperties>,
+) {
+  const propertiesList = Array.isArray(group) ? group : Shacl.getGroupProperties(store, group)
+  for (const [index, property] of propertiesList.entries()) {
+    const propertyOrder = getPropertyOrder(property)
+    if (typeof propertyOrder === 'undefined') continue
+    updatePropertyOrder(store, property.value, propertyOrder, index)
   }
 }

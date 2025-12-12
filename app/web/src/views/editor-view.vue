@@ -152,23 +152,7 @@ async function goToTurtle() {
             <Shape :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
             <Toolbox :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
           </SideBar>
-          <PropertiesList as="main">
-            <!-- <Group label="Name">
-            <Property :icon="TypeIcon" label="Text Field" path="firstName" in-group>
-              <template #options>
-                <Input v-model="value" />
-              </template>
-
-              <Input v-model="value" />
-            </Property>
-            <Property :icon="TypeIcon" label="Text Field" path="lastName" in-group>
-              hoi
-              <template #options>
-                <ExampleFormElements />
-              </template>
-            </Property>
-          </Group>-->
-          </PropertiesList>
+          <PropertiesList as="main" />
           <OptionsBar />
         </div>
         <main v-else-if="params.tab === 'turtle'" class="bg-background-highlighted p-1">

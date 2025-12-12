@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Shacl } from '@/components/rdf'
-import { useParentlessNamedNode } from '@/composables/use-shacl'
+import { useGlobalName } from '@/composables/use-shacl'
 import { useStorage, watchIgnorable } from '@vueuse/core'
 import { graph, type IndexedFormula } from 'rdflib'
 import { createContext } from 'reka-ui'
@@ -11,7 +11,7 @@ import { tryCatch } from '../../lib/try-catch'
 interface FileContext {
   store: Ref<IndexedFormula>
   resetFile: () => void
-  currentShape: ReturnType<typeof useParentlessNamedNode>
+  currentShape: ReturnType<typeof useGlobalName>
   showNewItemDialog: Ref<boolean>
   storedStore: Ref<string | null>
   isStoredStoreInvalid: Ref<string | null>
@@ -78,7 +78,7 @@ const shapeIRI = computed(() => {
   if (!shapeId.includes(':')) return undefined
   return shapeId
 })
-const shape = useParentlessNamedNode({ initialValue: shapeIRI })
+const shape = useGlobalName({ initialValue: shapeIRI, store })
 
 watch(
   [isStoreLoaded, store, shapeIRI],

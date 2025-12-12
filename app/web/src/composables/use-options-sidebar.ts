@@ -1,16 +1,20 @@
 import { injectOptionsSidebarProviderContext } from '@/components/options-bar'
 import { createReusableTemplate } from '@vueuse/core'
-import { onUnmounted, ref, watch } from 'vue'
+import { onUnmounted, ref, toValue, watch, type Ref } from 'vue'
 import { useActive, type UseActiveOptions } from './use-active'
 
-export function useOptionsSidebar(id: symbol, title: string, options: UseActiveOptions = {}) {
+export function useOptionsSidebar(
+  id: symbol,
+  title: string | Ref<string>,
+  options: UseActiveOptions = {},
+) {
   const target = ref<HTMLElement>()
 
   const optionsSidebar = injectOptionsSidebarProviderContext()
   const [Define, Reuse] = createReusableTemplate()
 
   function open() {
-    optionsSidebar.open(id, title, Reuse)
+    optionsSidebar.open(id, toValue(title), Reuse)
   }
 
   function close() {

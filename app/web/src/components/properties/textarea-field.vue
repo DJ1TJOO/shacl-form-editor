@@ -8,19 +8,15 @@ import {
   ValidationConstraints,
   ValueConstraints,
 } from '@/components/constraints'
-import { Property } from '@/components/properties'
+import { Property, type PropertyProps } from '@/components/properties'
 import Base from '@/components/properties/base.vue'
 import { Dash, RDF, Shacl } from '@/components/rdf'
 import { FieldSeparator } from '@/components/ui/field'
 import { useNamed } from '@/composables/use-shacl'
 import { FileTextIcon } from 'lucide-vue-next'
-import type { BlankNode } from 'rdflib/lib/tf-types'
 import { watch } from 'vue'
 
-const { subject, order } = defineProps<{
-  subject: BlankNode
-  order: number
-}>()
+const { subject, order, groupOrder, groupSubject } = defineProps<PropertyProps>()
 defineEmits<{
   (e: 'remove'): void
 }>()
@@ -45,6 +41,8 @@ watch(datatype, (newDatatype) => {
     label="Text Area"
     :subject="subject"
     :order="order"
+    :groupOrder="groupOrder"
+    :groupSubject="groupSubject"
     @remove="$emit('remove')"
   >
     <template #options>

@@ -3,7 +3,10 @@ import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { injectOptionsSidebarProviderContext } from '@/components/options-bar'
-import { recalculateOrdersForShape } from '@/components/properties/ordering'
+import {
+  createOrderingGapAtTarget,
+  recalculateOrdersForShape,
+} from '@/components/properties/ordering'
 import { RDF, RDFS, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
@@ -32,8 +35,10 @@ const properties = ref<
   {
     id: string
     subject: string
+    activatedAt: number
   }[]
 >([])
+
 const propertyLabels = computed(() =>
   properties.value.map(({ id }) => {
     const path = decodeURIComponent(id.split('-').pop() ?? '')
@@ -55,16 +60,19 @@ onMounted(() => {
     if (!(event instanceof CustomEvent)) return
 
     const id = event.detail.id as string
+    const activatedAt = event.detail.activatedAt as number | undefined
     const subject = document.getElementById(id)?.getAttribute('data-subject') as string | undefined
-    if (!subject) return
+    if (!subject || typeof activatedAt !== 'number') return
 
-    properties.value.push({ id, subject })
+    properties.value.push({ id, subject, activatedAt })
+    properties.value.sort((a, b) => a.activatedAt - b.activatedAt)
+
     open()
   })
   window.addEventListener(REMOVED_FROM_GROUP_EVENT, (event) => {
     if (!(event instanceof CustomEvent)) return
 
-    properties.value = properties.value.filter((label) => label !== event.detail.id)
+    properties.value = properties.value.filter(({ id }) => id !== event.detail.id)
     if (properties.value.length === 0) {
       optionsSidebar.close(id)
     } else {
@@ -96,16 +104,19 @@ function handleCreate() {
   for (const description of descriptions.value) {
     store.value.add(group, RDFS('comment'), new Literal(description.value, description.language))
   }
-  const maxOrder = Math.max(
-    ...store.value
-      .statementsMatching(null, Shacl.SHACL('order'))
-      .map(({ object }) => Node.toJS(object) as number),
-    0,
-  )
-  store.value.add(group, Shacl.SHACL('order'), Literal.fromValue<Literal>(maxOrder + 1))
 
+  const shapes = new Set<string>()
+  let groupOrder: number | null = null
   for (const [index, propertyId] of properties.value.entries()) {
     const property = new BlankNode(propertyId.subject)
+
+    if (groupOrder === null) {
+      const order = store.value.any(property, Shacl.SHACL('order'))
+      if (order instanceof Literal) {
+        groupOrder = Node.toJS(order) as number
+      }
+    }
+
     store.value.removeMatches(property, Shacl.SHACL('group'))
     store.value.removeMatches(property, Shacl.SHACL('order'))
 
@@ -114,7 +125,28 @@ function handleCreate() {
 
     const shape = store.value.any(null, Shacl.SHACL('property'), property)
     if (!shape || !(shape instanceof NamedNode)) continue
-    recalculateOrdersForShape(store.value, shape)
+    shapes.add(shape.value)
+  }
+
+  console.log(groupOrder)
+
+  const shape = Array.from(shapes)[0]
+  if (shape && groupOrder !== null) {
+    createOrderingGapAtTarget(
+      store.value,
+      Shacl.getNodeProperties(store.value, new NamedNode(shape)),
+      groupOrder,
+      1,
+    )
+  }
+
+  store.value.removeMatches(group, Shacl.SHACL('order'))
+  if (groupOrder !== undefined) {
+    store.value.add(group, Shacl.SHACL('order'), Literal.fromValue<Literal>(groupOrder))
+  }
+
+  for (const shape of shapes) {
+    recalculateOrdersForShape(store.value, new NamedNode(shape))
   }
 
   iri.value = ''

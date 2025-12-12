@@ -131,13 +131,17 @@ function getProperty(store: IndexedFormula, property: NamedNode | BlankNode) {
   }
 }
 
-export function getNodeProperties(store: IndexedFormula, shape: Quad_Subject) {
-  const properties = store
+function getNodeProps(store: IndexedFormula, shape: Quad_Subject) {
+  return store
     .statementsMatching(shape, SHACL('property'))
     .filter(
       (statement) => statement.object instanceof BlankNode || statement.object instanceof NamedNode,
     )
     .map((statement) => getProperty(store, statement.object as BlankNode | NamedNode))
+}
+
+export function getNodeProperties(store: IndexedFormula, shape: Quad_Subject) {
+  const properties = getNodeProps(store, shape)
 
   const groups = [
     ...new Set(properties.map((property) => property.group?.value).filter(Boolean) as string[]),
@@ -200,6 +204,22 @@ export function shapeExists(store: IndexedFormula, iri: string | NamedNode) {
   )
 }
 
+export function getMaxOrderOfNode(store: IndexedFormula, shape: Quad_Subject) {
+  const shapeProperties = getNodeProps(store, shape)
+  const ungroupedProperties = shapeProperties.filter((prop) => {
+    const group = store.anyStatementMatching(prop.value, SHACL('group'))?.object
+    return !(group instanceof NamedNode)
+  })
+
+  const orders = ungroupedProperties
+    .map((prop) => {
+      const order = store.anyStatementMatching(prop.value, SHACL('order'))?.object
+      return order instanceof Literal ? (Node.toJS(order) as number) : undefined
+    })
+    .filter((order): order is number => order !== undefined)
+  return orders.length > 0 ? Math.max(...orders, 0) : null
+}
+
 export function createProperty(
   store: IndexedFormula,
   shape: string | NamedNode,
@@ -218,13 +238,13 @@ export function createProperty(
   if (order !== undefined) {
     store.add(property, SHACL('order'), Literal.fromValue<Literal>(order))
   } else {
-    const maxOrder = Math.max(
-      ...store
-        .statementsMatching(null, SHACL('order'))
-        .map(({ object }) => Node.toJS(object) as number),
-      0,
+    const shapeNode = getNamedNode(shape)
+    const maxOrder = getMaxOrderOfNode(store, shapeNode)
+    store.add(
+      property,
+      SHACL('order'),
+      Literal.fromValue<Literal>(maxOrder !== null ? maxOrder + 1 : 0),
     )
-    store.add(property, SHACL('order'), Literal.fromValue<Literal>(maxOrder + 1))
   }
 }
 

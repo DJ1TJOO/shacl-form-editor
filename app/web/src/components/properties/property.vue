@@ -1,24 +1,23 @@
 <script setup lang="ts">
+import type { PropertyProps } from '@/components/properties'
 import { injectPropertiesListContext } from '@/components/properties/list.vue'
-import { moveProperty } from '@/components/properties/ordering'
+import { moveProperty, type DraggingExistingProperties } from '@/components/properties/ordering'
 import { Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
 import { useFileStore, useNamed } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { useDraggable } from '@vue-dnd-kit/core'
-import { ChevronDownIcon, GripVerticalIcon, type LucideIcon, XIcon } from 'lucide-vue-next'
-import type { BlankNode } from 'rdflib/lib/tf-types'
+import { ChevronDownIcon, GripVerticalIcon, XIcon, type LucideIcon } from 'lucide-vue-next'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, toValue, watch } from 'vue'
 
-const { inGroup, subject, order } = defineProps<{
-  icon: LucideIcon
-  label: string
-  subject: BlankNode
-  order: number
-  inGroup?: boolean
-}>()
+const { groupOrder, groupSubject, subject, order } = defineProps<
+  PropertyProps & {
+    icon: LucideIcon
+    label: string
+  }
+>()
 
 defineEmits<{
   (e: 'remove'): void
@@ -44,15 +43,21 @@ const {
   Define: DefineOptions,
   isOpen: isOpenOptions,
 } = useOptionsSidebar(Symbol('property-options'), 'Options for ' + localName.value, {
-  allowGrouping: !inGroup,
+  allowGrouping: typeof groupOrder === 'undefined',
 })
 
-const gripButton = ref<HTMLButtonElement | null>(null)
+const propertyId = computed(() => {
+  const pathValue = toValue(path)
+  if (!pathValue) return undefined
+  return `property-${encodeURIComponent(pathValue.value)}`
+})
 const { elementRef: draggableRef, handleDragStart } = useDraggable({
-  id: `property-${path.value?.value}`,
-  data: computed(() => ({
+  id: propertyId.value,
+  data: computed<DraggingExistingProperties>(() => ({
     subject,
     order,
+    groupOrder,
+    groupSubject,
   })),
   containerProps: {
     class: '',
@@ -61,9 +66,10 @@ const { elementRef: draggableRef, handleDragStart } = useDraggable({
 
 async function handleMoveProperty(offset: number) {
   moveProperty(store.value, subject, offset)
+
+  if (!propertyId.value) return
   await nextTick()
-  const propertyId = `property-${path.value?.value}`
-  const propertyElement = document.getElementById(propertyId)
+  const propertyElement = document.getElementById(propertyId.value)
   const button = propertyElement?.querySelector('button[data-grip-button]') as HTMLButtonElement
   button?.focus()
 }
@@ -77,7 +83,8 @@ async function handleMoveProperty(offset: number) {
     <!--  @TODO: id remove or change to something useful when components are based on data -->
     <CollapsibleRoot
       ref="target"
-      :id="`property-${path?.value}`"
+      :id="propertyId"
+      :data-subject="subject.value"
       default-open
       v-model:open="isOpen"
       :class="
@@ -89,7 +96,6 @@ async function handleMoveProperty(offset: number) {
     >
       <div class="relative flex justify-between items-center gap-2">
         <Button
-          ref="gripButton"
           variant="ghost"
           size="icon"
           data-grip-button
@@ -99,14 +105,14 @@ async function handleMoveProperty(offset: number) {
         >
           <GripVerticalIcon />
         </Button>
-        <p v-if="localName" class="left-8 absolute text-text-lighter text-sm">
-          {{ localName }}
+        <p class="left-8 absolute text-text-lighter text-sm">
+          {{ label }}
         </p>
 
         <CollapsibleTrigger as-child class="group/property-collapsible-trigger">
           <h2 class="flex justify-center justify-self-center items-center gap-1 w-fit">
             <component :is="icon" class="size-5" />
-            {{ label }}
+            {{ localName }}
             <Button variant="ghost" size="icon">
               <ChevronDownIcon
                 class="group-data-[state=open]/property-collapsible-trigger:-rotate-180 transition-transform"

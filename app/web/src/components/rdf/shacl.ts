@@ -1,4 +1,4 @@
-import { recalculateOrders } from '@/components/properties/ordering'
+import { recalculateOrdersForShape } from '@/components/properties/ordering'
 import { Dash, getNamedNode, RDF } from '@/components/rdf'
 import type { IndexedFormula } from 'rdflib'
 import { BlankNode, graph, Literal, NamedNode, Namespace, Node, parse } from 'rdflib'
@@ -27,7 +27,7 @@ export function getLocalName(iri?: string | NamedNode) {
     return iriValue.substring(separatorIndex + 1)
   }
 
-  return undefined
+  return iriValue
 }
 
 export function addShape(
@@ -43,7 +43,14 @@ export function addShape(
 }
 
 export function removeShape(store: IndexedFormula, iri: string | NamedNode) {
-  store.removeMany(getNamedNode(iri))
+  const properties = store.each(getNamedNode(iri), SHACL('property'))
+  for (const property of properties) {
+    if (!(property instanceof BlankNode)) continue
+    // @TODO: remove groups
+    store.removeMatches(property, null, null)
+  }
+
+  store.removeMatches(getNamedNode(iri))
 }
 
 export function getAllShapes(store: IndexedFormula) {
@@ -93,42 +100,96 @@ export function getAllShapes(store: IndexedFormula) {
   ]
 }
 
+function getProperty(store: IndexedFormula, property: NamedNode | BlankNode) {
+  let editor = store.anyStatementMatching(property, Dash.DASH('editor'))?.object
+  if (!(editor instanceof NamedNode)) {
+    editor = undefined
+  }
+
+  let viewer = store.anyStatementMatching(property, Dash.DASH('viewer'))?.object
+  if (!(viewer instanceof NamedNode)) {
+    viewer = undefined
+  }
+
+  let order = store.anyStatementMatching(property, SHACL('order'))?.object
+  if (!(order instanceof Literal)) {
+    order = undefined
+  }
+
+  let group = store.anyStatementMatching(property, SHACL('group'))?.object
+  if (!(group instanceof NamedNode)) {
+    group = undefined
+  }
+
+  return {
+    value: property,
+    editor,
+    viewer,
+    order,
+    group,
+    type: 'property' as const,
+  }
+}
+
 export function getNodeProperties(store: IndexedFormula, shape: Quad_Subject) {
-  return store
+  const properties = store
     .statementsMatching(shape, SHACL('property'))
     .filter(
       (statement) => statement.object instanceof BlankNode || statement.object instanceof NamedNode,
     )
-    .map((statement) => {
-      const object = statement.object as BlankNode | NamedNode
+    .map((statement) => getProperty(store, statement.object as BlankNode | NamedNode))
 
-      let editor = store.anyStatementMatching(object, Dash.DASH('editor'))?.object
-      if (!(editor instanceof NamedNode)) {
-        editor = undefined
-      }
+  const groups = [
+    ...new Set(properties.map((property) => property.group?.value).filter(Boolean) as string[]),
+  ].map((group) => {
+    let order = store.anyStatementMatching(new NamedNode(group), SHACL('order'))?.object
+    if (!(order instanceof Literal)) {
+      order = undefined
+    }
 
-      let viewer = store.anyStatementMatching(object, Dash.DASH('viewer'))?.object
-      if (!(viewer instanceof NamedNode)) {
-        viewer = undefined
-      }
+    return {
+      value: new NamedNode(group),
+      order,
+    }
+  })
 
-      let order = store.anyStatementMatching(object, SHACL('order'))?.object
-      if (!(order instanceof Literal)) {
-        order = undefined
-      }
+  const groupedProperties = properties.filter((prop) => prop.group)
+  const ungroupedProperties = properties.filter((prop) => !prop.group)
 
-      let group = store.anyStatementMatching(object, SHACL('group'))?.object
-      if (!(group instanceof NamedNode)) {
-        group = undefined
-      }
+  const combined = [
+    ...groups.map((group) => ({
+      ...group,
+      properties: groupedProperties
+        .filter((prop) => prop.group?.equals(group.value))
+        .toSorted((a, b) => {
+          const orderA = a.order ? (Node.toJS(a.order) as number) : Number.MAX_SAFE_INTEGER
+          const orderB = b.order ? (Node.toJS(b.order) as number) : Number.MAX_SAFE_INTEGER
+          return orderA - orderB
+        }),
+      type: 'group' as const,
+    })),
+    ...ungroupedProperties,
+  ].toSorted((a, b) => {
+    const orderA = a.order ? (Node.toJS(a.order) as number) : Number.MAX_SAFE_INTEGER
+    const orderB = b.order ? (Node.toJS(b.order) as number) : Number.MAX_SAFE_INTEGER
+    return orderA - orderB
+  })
 
-      return {
-        value: object,
-        editor,
-        viewer,
-        order,
-        group,
-      }
+  return combined
+}
+
+export function getGroupProperties(store: IndexedFormula, group: Quad_Subject) {
+  return store
+    .statementsMatching(null, SHACL('group'), group)
+    .filter(
+      (statement) =>
+        statement.subject instanceof BlankNode || statement.subject instanceof NamedNode,
+    )
+    .map((statement) => getProperty(store, statement.subject as BlankNode | NamedNode))
+    .toSorted((a, b) => {
+      const orderA = a.order ? (Node.toJS(a.order) as number) : Number.MAX_SAFE_INTEGER
+      const orderB = b.order ? (Node.toJS(b.order) as number) : Number.MAX_SAFE_INTEGER
+      return orderA - orderB
     })
 }
 
@@ -145,12 +206,15 @@ export function createProperty(
   editor: keyof typeof Dash.editors,
   viewer: keyof typeof Dash.viewers,
   order?: number,
+  group?: BlankNode | NamedNode,
 ) {
   const property = new BlankNode()
   store.add(property, Dash.DASH('editor'), Dash.editors[editor])
   store.add(property, Dash.DASH('viewer'), Dash.viewers[viewer])
   store.add(getNamedNode(shape), SHACL('property'), property)
-
+  if (group !== undefined) {
+    store.add(property, SHACL('group'), group)
+  }
   if (order !== undefined) {
     store.add(property, SHACL('order'), Literal.fromValue<Literal>(order))
   } else {
@@ -165,7 +229,7 @@ export function createProperty(
 }
 
 export function removeProperty(store: IndexedFormula, property: BlankNode | NamedNode) {
-  store.removeMany(property)
+  store.removeMatches(property)
 
   const shapes = store
     .each(null, SHACL('property'), property)
@@ -173,7 +237,7 @@ export function removeProperty(store: IndexedFormula, property: BlankNode | Name
   store.removeMatches(null, SHACL('property'), property)
 
   for (const shape of shapes) {
-    recalculateOrders(store, shape)
+    recalculateOrdersForShape(store, shape)
   }
 }
 

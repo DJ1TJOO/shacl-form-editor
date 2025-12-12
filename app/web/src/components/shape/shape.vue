@@ -36,7 +36,7 @@ defineEmits<{
 }>()
 
 const { currentShape } = injectFileContext()
-const { items: types } = useNamedList({ subject: currentShape.namedNode, predicate: RDF('type') })
+const { items: types } = useNamedList({ subject: currentShape.node, predicate: RDF('type') })
 const type = computed(() => {
   if (types.some((type) => type.value === Shacl.SHACL('NodeShape').value)) return 'node'
   if (types.some((type) => type.value === Shacl.SHACL('PropertyShape').value)) return 'property'
@@ -59,37 +59,33 @@ const {
   isOpen,
 } = useOptionsSidebar(
   Symbol(
-    `shape-options-${currentShape.namedNode.value ? Shacl.getLocalName(currentShape.namedNode.value) : ''}`,
+    `shape-options-${currentShape.node.value ? Shacl.getLocalName(currentShape.node.value) : ''}`,
   ),
-  `Options for ${currentShape.namedNode.value ? Shacl.getLocalName(currentShape.namedNode.value) : ''}`,
+  `Options for ${currentShape.node.value ? Shacl.getLocalName(currentShape.node.value) : ''}`,
   { allowGrouping: false },
 )
 
 const { items: labels } = useLiteralList({
-  subject: currentShape.namedNode,
+  subject: currentShape.node,
   predicate: Shacl.SHACL('name'),
 })
 const { items: descriptions } = useLiteralList({
-  subject: currentShape.namedNode,
+  subject: currentShape.node,
   predicate: Shacl.SHACL('description'),
 })
 const { value: path } = useNamed({
-  subject: currentShape.namedNode,
+  subject: currentShape.node,
   predicate: Shacl.SHACL('path'),
 })
 </script>
 
 <template>
   <DefineOptions>
-    <AdditionalConstraints v-if="type" :type="type" :subject="currentShape.namedNode.value" />
+    <AdditionalConstraints v-if="type" :type="type" :subject="currentShape.node.value" />
     <FieldSeparator v-if="type === 'node'" />
-    <TargetConstraints v-if="type === 'node'" :subject="currentShape.namedNode.value" collapsible />
+    <TargetConstraints v-if="type === 'node'" :subject="currentShape.node.value" collapsible />
     <FieldSeparator v-if="type === 'node'" />
-    <ValidationConstraints
-      v-if="type === 'node'"
-      :subject="currentShape.namedNode.value"
-      collapsible
-    />
+    <ValidationConstraints v-if="type === 'node'" :subject="currentShape.node.value" collapsible />
   </DefineOptions>
   <div
     ref="target"

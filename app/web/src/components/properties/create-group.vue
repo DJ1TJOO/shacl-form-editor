@@ -1,26 +1,48 @@
 <script setup lang="ts">
+import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { LanguageSelect } from '@/components/form-ui/languages'
+import { PrefixInput } from '@/components/form-ui/prefix'
 import { injectOptionsSidebarProviderContext } from '@/components/options-bar'
+import { recalculateOrdersForShape } from '@/components/properties/ordering'
+import { RDF, RDFS, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
+import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { Textarea } from '@/components/ui/textarea'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   ADDED_TO_GROUP_EVENT,
   DEACTIVATE_GROUPED_EVENT,
   REMOVED_FROM_GROUP_EVENT,
 } from '@/composables/use-active'
+import { useFileStore } from '@/composables/use-shacl'
 import { createReusableTemplate } from '@vueuse/core'
-import { GroupIcon, XIcon } from 'lucide-vue-next'
-import { onMounted, ref, watch } from 'vue'
+import { GroupIcon, InfoIcon } from 'lucide-vue-next'
+import { BlankNode, Literal, NamedNode, Node } from 'rdflib'
+import { computed, onMounted, ref, watch } from 'vue'
 
 const id = Symbol('create-group')
 
 const optionsSidebar = injectOptionsSidebarProviderContext()
 const [Define, Reuse] = createReusableTemplate()
 
-// @TODO: change to something useful when components are based on data
-const groupedLabels = ref<string[]>([])
+const store = useFileStore()
+
+const properties = ref<
+  {
+    id: string
+    subject: string
+  }[]
+>([])
+const propertyLabels = computed(() =>
+  properties.value.map(({ id }) => {
+    const path = decodeURIComponent(id.split('-').pop() ?? '')
+    return path ? Shacl.getLocalName(path) : ''
+  }),
+)
 
 function open() {
-  optionsSidebar.open(id, groupedLabels.value.join(', '), Reuse)
+  optionsSidebar.open(id, propertyLabels.value.join(', '), Reuse)
 }
 
 watch(optionsSidebar.currentId, (newId, oldId) => {
@@ -32,14 +54,18 @@ onMounted(() => {
   window.addEventListener(ADDED_TO_GROUP_EVENT, (event) => {
     if (!(event instanceof CustomEvent)) return
 
-    groupedLabels.value.push(event.detail.id)
+    const id = event.detail.id as string
+    const subject = document.getElementById(id)?.getAttribute('data-subject') as string | undefined
+    if (!subject) return
+
+    properties.value.push({ id, subject })
     open()
   })
   window.addEventListener(REMOVED_FROM_GROUP_EVENT, (event) => {
     if (!(event instanceof CustomEvent)) return
 
-    groupedLabels.value = groupedLabels.value.filter((label) => label !== event.detail.id)
-    if (groupedLabels.value.length === 0) {
+    properties.value = properties.value.filter((label) => label !== event.detail.id)
+    if (properties.value.length === 0) {
       optionsSidebar.close(id)
     } else {
       open()
@@ -47,35 +73,142 @@ onMounted(() => {
   })
 })
 
-const title = ref('')
-const inputRef = ref<HTMLInputElement>()
+const iri = ref<string>('')
+const labels = ref<{ value: string; language?: string }[]>([])
+const descriptions = ref<{ value: string; language?: string }[]>([])
+
+const valid = computed(() => {
+  return (
+    iri.value.trim().length > 0 &&
+    labels.value.length > 0 &&
+    labels.value.every((label) => label.value.trim().length > 0)
+  )
+})
 
 function handleCreate() {
-  console.log('create group', title.value.trim())
-}
+  if (!valid.value) return
 
-function handleClear() {
-  title.value = ''
-  inputRef.value?.focus()
+  const group = new NamedNode(iri.value)
+  store.value.add(group, RDF('type'), Shacl.SHACL('PropertyGroup'))
+  for (const label of labels.value) {
+    store.value.add(group, RDFS('label'), new Literal(label.value, label.language))
+  }
+  for (const description of descriptions.value) {
+    store.value.add(group, RDFS('comment'), new Literal(description.value, description.language))
+  }
+  const maxOrder = Math.max(
+    ...store.value
+      .statementsMatching(null, Shacl.SHACL('order'))
+      .map(({ object }) => Node.toJS(object) as number),
+    0,
+  )
+  store.value.add(group, Shacl.SHACL('order'), Literal.fromValue<Literal>(maxOrder + 1))
+
+  for (const [index, propertyId] of properties.value.entries()) {
+    const property = new BlankNode(propertyId.subject)
+    store.value.removeMatches(property, Shacl.SHACL('group'))
+    store.value.removeMatches(property, Shacl.SHACL('order'))
+
+    store.value.add(property, Shacl.SHACL('group'), group)
+    store.value.add(property, Shacl.SHACL('order'), Literal.fromValue<Literal>(index))
+
+    const shape = store.value.any(null, Shacl.SHACL('property'), property)
+    if (!shape || !(shape instanceof NamedNode)) continue
+    recalculateOrdersForShape(store.value, shape)
+  }
+
+  iri.value = ''
+  labels.value = []
+  descriptions.value = []
+
+  optionsSidebar.close(id)
 }
 </script>
 
 <template>
   <Define class="space-y-4">
-    <InputGroup>
-      <InputGroupInput
-        ref="inputRef"
-        v-model="title"
-        placeholder="Group title"
-        @keydown.enter="handleCreate"
-      />
-      <InputGroupAddon v-if="title" align="inline-end">
-        <Button size="icon-sm" variant="ghost" color="danger" @click="handleClear">
-          <XIcon />
-        </Button>
-      </InputGroupAddon>
-    </InputGroup>
-    <Button class="w-full" :disabled="!title.trim()" @click="handleCreate">
+    <FieldSet>
+      <FieldGroup>
+        <Field>
+          <FieldLabel>
+            IRI
+            <Tooltip>
+              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipContent>This is content in a tooltip.</TooltipContent>
+            </Tooltip>
+          </FieldLabel>
+          <PrefixInput v-model="iri" placeholder="ex:MyGroup" />
+        </Field>
+        <Field class="gap-0.5 grid grid-cols-[1fr_--spacing(20)]">
+          <div class="grid grid-cols-subgrid col-span-2">
+            <FieldLabel>
+              Label
+              <Tooltip>
+                <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+                <TooltipContent>This is content in a tooltip.</TooltipContent>
+              </Tooltip>
+            </FieldLabel>
+            <FieldLabel v-if="labels.length > 0"> Language </FieldLabel>
+          </div>
+          <div
+            class="grid grid-cols-subgrid col-span-2"
+            v-for="(label, index) in labels"
+            :key="index"
+          >
+            <InputGroup>
+              <InputGroupInput v-model="label.value" placeholder="My group" />
+              <InputGroupAddon align="inline-end">
+                <RemoveButton @click="labels.splice(index, 1)" />
+              </InputGroupAddon>
+            </InputGroup>
+            <!-- @TODO: show we show error when the same language is used for multiple times -->
+            <LanguageSelect v-model="label.language" />
+          </div>
+          <AddButton
+            @click="
+              labels.push({
+                value: '',
+                language: undefined,
+              })
+            "
+          />
+        </Field>
+        <Field>
+          <FieldLabel>
+            Description
+            <Tooltip>
+              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipContent>This is content in a tooltip.</TooltipContent>
+            </Tooltip>
+          </FieldLabel>
+          <div
+            v-for="(description, index) in descriptions"
+            :key="index"
+            class="space-y-0.5 has-[+div]:mb-2"
+          >
+            <Textarea
+              v-model="description.value"
+              placeholder="This is a group with a description"
+            />
+            <div class="flex items-center gap-0.5">
+              <div class="flex-1">
+                <LanguageSelect v-model="description.language" />
+              </div>
+              <RemoveButton standalone @click="descriptions.splice(index, 1)" />
+            </div>
+          </div>
+          <AddButton
+            @click="
+              descriptions.push({
+                value: '',
+                language: undefined,
+              })
+            "
+          />
+        </Field>
+      </FieldGroup>
+    </FieldSet>
+    <Button class="w-full" :disabled="!valid" @click="handleCreate">
       <GroupIcon />
       Create group
     </Button>

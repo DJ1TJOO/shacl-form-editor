@@ -19,7 +19,11 @@ import { InfoIcon } from 'lucide-vue-next'
 import { Literal } from 'rdflib'
 import { computed } from 'vue'
 
-const { subject } = defineProps<ConstraintProps>()
+const { subject, noLanguages = false } = defineProps<
+  ConstraintProps & {
+    noLanguages?: boolean
+  }
+>()
 
 const { value: minLength } = useLiteral<number>({ subject, predicate: Shacl.SHACL('minLength') })
 const { value: maxLength } = useLiteral<number>({ subject, predicate: Shacl.SHACL('maxLength') })
@@ -152,7 +156,7 @@ const allowedLanguages = computed({
       <AddButton v-else @click="pattern = ''" />
     </Field>
 
-    <Field class="gap-1 grid grid-cols-[1fr_auto]">
+    <Field class="gap-1 grid grid-cols-[1fr_auto]" v-if="!noLanguages">
       <div class="grid grid-cols-subgrid col-span-2">
         <FieldLabel>
           Allowed Languages

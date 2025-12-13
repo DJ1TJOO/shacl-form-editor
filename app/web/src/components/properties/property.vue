@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { PropertyProps } from '@/components/properties'
-import { injectPropertiesListContext } from '@/components/properties/list.vue'
-import { moveProperty, type DraggingExistingProperties } from '@/components/properties/ordering'
+import { injectPropertiesListContext } from '@/components/properties/list/list.vue'
+import {
+  moveProperty,
+  type DraggingExistingProperties,
+} from '@/components/properties/list/ordering'
 import { Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'

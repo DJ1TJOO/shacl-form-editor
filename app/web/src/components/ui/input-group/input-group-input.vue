@@ -4,6 +4,7 @@ import { cn } from '@/lib/cn'
 import { reactiveOmit } from '@vueuse/core'
 import { useForwardPropsEmits } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
+import { ref } from 'vue'
 
 defineOptions({
   inheritAttrs: false,
@@ -20,10 +21,19 @@ const emits = defineEmits<InputEmits>()
 const delegatedProps = reactiveOmit(props, 'class')
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
+
+const inputComponentRef = ref<InstanceType<typeof Input> | null>(null)
+
+defineExpose({
+  get inputRef() {
+    return inputComponentRef.value?.inputRef ?? null
+  },
+})
 </script>
 
 <template>
   <Input
+    ref="inputComponentRef"
     v-bind="{ ...forwarded, ...$attrs }"
     data-slot="input-group-control"
     :class="

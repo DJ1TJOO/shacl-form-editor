@@ -9,36 +9,20 @@ import {
   ValueConstraints,
 } from '@/components/constraints'
 import { Property, type PropertyProps } from '@/components/properties'
-import Base from '@/components/properties/base.vue'
-import { Dash, RDF, Shacl } from '@/components/rdf'
+import Base from '@/components/properties/fields/base.vue'
 import { FieldSeparator } from '@/components/ui/field'
-import { useNamed } from '@/composables/use-shacl'
-import { FileTextIcon } from 'lucide-vue-next'
-import { watch } from 'vue'
+import { TypeOutlineIcon } from 'lucide-vue-next'
 
 const { subject, order, groupOrder, groupSubject } = defineProps<PropertyProps>()
 defineEmits<{
   (e: 'remove'): void
 }>()
-
-const { value: editor } = useNamed({ subject, predicate: Dash.DASH('editor') })
-const { value: viewer } = useNamed({ subject, predicate: Dash.DASH('viewer') })
-const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype') })
-watch(datatype, (newDatatype) => {
-  if (newDatatype === RDF('langString').value) {
-    editor.value = Dash.DASH('TextAreaWithLangEditor').value
-    viewer.value = Dash.DASH('LangStringViewer').value
-  } else {
-    editor.value = Dash.DASH('TextAreaEditor').value
-    viewer.value = Dash.DASH('LiteralViewer').value
-  }
-})
 </script>
 
 <template>
   <Property
-    :icon="FileTextIcon"
-    label="Text Area"
+    :icon="TypeOutlineIcon"
+    label="Rich text"
     :subject="subject"
     :order="order"
     :groupOrder="groupOrder"
@@ -48,10 +32,9 @@ watch(datatype, (newDatatype) => {
     <template #options>
       <CardinalityConstraints :subject="subject" />
       <FieldSeparator />
-      <!-- @TODO: should not allow for non string datatypes, that are known -->
-      <TypeConstraints :subject="subject" collapsible />
+      <TypeConstraints :subject="subject" collapsible fixedDatatype />
       <FieldSeparator />
-      <StringConstraints :subject="subject" collapsible />
+      <StringConstraints :subject="subject" collapsible noLanguages />
       <FieldSeparator />
       <ValueConstraints :subject="subject" collapsible />
       <FieldSeparator />

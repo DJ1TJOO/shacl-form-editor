@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { injectPropertiesListContext } from '@/components/properties/list.vue'
+import { injectPropertiesListContext } from '@/components/properties/list/list.vue'
 import {
   addExistingPropertiesAtTarget,
   addNewPropertiesAtTarget,
@@ -17,7 +17,7 @@ import {
   type DraggingExistingPropertiesInGroup,
   type DraggingExistingPropertiesNotInGroup,
   type PropertiesList,
-} from '@/components/properties/ordering'
+} from '@/components/properties/list/ordering'
 import { RDFS, Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
@@ -31,9 +31,9 @@ import { ChevronDownIcon, GripVerticalIcon, InfoIcon, UngroupIcon, XIcon } from 
 import { BlankNode, Literal, NamedNode } from 'rdflib'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import { computed, nextTick, ref, watch } from 'vue'
-import { AddButton, RemoveButton } from '../form-ui/buttons'
-import { LanguageSelect } from '../form-ui/languages'
-import { Textarea } from '../ui/textarea'
+import { AddButton, RemoveButton } from '../../form-ui/buttons'
+import { LanguageSelect } from '../../form-ui/languages'
+import { Textarea } from '../../ui/textarea'
 
 const { subject, order, properties } = defineProps<{
   subject: NamedNode

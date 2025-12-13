@@ -1,7 +1,16 @@
 <script setup lang="ts">
-import { Group, TextAreaProperty, TextFieldProperty } from '@/components/properties'
-import Empty from '@/components/properties/empty.vue'
-import PropertiesList from '@/components/properties/list.vue'
+import {
+  BooleanProperty,
+  DateProperty,
+  DateTimeProperty,
+  Group,
+  RichTextProperty,
+  TextAreaProperty,
+  TextFieldProperty,
+  URIProperty,
+} from '@/components/properties'
+import Empty from '@/components/properties/list/empty.vue'
+import PropertiesList from '@/components/properties/list/list.vue'
 import {
   addExistingPropertiesAtTarget,
   addNewPropertiesAtTarget,
@@ -14,7 +23,7 @@ import {
   recalculateOrdersForGroup,
   type DraggingExistingPropertiesInGroup,
   type DraggingExistingPropertiesNotInGroup,
-} from '@/components/properties/ordering'
+} from '@/components/properties/list/ordering'
 import { Dash, injectFileContext } from '@/components/rdf'
 import { useNodeProperties } from '@/composables/use-shacl'
 import { useDroppable } from '@vue-dnd-kit/core'
@@ -36,6 +45,31 @@ const propertyEditorTypes: {
     component: TextAreaProperty,
     nodeType: BlankNode,
     editor: ['TextAreaEditor', 'TextAreaWithLangEditor'],
+  },
+  {
+    component: BooleanProperty,
+    nodeType: BlankNode,
+    editor: ['BooleanSelectEditor'],
+  },
+  {
+    component: DateProperty,
+    nodeType: BlankNode,
+    editor: ['DatePickerEditor'],
+  },
+  {
+    component: DateTimeProperty,
+    nodeType: BlankNode,
+    editor: ['DateTimePickerEditor'],
+  },
+  {
+    component: RichTextProperty,
+    nodeType: BlankNode,
+    editor: ['RichTextEditor'],
+  },
+  {
+    component: URIProperty,
+    nodeType: BlankNode,
+    editor: ['URIEditor'],
   },
 ] as const
 

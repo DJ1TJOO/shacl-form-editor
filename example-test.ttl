@@ -5,21 +5,31 @@
 @prefix shacl: <http://www.w3.org/ns/shacl#>.
 @prefix dash: <http://datashapes.org/dash#>.
 
-exa:Name a shacl:PropertyGroup; rdfs:label "Name"; shacl:order 1.
+exa:Name a shacl:PropertyGroup; rdfs:label "Name"; shacl:order 1 .
 
-exa:Person
+exa:Persons
     a schema:Person, shacl:NodeShape;
     shacl:property
             [
-                dash:editor dash:TextAreaEditor;
+                dash:editor dash:BooleanSelectEditor;
                 dash:viewer dash:LiteralViewer;
-                shacl:order 0;
-                shacl:path exa:Address
+                shacl:datatype xsd:boolean;
+                shacl:description "If the person is blind";
+                shacl:name "Is blind";
+                shacl:order 2;
+                shacl:path exa:IsBlind
+            ],
+            [
+                dash:editor dash:DatePickerEditor;
+                dash:viewer dash:LiteralViewer;
+                shacl:datatype xsd:date;
+                shacl:order 3;
+                shacl:path exa:BirthDate
             ],
             [
                 dash:editor dash:TextAreaEditor;
                 dash:viewer dash:LiteralViewer;
-                shacl:order 2;
+                shacl:order 0;
                 shacl:path exa:Address
             ],
             [

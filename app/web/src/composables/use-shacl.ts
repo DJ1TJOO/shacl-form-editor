@@ -253,8 +253,10 @@ export const useLiteral = <T extends string | boolean | number | Date = string>(
     predicate,
     nodeClass: Literal,
     onNodeFromStore: (foundLiteral) => {
-      language.value = foundLiteral.language
-      datatype.value = foundLiteral.datatype
+      ignoreLanguageAndDatatypeUpdates(() => {
+        language.value = foundLiteral.language
+        datatype.value = foundLiteral.datatype
+      })
     },
   })
 
@@ -272,7 +274,7 @@ export const useLiteral = <T extends string | boolean | number | Date = string>(
     },
   })
 
-  watch(
+  const { ignoreUpdates: ignoreLanguageAndDatatypeUpdates } = watchIgnorable(
     () => [language.value, datatype.value] as const,
     ([language, datatype], [oldLanguage, oldDatatype]) => {
       if (oldLanguage === language && oldDatatype === datatype) return

@@ -2,14 +2,16 @@
 import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { Shacl } from '@/components/rdf'
+import { getNamedNode, injectFileContext, RDF, Shacl } from '@/components/rdf'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useLiteral, useNamed } from '@/composables/use-shacl'
-import { InfoIcon } from 'lucide-vue-next'
+import { ForwardIcon, InfoIcon } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const { subject } = defineProps<ConstraintProps>()
 
@@ -28,9 +30,32 @@ const { value: qualifiedValueShapesDisjoint } = useLiteral<boolean>({
 })
 
 const hasShape = computed(() => typeof node !== 'undefined')
+
+const { store } = injectFileContext()
+const router = useRouter()
+const route = useRoute()
+
+const canGoToNode = computed(() => {
+  if (!node.value) {
+    return false
+  }
+  const nodeNode = getNamedNode(node.value)
+  return store.value.holds(nodeNode, RDF('type'), Shacl.SHACL('NodeShape'))
+})
+
+function goToNode() {
+  if (!node.value) return
+  const fileId = typeof route.params.fileId === 'string' ? route.params.fileId : 'MyShaclFile'
+  router.push(`/file/${fileId}/${encodeURIComponent(node.value)}`)
+}
 </script>
 <template>
   <Constraint legend="Shape constraints" :collapsible="collapsible">
+    <Button @click="goToNode" :disabled="!canGoToNode">
+      <ForwardIcon />
+      Go to Node
+    </Button>
+
     <Field>
       <FieldLabel>
         Node

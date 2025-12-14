@@ -47,8 +47,7 @@ const propertyLabels = computed(() =>
 )
 
 function open() {
-  optionsSidebar.title = computed(() => propertyLabels.value.join(', '))
-  optionsSidebar.open(id, Reuse)
+  optionsSidebar.open(id, propertyLabels.value.join(', '), Reuse)
 }
 
 watch(optionsSidebar.currentId, (newId, oldId) => {

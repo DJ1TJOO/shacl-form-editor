@@ -8,9 +8,9 @@ import {
   ValueConstraints,
 } from '@/components/constraints'
 import { Property, type PropertyProps } from '@/components/properties'
-import Base from '@/components/properties/fields/base.vue'
+import Base from '@/components/properties/property/base-fields.vue'
 import { FieldSeparator } from '@/components/ui/field'
-import { TextCursorInputIcon } from 'lucide-vue-next'
+import { ListTodoIcon } from 'lucide-vue-next'
 
 const { subject, order, groupOrder, groupSubject } = defineProps<PropertyProps>()
 defineEmits<{
@@ -20,8 +20,8 @@ defineEmits<{
 
 <template>
   <Property
-    :icon="TextCursorInputIcon"
-    label="Combobox"
+    :icon="ListTodoIcon"
+    label="True / False"
     :subject="subject"
     :order="order"
     :groupOrder="groupOrder"
@@ -31,7 +31,7 @@ defineEmits<{
     <template #options>
       <CardinalityConstraints :subject="subject" />
       <FieldSeparator />
-      <TypeConstraints :subject="subject" collapsible noDatatype />
+      <TypeConstraints :subject="subject" collapsible fixedDatatype />
       <FieldSeparator />
       <ValueConstraints :subject="subject" collapsible />
       <FieldSeparator />

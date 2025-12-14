@@ -9,7 +9,7 @@ import {
   ValueConstraints,
 } from '@/components/constraints'
 import { Property, type PropertyProps } from '@/components/properties'
-import Base from '@/components/properties/fields/base.vue'
+import Base from '@/components/properties/property/base-fields.vue'
 import { Dash, Shacl } from '@/components/rdf'
 import { FieldSeparator } from '@/components/ui/field'
 import { useNamed, useNamedList } from '@/composables/use-shacl'

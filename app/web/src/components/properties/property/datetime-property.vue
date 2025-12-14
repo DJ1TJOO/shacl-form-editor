@@ -3,15 +3,15 @@ import {
   AdditionalConstraints,
   CardinalityConstraints,
   PairConstraints,
-  StringConstraints,
+  RangeConstraints,
   TypeConstraints,
   ValidationConstraints,
   ValueConstraints,
 } from '@/components/constraints'
 import { Property, type PropertyProps } from '@/components/properties'
-import Base from '@/components/properties/fields/base.vue'
+import Base from '@/components/properties/property/base-fields.vue'
 import { FieldSeparator } from '@/components/ui/field'
-import { TypeOutlineIcon } from 'lucide-vue-next'
+import { CalendarClockIcon } from 'lucide-vue-next'
 
 const { subject, order, groupOrder, groupSubject } = defineProps<PropertyProps>()
 defineEmits<{
@@ -21,8 +21,8 @@ defineEmits<{
 
 <template>
   <Property
-    :icon="TypeOutlineIcon"
-    label="Rich text"
+    :icon="CalendarClockIcon"
+    label="DateTime"
     :subject="subject"
     :order="order"
     :groupOrder="groupOrder"
@@ -34,11 +34,11 @@ defineEmits<{
       <FieldSeparator />
       <TypeConstraints :subject="subject" collapsible fixedDatatype />
       <FieldSeparator />
-      <StringConstraints :subject="subject" collapsible noLanguages />
+      <RangeConstraints :subject="subject" collapsible />
       <FieldSeparator />
       <ValueConstraints :subject="subject" collapsible />
       <FieldSeparator />
-      <PairConstraints :subject="subject" collapsible noLessThan />
+      <PairConstraints :subject="subject" collapsible />
       <FieldSeparator />
       <ValidationConstraints :subject="subject" collapsible />
       <FieldSeparator />

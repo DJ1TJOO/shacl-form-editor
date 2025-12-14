@@ -7,8 +7,8 @@ import {
   Group,
   RichTextProperty,
   SelectProperty,
-  SubnodeProperty,
-  SubpropertyProperty,
+  SubNodeProperty,
+  SubProperty,
   TextAreaProperty,
   TextFieldProperty,
   URIProperty,
@@ -86,12 +86,12 @@ const propertyEditorTypes: {
     editor: ['EnumSelectEditor', 'InstancesSelectEditor', 'SubClassEditor'],
   },
   {
-    component: SubnodeProperty,
+    component: SubNodeProperty,
     nodeType: BlankNode,
     editor: ['DetailsEditor'],
   },
   {
-    component: SubpropertyProperty,
+    component: SubProperty,
     nodeType: NamedNode,
     editor: [],
   },
@@ -109,7 +109,7 @@ function getPropertyEditorType(property: {
 
     if (typeof property.editor === 'undefined') {
       if (type.editor.length !== 0) continue
-      return SubpropertyProperty
+      return SubProperty
     }
 
     if (!type.editor.map((editor) => Dash.editors[editor].value).includes(property.editor.value))

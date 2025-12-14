@@ -3,14 +3,14 @@ import {
   AdditionalConstraints,
   CardinalityConstraints,
   PairConstraints,
+  ShapeConstraints,
   TypeConstraints,
   ValidationConstraints,
-  ValueConstraints,
 } from '@/components/constraints'
 import { Property, type PropertyProps } from '@/components/properties'
-import Base from '@/components/properties/fields/base.vue'
+import Base from '@/components/properties/property/base-fields.vue'
 import { FieldSeparator } from '@/components/ui/field'
-import { Link2Icon } from 'lucide-vue-next'
+import { DiamondIcon } from 'lucide-vue-next'
 
 const { subject, order, groupOrder, groupSubject } = defineProps<PropertyProps>()
 defineEmits<{
@@ -20,8 +20,8 @@ defineEmits<{
 
 <template>
   <Property
-    :icon="Link2Icon"
-    label="URI"
+    :icon="DiamondIcon"
+    label="Node"
     :subject="subject"
     :order="order"
     :groupOrder="groupOrder"
@@ -31,9 +31,9 @@ defineEmits<{
     <template #options>
       <CardinalityConstraints :subject="subject" />
       <FieldSeparator />
-      <TypeConstraints :subject="subject" collapsible fixedNodeKind noClasses />
+      <ShapeConstraints :subject="subject" collapsible />
       <FieldSeparator />
-      <ValueConstraints :subject="subject" collapsible />
+      <TypeConstraints :subject="subject" collapsible />
       <FieldSeparator />
       <PairConstraints :subject="subject" collapsible noLessThan />
       <FieldSeparator />

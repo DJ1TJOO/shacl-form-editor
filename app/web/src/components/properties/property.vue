@@ -12,6 +12,7 @@ import { useFileStore, useNamed } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { useDraggable } from '@vue-dnd-kit/core'
 import { ChevronDownIcon, GripVerticalIcon, XIcon, type LucideIcon } from 'lucide-vue-next'
+import { NamedNode } from 'rdflib'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import { computed, nextTick, ref, toValue, watch } from 'vue'
 
@@ -29,7 +30,9 @@ defineEmits<{
 const store = useFileStore()
 const { node: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })
 const localName = computed(
-  () => Shacl.getLocalName(path.value) ?? Shacl.getLocalName(subject.value),
+  () =>
+    Shacl.getLocalName(path.value) ??
+    (subject instanceof NamedNode ? Shacl.getLocalName(subject.value) : undefined),
 )
 
 const isOpen = ref(false)

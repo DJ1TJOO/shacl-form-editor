@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { PropertyProps } from '@/components/properties'
-import { injectPropertiesListContext } from '@/components/properties/list.vue'
-import { moveProperty, type DraggingExistingProperties } from '@/components/properties/ordering'
+import { injectPropertiesListContext } from '@/components/properties/list/list.vue'
+import {
+  moveProperty,
+  type DraggingExistingProperties,
+} from '@/components/properties/list/ordering'
 import { Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
@@ -9,6 +12,7 @@ import { useFileStore, useNamed } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { useDraggable } from '@vue-dnd-kit/core'
 import { ChevronDownIcon, GripVerticalIcon, XIcon, type LucideIcon } from 'lucide-vue-next'
+import { NamedNode } from 'rdflib'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import { computed, nextTick, ref, toValue, watch } from 'vue'
 
@@ -25,7 +29,11 @@ defineEmits<{
 
 const store = useFileStore()
 const { node: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })
-const localName = computed(() => Shacl.getLocalName(path.value))
+const localName = computed(
+  () =>
+    Shacl.getLocalName(path.value) ??
+    (subject instanceof NamedNode ? Shacl.getLocalName(subject.value) : undefined),
+)
 
 const isOpen = ref(false)
 const { listOpen, indeterminate } = injectPropertiesListContext()
@@ -42,9 +50,13 @@ const {
   target,
   Define: DefineOptions,
   isOpen: isOpenOptions,
-} = useOptionsSidebar(Symbol('property-options'), 'Options for ' + localName.value, {
-  allowGrouping: typeof groupOrder === 'undefined',
-})
+} = useOptionsSidebar(
+  Symbol('property-options-' + encodeURIComponent(subject.value)),
+  computed(() => 'Options for ' + localName.value),
+  {
+    allowGrouping: typeof groupOrder === 'undefined',
+  },
+)
 
 const propertyId = computed(() => {
   const pathValue = toValue(path)

@@ -2,15 +2,16 @@
 import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { Shacl } from '@/components/rdf'
+import { Shacl, Xsd } from '@/components/rdf'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { booleanFromCheckboxValue, useNamedList } from '@/composables/use-shacl'
+import { booleanFromCheckboxValue, useNamed, useNamedList } from '@/composables/use-shacl'
 import { InfoIcon } from 'lucide-vue-next'
 import { NamedNode } from 'rdflib'
+import { computed } from 'vue'
 
-const { subject } = defineProps<ConstraintProps>()
+const { subject, noLessThan = false } = defineProps<ConstraintProps & { noLessThan?: boolean }>()
 
 const { items: equals } = useNamedList({ subject, predicate: Shacl.SHACL('equals') })
 const { items: disjoint } = useNamedList({ subject, predicate: Shacl.SHACL('disjoint') })
@@ -22,6 +23,11 @@ const { items: lessThan } = useNamedList({
 const { items: lessThanOrEquals } = useNamedList({
   subject,
   predicate: Shacl.SHACL('lessThanOrEquals'),
+})
+
+const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype') })
+const canHaveLessThanConstraints = computed(() => {
+  return !datatype.value || (!Xsd.isString(datatype.value) && !Xsd.isBoolean(datatype.value))
 })
 </script>
 
@@ -63,7 +69,10 @@ const { items: lessThanOrEquals } = useNamedList({
       <AddButton @click="disjoint.push({ value: '', node: new NamedNode(':') })" />
     </Field>
 
-    <Field class="gap-x-1 gap-y-0.5 grid grid-cols-[1fr_auto]">
+    <Field
+      class="gap-x-1 gap-y-0.5 grid grid-cols-[1fr_auto]"
+      v-if="canHaveLessThanConstraints && !noLessThan"
+    >
       <div class="grid grid-cols-subgrid col-span-2">
         <FieldLabel>
           Less than

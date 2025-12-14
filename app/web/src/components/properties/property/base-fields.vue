@@ -9,11 +9,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useLiteral, useLiteralList, useNamed } from '@/composables/use-shacl'
 import { InfoIcon } from 'lucide-vue-next'
-import { Literal } from 'rdflib'
+import { Literal, NamedNode } from 'rdflib'
 import type { BlankNode } from 'rdflib/lib/tf-types'
 
 const { subject } = defineProps<{
-  subject: BlankNode
+  subject: BlankNode | NamedNode
 }>()
 
 const { value: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })

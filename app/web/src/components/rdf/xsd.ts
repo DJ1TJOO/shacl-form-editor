@@ -1,5 +1,6 @@
 import { getNamedNode, RDF } from '@/components/rdf'
-import { NamedNode, Namespace } from 'rdflib'
+import { Namespace } from 'rdflib'
+import type { NamedNode } from 'rdflib/lib/tf-types'
 
 export const XSD = Namespace('http://www.w3.org/2001/XMLSchema#')
 
@@ -15,7 +16,7 @@ export const dateTime = XSD('dateTime')
 
 export function isString(iri: string | NamedNode): boolean {
   const iriNode = getNamedNode(iri)
-  const stringDataTypes = [XSD('string'), RDF('langString')]
+  const stringDataTypes = [XSD('string'), RDF('langString'), RDF('html')]
   return stringDataTypes.some((type) => iriNode.equals(type))
 }
 
@@ -28,6 +29,16 @@ export function isDate(iri: string | NamedNode): boolean {
   const iriNode = getNamedNode(iri)
   const dateDataTypes = [XSD('dateTime'), XSD('date')]
   return dateDataTypes.some((type) => iriNode.equals(type))
+}
+
+export function isDateOnly(iri: string | NamedNode): boolean {
+  const iriNode = getNamedNode(iri)
+  return iriNode.equals(XSD('date'))
+}
+
+export function isDateTime(iri: string | NamedNode): boolean {
+  const iriNode = getNamedNode(iri)
+  return iriNode.equals(XSD('dateTime'))
 }
 
 export function isInteger(iri: string | NamedNode): boolean {

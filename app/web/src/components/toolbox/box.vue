@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { injectFileContext, RDF, Shacl } from '@/components/rdf'
+import { getNamedNode, injectFileContext, RDF, Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useNamedList } from '@/composables/use-shacl'
@@ -15,12 +15,11 @@ import {
   ListTodoIcon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
-  SquareIcon,
   TextCursorInputIcon,
   TypeIcon,
   TypeOutlineIcon,
 } from 'lucide-vue-next'
-import type { BlankNode, NamedNode } from 'rdflib'
+import { BlankNode, NamedNode } from 'rdflib'
 import type { Component } from 'vue'
 import { computed, ref } from 'vue'
 import BoxItem from './box-item.vue'
@@ -62,6 +61,7 @@ const items: ToolboxItem[] = [
         'LiteralViewer',
         order,
         group,
+        Xsd.string,
       )
     },
   },
@@ -78,20 +78,155 @@ const items: ToolboxItem[] = [
         'LiteralViewer',
         order,
         group,
+        Xsd.string,
       )
     },
   },
-  { icon: TextCursorInputIcon, label: 'Combobox', tooltip: 'Add to library' },
-  { icon: ListTodoIcon, label: 'True / False', tooltip: 'Add to library' },
-  { icon: CalendarIcon, label: 'Date', tooltip: 'Add to library' },
-  { icon: CalendarClockIcon, label: 'DateTime', tooltip: 'Add to library' },
-  { icon: ListIndentIncreaseIcon, label: 'Select', tooltip: 'Add to library' },
-  { icon: ListIndentIncreaseIcon, label: 'Instance select', tooltip: 'Add to library' },
-  { icon: TypeOutlineIcon, label: 'Rich text', tooltip: 'Add to library' },
-  { icon: SquareIcon, label: 'SubClassEditor?', tooltip: 'Add to library' },
-  { icon: Link2Icon, label: 'URI', tooltip: 'Add to library' },
-  { icon: DiamondIcon, label: 'Subnode', tooltip: 'Add to library' },
-  { icon: CircleIcon, label: 'Subproperty', tooltip: 'Add to library' },
+  {
+    icon: TextCursorInputIcon,
+    label: 'Combobox',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'AutoCompleteEditor',
+        'LabelViewer',
+        order,
+        group,
+      )
+    },
+  },
+  {
+    icon: ListTodoIcon,
+    label: 'True / False',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'BooleanSelectEditor',
+        'LiteralViewer',
+        order,
+        group,
+        Xsd.boolean,
+      )
+    },
+  },
+  {
+    icon: CalendarIcon,
+    label: 'Date',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'DatePickerEditor',
+        'LiteralViewer',
+        order,
+        group,
+        Xsd.date,
+      )
+    },
+  },
+  {
+    icon: CalendarClockIcon,
+    label: 'DateTime',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'DateTimePickerEditor',
+        'LiteralViewer',
+        order,
+        group,
+        Xsd.dateTime,
+      )
+    },
+  },
+  {
+    icon: ListIndentIncreaseIcon,
+    label: 'Select',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'EnumSelectEditor',
+        'LiteralViewer',
+        order,
+        group,
+      )
+    },
+  },
+  {
+    icon: TypeOutlineIcon,
+    label: 'Rich text',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'RichTextEditor',
+        'HTMLViewer',
+        order,
+        group,
+        RDF('html'),
+      )
+    },
+  },
+  {
+    icon: Link2Icon,
+    label: 'URI',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'URIEditor',
+        'LiteralViewer',
+        order,
+        group,
+        undefined,
+        Shacl.SHACL('IRI'),
+      )
+    },
+  },
+  {
+    icon: DiamondIcon,
+    label: 'Subnode',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'DetailsEditor',
+        'DetailsViewer',
+        order,
+        group,
+      )
+    },
+  },
+  {
+    icon: CircleIcon,
+    label: 'Subproperty',
+    tooltip: 'Add to library',
+    create: () => {
+      if (!store.value || !currentShape.node.value) return
+
+      const property = new NamedNode('http://example.com/TemporaryProperty')
+      store.value.add(getNamedNode(currentShape.node.value), Shacl.SHACL('property'), property)
+    },
+  },
 ]
 
 const searchQuery = ref('')

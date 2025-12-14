@@ -3,18 +3,17 @@ import {
   AdditionalConstraints,
   CardinalityConstraints,
   PairConstraints,
-  RangeConstraints,
-  StringConstraints,
+  RootClassConstraints,
   TypeConstraints,
   ValidationConstraints,
   ValueConstraints,
 } from '@/components/constraints'
 import { Property, type PropertyProps } from '@/components/properties'
-import Base from '@/components/properties/base.vue'
-import { Dash, RDF, Shacl, Xsd } from '@/components/rdf'
+import Base from '@/components/properties/property/base-fields.vue'
+import { Dash, Shacl } from '@/components/rdf'
 import { FieldSeparator } from '@/components/ui/field'
-import { useNamed } from '@/composables/use-shacl'
-import { TypeIcon } from 'lucide-vue-next'
+import { useNamed, useNamedList } from '@/composables/use-shacl'
+import { ListIndentIncreaseIcon } from 'lucide-vue-next'
 import { computed, watch } from 'vue'
 
 const { subject, order, groupOrder, groupSubject } = defineProps<PropertyProps>()
@@ -24,29 +23,36 @@ defineEmits<{
 
 const { value: editor } = useNamed({ subject, predicate: Dash.DASH('editor') })
 const { value: viewer } = useNamed({ subject, predicate: Dash.DASH('viewer') })
-const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype') })
-watch(datatype, (newDatatype) => {
-  if (newDatatype === RDF('langString').value) {
-    editor.value = Dash.DASH('TextFieldWithLangEditor').value
-    viewer.value = Dash.DASH('LangStringViewer').value
-  } else {
-    editor.value = Dash.DASH('TextFieldEditor').value
-    viewer.value = Dash.DASH('LiteralViewer').value
-  }
+const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
+const { value: rootClass } = useNamed({ subject, predicate: Dash.DASH('rootClass') })
+
+const hasClass = computed(() => classes.length > 0)
+const hasRootClass = computed(() => typeof rootClass.value !== 'undefined')
+
+const label = computed(() => {
+  if (hasClass.value) return 'Instance select'
+  if (hasRootClass.value) return 'SubClass'
+  return 'Select'
 })
 
-const canHaveRangeConstraints = computed(() => {
-  return !datatype.value || !Xsd.isString(datatype.value)
-})
-const canHaveStringConstraints = computed(() => {
-  return !datatype.value || (!Xsd.isDecimal(datatype.value) && !Xsd.isInteger(datatype.value))
+watch([hasClass, hasRootClass], ([hasClassValue, hasRootClassValue]) => {
+  if (hasClassValue) {
+    editor.value = Dash.DASH('InstancesSelectEditor').value
+    viewer.value = Dash.DASH('LabelViewer').value
+  } else if (hasRootClassValue) {
+    editor.value = Dash.DASH('SubClassEditor').value
+    viewer.value = Dash.DASH('LabelViewer').value
+  } else {
+    editor.value = Dash.DASH('EnumSelectEditor').value
+    viewer.value = Dash.DASH('LiteralViewer').value
+  }
 })
 </script>
 
 <template>
   <Property
-    :icon="TypeIcon"
-    label="Text Field"
+    :icon="ListIndentIncreaseIcon"
+    :label="label"
     :subject="subject"
     :order="order"
     :groupOrder="groupOrder"
@@ -57,14 +63,12 @@ const canHaveStringConstraints = computed(() => {
       <CardinalityConstraints :subject="subject" />
       <FieldSeparator />
       <TypeConstraints :subject="subject" collapsible />
-      <FieldSeparator v-if="canHaveStringConstraints" />
-      <StringConstraints v-if="canHaveStringConstraints" :subject="subject" collapsible />
-      <FieldSeparator v-if="canHaveRangeConstraints" />
-      <RangeConstraints v-if="canHaveRangeConstraints" :subject="subject" collapsible />
+      <FieldSeparator />
+      <RootClassConstraints :subject="subject" collapsible />
       <FieldSeparator />
       <ValueConstraints :subject="subject" collapsible />
       <FieldSeparator />
-      <PairConstraints :subject="subject" collapsible />
+      <PairConstraints :subject="subject" collapsible noLessThan />
       <FieldSeparator />
       <ValidationConstraints :subject="subject" collapsible />
       <FieldSeparator />

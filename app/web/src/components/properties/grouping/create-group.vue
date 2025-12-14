@@ -6,7 +6,7 @@ import { injectOptionsSidebarProviderContext } from '@/components/options-bar'
 import {
   createOrderingGapAtTarget,
   recalculateOrdersForShape,
-} from '@/components/properties/ordering'
+} from '@/components/properties/list/ordering'
 import { RDF, RDFS, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'

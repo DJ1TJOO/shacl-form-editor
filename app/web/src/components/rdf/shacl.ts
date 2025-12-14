@@ -1,8 +1,8 @@
-import { recalculateOrdersForShape } from '@/components/properties/ordering'
+import { recalculateOrdersForShape } from '@/components/properties/list/ordering'
 import { Dash, getNamedNode, RDF } from '@/components/rdf'
 import type { IndexedFormula } from 'rdflib'
 import { BlankNode, graph, Literal, NamedNode, Namespace, Node, parse } from 'rdflib'
-import type { Quad_Subject } from 'rdflib/lib/tf-types'
+import type { NamedNode as NamedNodeType, Quad_Subject } from 'rdflib/lib/tf-types'
 
 export const SHACL = Namespace('http://www.w3.org/ns/shacl#')
 export const nodeKinds = [
@@ -14,7 +14,7 @@ export const nodeKinds = [
   SHACL('IRIOrLiteral'),
 ] as const
 
-export function getLocalName(iri?: string | NamedNode) {
+export function getLocalName(iri?: string | NamedNodeType) {
   if (!iri) return undefined
   const iriNode = getNamedNode(iri)
   const iriValue = iriNode.value
@@ -32,7 +32,7 @@ export function getLocalName(iri?: string | NamedNode) {
 
 export function addShape(
   store: IndexedFormula,
-  iri: string | NamedNode,
+  iri: string | NamedNodeType,
   type: 'node' | 'property',
 ) {
   store.add(
@@ -42,7 +42,7 @@ export function addShape(
   )
 }
 
-export function removeShape(store: IndexedFormula, iri: string | NamedNode) {
+export function removeShape(store: IndexedFormula, iri: string | NamedNodeType) {
   const properties = store.each(getNamedNode(iri), SHACL('property'))
   for (const property of properties) {
     if (!(property instanceof BlankNode)) continue
@@ -197,7 +197,7 @@ export function getGroupProperties(store: IndexedFormula, group: Quad_Subject) {
     })
 }
 
-export function shapeExists(store: IndexedFormula, iri: string | NamedNode) {
+export function shapeExists(store: IndexedFormula, iri: string | NamedNodeType) {
   return Boolean(
     store.holds(getNamedNode(iri), RDF('type'), SHACL('NodeShape')) ||
       store.holds(getNamedNode(iri), RDF('type'), SHACL('PropertyShape')),
@@ -222,15 +222,23 @@ export function getMaxOrderOfNode(store: IndexedFormula, shape: Quad_Subject) {
 
 export function createProperty(
   store: IndexedFormula,
-  shape: string | NamedNode,
+  shape: string | NamedNodeType,
   editor: keyof typeof Dash.editors,
   viewer: keyof typeof Dash.viewers,
   order?: number,
-  group?: BlankNode | NamedNode,
+  group?: BlankNode | NamedNodeType,
+  datatype?: string | NamedNodeType,
+  nodeKind?: string | NamedNodeType,
 ) {
   const property = new BlankNode()
   store.add(property, Dash.DASH('editor'), Dash.editors[editor])
   store.add(property, Dash.DASH('viewer'), Dash.viewers[viewer])
+  if (datatype !== undefined) {
+    store.add(property, SHACL('datatype'), getNamedNode(datatype))
+  }
+  if (nodeKind !== undefined) {
+    store.add(property, SHACL('nodeKind'), getNamedNode(nodeKind))
+  }
   store.add(getNamedNode(shape), SHACL('property'), property)
   if (group !== undefined) {
     store.add(property, SHACL('group'), group)
@@ -246,9 +254,11 @@ export function createProperty(
       Literal.fromValue<Literal>(maxOrder !== null ? maxOrder + 1 : 0),
     )
   }
+
+  return property
 }
 
-export function removeProperty(store: IndexedFormula, property: BlankNode | NamedNode) {
+export function removeProperty(store: IndexedFormula, property: BlankNode | NamedNodeType) {
   store.removeMatches(property)
 
   const shapes = store

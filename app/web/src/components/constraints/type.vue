@@ -17,8 +17,20 @@ import { useNamed, useNamedList } from '@/composables/use-shacl'
 import { InfoIcon } from 'lucide-vue-next'
 import { NamedNode } from 'rdflib'
 
-const { subject } = defineProps<ConstraintProps>()
-
+const {
+  subject,
+  fixedDatatype,
+  fixedNodeKind = false,
+  noClasses = false,
+  noDatatype = false,
+} = defineProps<
+  ConstraintProps & {
+    fixedDatatype?: boolean
+    fixedNodeKind?: boolean
+    noClasses?: boolean
+    noDatatype?: boolean
+  }
+>()
 const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype') })
 const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
 const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind') })
@@ -26,7 +38,7 @@ const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind
 
 <template>
   <Constraint legend="Type constraints" :collapsible="collapsible">
-    <Field>
+    <Field v-if="!noDatatype">
       <FieldLabel>
         Datatype
         <Tooltip>
@@ -38,14 +50,15 @@ const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind
       <AddButton
         v-if="typeof datatype === 'undefined'"
         @click="datatype = 'http://www.w3.org/2001/XMLSchema#string'"
+        :disabled="fixedDatatype"
       />
       <!-- @TODO: fix when on blur is called in the prefix input the value is set to undefined, this also happens when a user tries to click a option from the list -->
-      <PrefixInput v-model="datatype" v-else>
-        <RemoveButton @click="datatype = undefined" />
+      <PrefixInput v-model="datatype" v-else :disabled="fixedDatatype">
+        <RemoveButton @click="datatype = undefined" :disabled="fixedDatatype" />
       </PrefixInput>
     </Field>
 
-    <Field>
+    <Field v-if="!noClasses">
       <FieldLabel>
         Class
         <Tooltip>
@@ -71,15 +84,16 @@ const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind
       <AddButton
         v-if="typeof nodeKind === 'undefined'"
         @click="nodeKind = Shacl.nodeKinds[0].value"
+        :disabled="fixedNodeKind"
       />
-      <Select v-model="nodeKind" v-else>
+      <Select v-model="nodeKind" v-else :disabled="fixedNodeKind">
         <InputGroup>
           <InputGroupSelectTrigger>
             <SelectValue />
           </InputGroupSelectTrigger>
           <InputGroupAddon align="inline-end">
             <InputGroupSelectTriggerIcon />
-            <RemoveButton @click="nodeKind = undefined" />
+            <RemoveButton @click="nodeKind = undefined" :disabled="fixedNodeKind" />
           </InputGroupAddon>
         </InputGroup>
         <SelectContent>

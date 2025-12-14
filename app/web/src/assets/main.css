@@ -46,3 +46,19 @@
     @apply bg-background-highlighted text-text;
   }
 }
+
+input[type='date'].hide-date-picker::-webkit-calendar-picker-indicator,
+input[type='datetime-local'].hide-date-picker::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+/* https://gist.github.com/geekelo/1968b7f56d6275867c54a53fb1c53306 */
+/* @TODO: Is not working in Firefox */
+input[type='date'].hide-date-picker,
+input[type='datetime-local'].hide-date-picker {
+  -moz-appearance: textfield;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+}

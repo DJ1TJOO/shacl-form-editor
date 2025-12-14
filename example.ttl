@@ -122,7 +122,6 @@
   ], [
     sh:path dct:license ;
     sh:nodeKind sh:IRI ;
-    sh:defaultValue <http://purl.org/NET/rdflicense/cc-zero1.0> ;
     sh:name "License"@en ;
     sh:description "A legal document under which the resource is made available."@en ;
     sh:maxCount 1 ;
@@ -139,14 +138,6 @@
     dash:editor dash:TextFieldEditor ;
     dash:viewer dash:LiteralViewer ;
     sh:order 4 ;
-  ], [
-    sh:path dct:license ;
-    sh:nodeKind sh:IRI ;
-    sh:maxCount 1 ;
-    dash:editor dash:URIEditor ;
-    dash:viewer dash:LabelViewer ;
-    sh:defaultValue <http://purl.org/NET/rdflicense/cc-zero1.0> ;
-    sh:order 6 ;
   ], [
     sh:path dct:rights ;
     sh:nodeKind sh:IRI ;

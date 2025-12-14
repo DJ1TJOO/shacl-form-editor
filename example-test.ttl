@@ -1,3 +1,4 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 @prefix schema: <http://schema.org/>.
@@ -5,22 +6,89 @@
 @prefix shacl: <http://www.w3.org/ns/shacl#>.
 @prefix dash: <http://datashapes.org/dash#>.
 
-exa:Name a shacl:PropertyGroup; rdfs:label "Name"; shacl:order 1.
+exa:Name a shacl:PropertyGroup; rdfs:label "Name"; shacl:order 0 .
 
 exa:Person
     a schema:Person, shacl:NodeShape;
     shacl:property
             [
-                dash:editor dash:TextAreaEditor;
+                dash:editor dash:AutoCompleteEditor;
+                dash:viewer dash:LabelViewer;
+                shacl:class schema:Country;
+                shacl:maxCount 1;
+                shacl:minCount 1;
+                shacl:order 2;
+                shacl:path exa:BirthCountry
+            ],
+            [
+                dash:editor dash:BooleanSelectEditor;
                 dash:viewer dash:LiteralViewer;
-                shacl:order 0;
-                shacl:path exa:Address
+                shacl:datatype xsd:boolean;
+                shacl:description "If the person is blind";
+                shacl:name "Is blind";
+                shacl:order 8;
+                shacl:path exa:IsBlind
+            ],
+            [
+                dash:editor dash:DatePickerEditor;
+                dash:viewer dash:LiteralViewer;
+                shacl:datatype xsd:date;
+                shacl:maxCount 1;
+                shacl:minCount 1;
+                shacl:minExclusive "2024-12-10"^^xsd:date;
+                shacl:order 3;
+                shacl:path exa:BirthDate
+            ],
+            [
+                dash:editor dash:DetailsEditor;
+                dash:viewer dash:DetailsViewer;
+                shacl:node schema:Address;
+                shacl:order 1;
+                shacl:path exa:Address;
+                shacl:qualifiedValueShapesDisjoint false
+            ],
+            [
+                dash:editor dash:EnumSelectEditor;
+                dash:viewer dash:LiteralViewer;
+                shacl:datatype xsd:string;
+                shacl:in "female", "male", "private", "unknown";
+                shacl:maxCount 1;
+                shacl:minCount 1;
+                shacl:order 4;
+                shacl:path exa:Gender
+            ],
+            [
+                dash:editor dash:InstancesSelectEditor;
+                dash:viewer dash:LabelViewer;
+                shacl:class schema:children;
+                shacl:order 9;
+                shacl:path exa:Children
+            ],
+            [
+                dash:editor dash:RichTextEditor;
+                dash:viewer dash:HTMLViewer;
+                shacl:datatype rdf:html;
+                shacl:order 6;
+                shacl:path exa:AboutPage
             ],
             [
                 dash:editor dash:TextAreaEditor;
                 dash:viewer dash:LiteralViewer;
-                shacl:order 2;
-                shacl:path exa:Address
+                shacl:datatype xsd:string;
+                shacl:description
+                    "Short description that provides a comprehensive summary of the persons academic and professional history"@en;
+                shacl:name "Curriculum Vitae"@en;
+                shacl:order 5;
+                shacl:path exa:CV
+            ],
+            [
+                dash:editor dash:TextFieldEditor;
+                dash:viewer dash:LiteralViewer;
+                shacl:datatype xsd:string;
+                shacl:description "";
+                shacl:group exa:Name;
+                shacl:order 1;
+                shacl:path exa:LastName
             ],
             [
                 dash:editor dash:TextFieldEditor;
@@ -37,10 +105,9 @@ exa:Person
                 shacl:path exa:FirstName
             ],
             [
-                dash:editor dash:TextFieldEditor;
+                dash:editor dash:URIEditor;
                 dash:viewer dash:LiteralViewer;
-                shacl:description "";
-                shacl:group exa:Name;
-                shacl:order 1;
-                shacl:path exa:LastName
+                shacl:nodeKind shacl:IRI;
+                shacl:order 7;
+                shacl:path exa:Website
             ].

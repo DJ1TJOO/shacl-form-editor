@@ -91,7 +91,10 @@ export const useGlobalName = ({
   store?: Ref<IndexedFormula>
 }) => {
   const store = customStore ?? useFileStore()
-  const node = ref<NamedNode | undefined>()
+  const initialValueString = toValue(initialValue)
+  const node = ref<NamedNode | undefined>(
+    initialValueString ? new NamedNode(initialValueString) : undefined,
+  )
 
   const value = computed({
     get() {
@@ -125,15 +128,6 @@ export const useGlobalName = ({
       node.value = newNode
     },
   })
-
-  watch(
-    () => toValue(initialValue),
-    (initialValue) => {
-      if (typeof initialValue === 'undefined') return
-      value.value = initialValue
-    },
-    { immediate: true },
-  )
 
   return { value, node }
 }
@@ -253,8 +247,10 @@ export const useLiteral = <T extends string | boolean | number | Date = string>(
     predicate,
     nodeClass: Literal,
     onNodeFromStore: (foundLiteral) => {
-      language.value = foundLiteral.language
-      datatype.value = foundLiteral.datatype
+      ignoreLanguageAndDatatypeUpdates(() => {
+        language.value = foundLiteral.language
+        datatype.value = foundLiteral.datatype
+      })
     },
   })
 
@@ -272,7 +268,7 @@ export const useLiteral = <T extends string | boolean | number | Date = string>(
     },
   })
 
-  watch(
+  const { ignoreUpdates: ignoreLanguageAndDatatypeUpdates } = watchIgnorable(
     () => [language.value, datatype.value] as const,
     ([language, datatype], [oldLanguage, oldDatatype]) => {
       if (oldLanguage === language && oldDatatype === datatype) return

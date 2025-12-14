@@ -16,7 +16,7 @@ import { cn } from '@/lib/cn'
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-vue-next'
 import { Primitive, type PrimitiveProps } from 'reka-ui'
 import { ref, type HTMLAttributes, type Ref } from 'vue'
-import CreateGroup from './create-group.vue'
+import CreateGroup from '../grouping/create-group.vue'
 
 const props = withDefaults(defineProps<PrimitiveProps & { class?: HTMLAttributes['class'] }>(), {
   as: 'div',

@@ -7,7 +7,6 @@ import {
   Group,
   RichTextProperty,
   SelectProperty,
-  SubClassProperty,
   SubnodeProperty,
   SubpropertyProperty,
   TextAreaProperty,
@@ -84,12 +83,7 @@ const propertyEditorTypes: {
   {
     component: SelectProperty,
     nodeType: BlankNode,
-    editor: ['EnumSelectEditor', 'InstancesSelectEditor'],
-  },
-  {
-    component: SubClassProperty,
-    nodeType: BlankNode,
-    editor: ['SubClassEditor'],
+    editor: ['EnumSelectEditor', 'InstancesSelectEditor', 'SubClassEditor'],
   },
   {
     component: SubnodeProperty,

@@ -3,6 +3,7 @@ import {
   AdditionalConstraints,
   CardinalityConstraints,
   PairConstraints,
+  RootClassConstraints,
   TypeConstraints,
   ValidationConstraints,
   ValueConstraints,
@@ -23,12 +24,23 @@ defineEmits<{
 const { value: editor } = useNamed({ subject, predicate: Dash.DASH('editor') })
 const { value: viewer } = useNamed({ subject, predicate: Dash.DASH('viewer') })
 const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
+const { value: rootClass } = useNamed({ subject, predicate: Dash.DASH('rootClass') })
 
 const hasClass = computed(() => classes.length > 0)
+const hasRootClass = computed(() => typeof rootClass.value !== 'undefined')
 
-watch([hasClass], ([hasClassValue]) => {
+const label = computed(() => {
+  if (hasClass.value) return 'Instance select'
+  if (hasRootClass.value) return 'SubClass'
+  return 'Select'
+})
+
+watch([hasClass, hasRootClass], ([hasClassValue, hasRootClassValue]) => {
   if (hasClassValue) {
     editor.value = Dash.DASH('InstancesSelectEditor').value
+    viewer.value = Dash.DASH('LabelViewer').value
+  } else if (hasRootClassValue) {
+    editor.value = Dash.DASH('SubClassEditor').value
     viewer.value = Dash.DASH('LabelViewer').value
   } else {
     editor.value = Dash.DASH('EnumSelectEditor').value
@@ -40,7 +52,7 @@ watch([hasClass], ([hasClassValue]) => {
 <template>
   <Property
     :icon="ListIndentIncreaseIcon"
-    :label="hasClass ? 'Instance select' : 'Select'"
+    :label="label"
     :subject="subject"
     :order="order"
     :groupOrder="groupOrder"
@@ -51,6 +63,8 @@ watch([hasClass], ([hasClassValue]) => {
       <CardinalityConstraints :subject="subject" />
       <FieldSeparator />
       <TypeConstraints :subject="subject" collapsible />
+      <FieldSeparator />
+      <RootClassConstraints :subject="subject" collapsible />
       <FieldSeparator />
       <ValueConstraints :subject="subject" collapsible />
       <FieldSeparator />

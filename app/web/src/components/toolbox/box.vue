@@ -15,7 +15,6 @@ import {
   ListTodoIcon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
-  SquareIcon,
   TextCursorInputIcon,
   TypeIcon,
   TypeOutlineIcon,
@@ -180,22 +179,6 @@ const items: ToolboxItem[] = [
         order,
         group,
         RDF('html'),
-      )
-    },
-  },
-  {
-    icon: SquareIcon,
-    label: 'SubClassEditor',
-    tooltip: 'Add to library',
-    create: (order?: number, group?: BlankNode | NamedNode) => {
-      if (!store.value || !currentShape.node.value) return
-      Shacl.createProperty(
-        store.value,
-        currentShape.node.value,
-        'SubClassEditor',
-        'LabelViewer',
-        order,
-        group,
       )
     },
   },

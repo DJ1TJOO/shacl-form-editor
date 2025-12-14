@@ -38,7 +38,7 @@ const localName = computed(
 const isOpen = ref(false)
 const { listOpen, indeterminate } = injectPropertiesListContext()
 watch(listOpen, (newVal) => {
-  if (newVal === 'indeterminate') return
+  if (newVal === 'indeterminate' || newVal === 'groups') return
   isOpen.value = newVal
 })
 watch(isOpen, (newVal) => {

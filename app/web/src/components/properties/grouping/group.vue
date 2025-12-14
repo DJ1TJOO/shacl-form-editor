@@ -60,10 +60,10 @@ const isOpen = ref(true)
 const { listOpen, indeterminate } = injectPropertiesListContext()
 watch(listOpen, (newVal) => {
   if (newVal === 'indeterminate') return
-  isOpen.value = newVal
+  isOpen.value = newVal === 'groups' ? true : newVal
 })
 watch(isOpen, (newVal) => {
-  if (newVal === listOpen.value) return
+  if (newVal === listOpen.value || (newVal && listOpen.value === 'groups')) return
   indeterminate()
 })
 

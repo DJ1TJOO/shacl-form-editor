@@ -2,7 +2,7 @@
 import { createContext } from 'reka-ui'
 
 interface PropertiesListContext {
-  listOpen: Ref<boolean | 'indeterminate'>
+  listOpen: Ref<boolean | 'indeterminate' | 'groups'>
   indeterminate: () => void
 }
 
@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<PrimitiveProps & { class?: HTMLAttributes
   as: 'div',
 })
 
-const listOpen = ref<boolean | 'indeterminate'>('indeterminate')
+const listOpen = ref<boolean | 'indeterminate' | 'groups'>('indeterminate')
 
 providePropertiesListContext({
   listOpen,
@@ -37,6 +37,9 @@ providePropertiesListContext({
     <div class="flex gap-2">
       <Button color="background-blue" class="bg-transparent" @click="listOpen = false">
         Collapse all <ChevronUpIcon />
+      </Button>
+      <Button color="background-blue" class="bg-transparent" @click="listOpen = 'groups'">
+        Expand groups <ChevronDownIcon />
       </Button>
       <Button color="background-blue" class="bg-transparent" @click="listOpen = true">
         Expand all <ChevronDownIcon />

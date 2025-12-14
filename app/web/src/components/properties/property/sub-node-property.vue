@@ -21,7 +21,7 @@ defineEmits<{
 <template>
   <Property
     :icon="DiamondIcon"
-    label="Node"
+    label="Subnode"
     :subject="subject"
     :order="order"
     :groupOrder="groupOrder"

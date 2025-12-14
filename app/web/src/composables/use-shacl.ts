@@ -91,7 +91,10 @@ export const useGlobalName = ({
   store?: Ref<IndexedFormula>
 }) => {
   const store = customStore ?? useFileStore()
-  const node = ref<NamedNode | undefined>()
+  const initialValueString = toValue(initialValue)
+  const node = ref<NamedNode | undefined>(
+    initialValueString ? new NamedNode(initialValueString) : undefined,
+  )
 
   const value = computed({
     get() {
@@ -125,15 +128,6 @@ export const useGlobalName = ({
       node.value = newNode
     },
   })
-
-  watch(
-    () => toValue(initialValue),
-    (initialValue) => {
-      if (typeof initialValue === 'undefined') return
-      value.value = initialValue
-    },
-    { immediate: true },
-  )
 
   return { value, node }
 }

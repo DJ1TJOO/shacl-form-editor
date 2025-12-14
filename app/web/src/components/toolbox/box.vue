@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { injectFileContext, RDF, Shacl, Xsd } from '@/components/rdf'
+import { getNamedNode, injectFileContext, RDF, Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useNamedList } from '@/composables/use-shacl'
@@ -20,7 +20,7 @@ import {
   TypeIcon,
   TypeOutlineIcon,
 } from 'lucide-vue-next'
-import type { BlankNode, NamedNode } from 'rdflib'
+import { BlankNode, NamedNode } from 'rdflib'
 import type { Component } from 'vue'
 import { computed, ref } from 'vue'
 import BoxItem from './box-item.vue'
@@ -83,7 +83,22 @@ const items: ToolboxItem[] = [
       )
     },
   },
-  { icon: TextCursorInputIcon, label: 'Combobox', tooltip: 'Add to library' },
+  {
+    icon: TextCursorInputIcon,
+    label: 'Combobox',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'AutoCompleteEditor',
+        'LabelViewer',
+        order,
+        group,
+      )
+    },
+  },
   {
     icon: ListTodoIcon,
     label: 'True / False',
@@ -135,8 +150,22 @@ const items: ToolboxItem[] = [
       )
     },
   },
-  { icon: ListIndentIncreaseIcon, label: 'Select', tooltip: 'Add to library' },
-  { icon: ListIndentIncreaseIcon, label: 'Instance select', tooltip: 'Add to library' },
+  {
+    icon: ListIndentIncreaseIcon,
+    label: 'Select',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'EnumSelectEditor',
+        'LiteralViewer',
+        order,
+        group,
+      )
+    },
+  },
   {
     icon: TypeOutlineIcon,
     label: 'Rich text',
@@ -154,7 +183,22 @@ const items: ToolboxItem[] = [
       )
     },
   },
-  { icon: SquareIcon, label: 'SubClassEditor?', tooltip: 'Add to library' },
+  {
+    icon: SquareIcon,
+    label: 'SubClassEditor',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'SubClassEditor',
+        'LabelViewer',
+        order,
+        group,
+      )
+    },
+  },
   {
     icon: Link2Icon,
     label: 'URI',
@@ -173,8 +217,33 @@ const items: ToolboxItem[] = [
       )
     },
   },
-  { icon: DiamondIcon, label: 'Subnode', tooltip: 'Add to library' },
-  { icon: CircleIcon, label: 'Subproperty', tooltip: 'Add to library' },
+  {
+    icon: DiamondIcon,
+    label: 'Subnode',
+    tooltip: 'Add to library',
+    create: (order?: number, group?: BlankNode | NamedNode) => {
+      if (!store.value || !currentShape.node.value) return
+      Shacl.createProperty(
+        store.value,
+        currentShape.node.value,
+        'DetailsEditor',
+        'DetailsViewer',
+        order,
+        group,
+      )
+    },
+  },
+  {
+    icon: CircleIcon,
+    label: 'Subproperty',
+    tooltip: 'Add to library',
+    create: () => {
+      if (!store.value || !currentShape.node.value) return
+
+      const property = new NamedNode('http://example.com/TemporaryProperty')
+      store.value.add(getNamedNode(currentShape.node.value), Shacl.SHACL('property'), property)
+    },
+  },
 ]
 
 const searchQuery = ref('')

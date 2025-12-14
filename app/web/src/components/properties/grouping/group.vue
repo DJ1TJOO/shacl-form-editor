@@ -52,7 +52,7 @@ const {
   target,
   Define: DefineOptions,
   isOpen: isOpenOptions,
-} = useOptionsSidebar(Symbol('group-options'), optionsTitle, {
+} = useOptionsSidebar(Symbol('group-options-' + encodeURIComponent(subject.value)), optionsTitle, {
   allowGrouping: false,
 })
 

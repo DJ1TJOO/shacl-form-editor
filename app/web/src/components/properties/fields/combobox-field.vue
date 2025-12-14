@@ -10,7 +10,7 @@ import {
 import { Property, type PropertyProps } from '@/components/properties'
 import Base from '@/components/properties/fields/base.vue'
 import { FieldSeparator } from '@/components/ui/field'
-import { Link2Icon } from 'lucide-vue-next'
+import { TextCursorInputIcon } from 'lucide-vue-next'
 
 const { subject, order, groupOrder, groupSubject } = defineProps<PropertyProps>()
 defineEmits<{
@@ -20,8 +20,8 @@ defineEmits<{
 
 <template>
   <Property
-    :icon="Link2Icon"
-    label="URI"
+    :icon="TextCursorInputIcon"
+    label="Combobox"
     :subject="subject"
     :order="order"
     :groupOrder="groupOrder"
@@ -31,7 +31,7 @@ defineEmits<{
     <template #options>
       <CardinalityConstraints :subject="subject" />
       <FieldSeparator />
-      <TypeConstraints :subject="subject" collapsible fixedNodeKind noClasses />
+      <TypeConstraints :subject="subject" collapsible noDatatype />
       <FieldSeparator />
       <ValueConstraints :subject="subject" collapsible />
       <FieldSeparator />

@@ -22,11 +22,13 @@ const {
   fixedDatatype,
   fixedNodeKind = false,
   noClasses = false,
+  noDatatype = false,
 } = defineProps<
   ConstraintProps & {
     fixedDatatype?: boolean
     fixedNodeKind?: boolean
     noClasses?: boolean
+    noDatatype?: boolean
   }
 >()
 const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype') })
@@ -36,7 +38,7 @@ const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind
 
 <template>
   <Constraint legend="Type constraints" :collapsible="collapsible">
-    <Field>
+    <Field v-if="!noDatatype">
       <FieldLabel>
         Datatype
         <Tooltip>

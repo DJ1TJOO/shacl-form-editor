@@ -38,7 +38,7 @@ defineEmits<{
       <FieldSeparator />
       <ValueConstraints :subject="subject" collapsible />
       <FieldSeparator />
-      <PairConstraints :subject="subject" collapsible />
+      <PairConstraints :subject="subject" collapsible noLessThan />
       <FieldSeparator />
       <ValidationConstraints :subject="subject" collapsible />
       <FieldSeparator />

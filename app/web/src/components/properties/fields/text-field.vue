@@ -64,7 +64,7 @@ const canHaveStringConstraints = computed(() => {
       <FieldSeparator />
       <ValueConstraints :subject="subject" collapsible />
       <FieldSeparator />
-      <PairConstraints :subject="subject" collapsible />
+      <PairConstraints :subject="subject" collapsible :noLessThan="!canHaveRangeConstraints" />
       <FieldSeparator />
       <ValidationConstraints :subject="subject" collapsible />
       <FieldSeparator />

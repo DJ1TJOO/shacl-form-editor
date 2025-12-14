@@ -28,7 +28,9 @@ defineEmits<{
 
 const store = useFileStore()
 const { node: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })
-const localName = computed(() => Shacl.getLocalName(path.value))
+const localName = computed(
+  () => Shacl.getLocalName(path.value) ?? Shacl.getLocalName(subject.value),
+)
 
 const isOpen = ref(false)
 const { listOpen, indeterminate } = injectPropertiesListContext()
@@ -45,9 +47,13 @@ const {
   target,
   Define: DefineOptions,
   isOpen: isOpenOptions,
-} = useOptionsSidebar(Symbol('property-options'), 'Options for ' + localName.value, {
-  allowGrouping: typeof groupOrder === 'undefined',
-})
+} = useOptionsSidebar(
+  Symbol('property-options-' + encodeURIComponent(subject.value)),
+  computed(() => 'Options for ' + localName.value),
+  {
+    allowGrouping: typeof groupOrder === 'undefined',
+  },
+)
 
 const propertyId = computed(() => {
   const pathValue = toValue(path)

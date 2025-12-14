@@ -11,7 +11,7 @@ import { InfoIcon } from 'lucide-vue-next'
 import { NamedNode } from 'rdflib'
 import { computed } from 'vue'
 
-const { subject } = defineProps<ConstraintProps>()
+const { subject, noLessThan = false } = defineProps<ConstraintProps & { noLessThan?: boolean }>()
 
 const { items: equals } = useNamedList({ subject, predicate: Shacl.SHACL('equals') })
 const { items: disjoint } = useNamedList({ subject, predicate: Shacl.SHACL('disjoint') })
@@ -69,7 +69,10 @@ const canHaveLessThanConstraints = computed(() => {
       <AddButton @click="disjoint.push({ value: '', node: new NamedNode(':') })" />
     </Field>
 
-    <Field class="gap-x-1 gap-y-0.5 grid grid-cols-[1fr_auto]" v-if="canHaveLessThanConstraints">
+    <Field
+      class="gap-x-1 gap-y-0.5 grid grid-cols-[1fr_auto]"
+      v-if="canHaveLessThanConstraints && !noLessThan"
+    >
       <div class="grid grid-cols-subgrid col-span-2">
         <FieldLabel>
           Less than

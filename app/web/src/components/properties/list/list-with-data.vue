@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import {
   BooleanProperty,
+  ComboboxProperty,
   DateProperty,
   DateTimeProperty,
   Group,
   RichTextProperty,
+  SelectProperty,
+  SubClassProperty,
+  SubnodeProperty,
+  SubpropertyProperty,
   TextAreaProperty,
   TextFieldProperty,
   URIProperty,
@@ -71,6 +76,31 @@ const propertyEditorTypes: {
     nodeType: BlankNode,
     editor: ['URIEditor'],
   },
+  {
+    component: ComboboxProperty,
+    nodeType: BlankNode,
+    editor: ['AutoCompleteEditor'],
+  },
+  {
+    component: SelectProperty,
+    nodeType: BlankNode,
+    editor: ['EnumSelectEditor', 'InstancesSelectEditor'],
+  },
+  {
+    component: SubClassProperty,
+    nodeType: BlankNode,
+    editor: ['SubClassEditor'],
+  },
+  {
+    component: SubnodeProperty,
+    nodeType: BlankNode,
+    editor: ['DetailsEditor'],
+  },
+  {
+    component: SubpropertyProperty,
+    nodeType: NamedNode,
+    editor: [],
+  },
 ] as const
 
 const { currentShape, store } = injectFileContext()
@@ -82,7 +112,12 @@ function getPropertyEditorType(property: {
 }) {
   for (const type of propertyEditorTypes) {
     if (!(property.value instanceof type.nodeType)) continue
-    if (!property.editor) continue
+
+    if (typeof property.editor === 'undefined') {
+      if (type.editor.length !== 0) continue
+      return SubpropertyProperty
+    }
+
     if (!type.editor.map((editor) => Dash.editors[editor].value).includes(property.editor.value))
       continue
     return type.component

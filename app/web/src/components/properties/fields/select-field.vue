@@ -9,19 +9,38 @@ import {
 } from '@/components/constraints'
 import { Property, type PropertyProps } from '@/components/properties'
 import Base from '@/components/properties/fields/base.vue'
+import { Dash, Shacl } from '@/components/rdf'
 import { FieldSeparator } from '@/components/ui/field'
-import { Link2Icon } from 'lucide-vue-next'
+import { useNamed, useNamedList } from '@/composables/use-shacl'
+import { ListIndentIncreaseIcon } from 'lucide-vue-next'
+import { computed, watch } from 'vue'
 
 const { subject, order, groupOrder, groupSubject } = defineProps<PropertyProps>()
 defineEmits<{
   (e: 'remove'): void
 }>()
+
+const { value: editor } = useNamed({ subject, predicate: Dash.DASH('editor') })
+const { value: viewer } = useNamed({ subject, predicate: Dash.DASH('viewer') })
+const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
+
+const hasClass = computed(() => classes.length > 0)
+
+watch([hasClass], ([hasClassValue]) => {
+  if (hasClassValue) {
+    editor.value = Dash.DASH('InstancesSelectEditor').value
+    viewer.value = Dash.DASH('LabelViewer').value
+  } else {
+    editor.value = Dash.DASH('EnumSelectEditor').value
+    viewer.value = Dash.DASH('LiteralViewer').value
+  }
+})
 </script>
 
 <template>
   <Property
-    :icon="Link2Icon"
-    label="URI"
+    :icon="ListIndentIncreaseIcon"
+    :label="hasClass ? 'Instance select' : 'Select'"
     :subject="subject"
     :order="order"
     :groupOrder="groupOrder"
@@ -31,7 +50,7 @@ defineEmits<{
     <template #options>
       <CardinalityConstraints :subject="subject" />
       <FieldSeparator />
-      <TypeConstraints :subject="subject" collapsible fixedNodeKind noClasses />
+      <TypeConstraints :subject="subject" collapsible />
       <FieldSeparator />
       <ValueConstraints :subject="subject" collapsible />
       <FieldSeparator />

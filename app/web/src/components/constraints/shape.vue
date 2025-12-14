@@ -1,112 +1,52 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { Button } from '@/components/ui/button'
+import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { PrefixInput } from '@/components/form-ui/prefix'
+import { Shacl } from '@/components/rdf'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Combobox,
-  ComboboxAnchor,
-  ComboboxEmpty,
-  ComboboxGroup,
-  ComboboxItem,
-  ComboboxItemIndicator,
-  ComboboxList,
-  ComboboxSeparator,
-  ComboboxTrigger,
-} from '@/components/ui/combobox'
 import { Field, FieldLabel } from '@/components/ui/field'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupComboboxInput,
-  InputGroupInput,
-} from '@/components/ui/input-group'
-import { InputOptional } from '@/components/ui/input-optional'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { InfoIcon, XIcon } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { useLiteral, useNamed } from '@/composables/use-shacl'
+import { InfoIcon } from 'lucide-vue-next'
+import { computed } from 'vue'
 
-defineProps<ConstraintProps>()
+const { subject } = defineProps<ConstraintProps>()
 
-const shape = ref<string | undefined>()
-const hasShape = computed(() => typeof shape.value !== 'undefined')
-const inline = ref<boolean>(false)
+const { value: node } = useNamed({ subject, predicate: Shacl.SHACL('node') })
+const { value: qualifiedMinCount } = useLiteral<number>({
+  subject,
+  predicate: Shacl.SHACL('qualifiedMinCount'),
+})
+const { value: qualifiedMaxCount } = useLiteral<number>({
+  subject,
+  predicate: Shacl.SHACL('qualifiedMaxCount'),
+})
+const { value: qualifiedValueShapesDisjoint } = useLiteral<boolean>({
+  subject,
+  predicate: Shacl.SHACL('qualifiedValueShapesDisjoint'),
+})
 
-const minQualified = ref<number | undefined>(5)
-const maxQualified = ref<number | undefined>()
-const disjoint = ref<boolean | 'indeterminate'>(false)
-
-const shapeOptions = ['ex:MyNode', 'ex:MyNodeOther', 'ex:AddressShape', 'ex:ContactShape']
+const hasShape = computed(() => typeof node !== 'undefined')
 </script>
-
-<!-- @TODO: implementation when creating subshape property -->
 <template>
   <Constraint legend="Shape constraints" :collapsible="collapsible">
-    <Field class="gap-1 grid grid-cols-[1fr_auto]">
-      <div class="grid grid-cols-subgrid col-span-2">
-        <FieldLabel>
-          Shape
-          <Tooltip>
-            <TooltipTrigger><InfoIcon /></TooltipTrigger>
-            <TooltipContent>The shape that values of this property must conform to.</TooltipContent>
-          </Tooltip>
-        </FieldLabel>
-        <FieldLabel v-if="hasShape">
-          Inline
-          <Tooltip>
-            <TooltipTrigger><InfoIcon /></TooltipTrigger>
-            <TooltipContent>Whether the shape is defined inline.</TooltipContent>
-          </Tooltip>
-        </FieldLabel>
-      </div>
+    <Field>
+      <FieldLabel>
+        Node
+        <Tooltip>
+          <TooltipTrigger><InfoIcon /></TooltipTrigger>
+          <TooltipContent>The shape that values of this property must conform to.</TooltipContent>
+        </Tooltip>
+      </FieldLabel>
 
-      <InputOptional v-model="shape" :create="() => ''" v-slot="{ remove }">
-        <div class="items-center grid grid-cols-subgrid col-span-2">
-          <Combobox v-model="shape" :reset-search-term-on-blur="false">
-            <ComboboxAnchor>
-              <InputGroup>
-                <InputGroupComboboxInput
-                  @input="
-                    (e: Event) => {
-                      const target = e.target as HTMLInputElement
-                      shape = target.value
-                    }
-                  "
-                  @blur="
-                    (e: Event) => {
-                      const target = e.target as HTMLInputElement
-                      shape = target.value
-                    }
-                  "
-                />
-                <InputGroupAddon align="inline-end">
-                  <ComboboxTrigger />
-                  <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
-                    <XIcon />
-                  </Button>
-                </InputGroupAddon>
-              </InputGroup>
-            </ComboboxAnchor>
-
-            <ComboboxList>
-              <ComboboxEmpty> No results. </ComboboxEmpty>
-
-              <ComboboxGroup>
-                <ComboboxItem v-for="option in shapeOptions" :key="option" :value="option">
-                  <div class="flex items-center gap-2">
-                    <ComboboxItemIndicator />
-                    <span> {{ option }}</span>
-                  </div>
-                </ComboboxItem>
-              </ComboboxGroup>
-              <ComboboxSeparator />
-            </ComboboxList>
-          </Combobox>
-          <Checkbox v-model="inline" class="justify-self-center" />
-        </div>
-      </InputOptional>
+      <AddButton v-if="typeof node === 'undefined'" @click="node = 'http://example.com/MyNode'" />
+      <PrefixInput v-model="node" v-else>
+        <RemoveButton @click="node = undefined" />
+      </PrefixInput>
     </Field>
 
-    <div class="gap-1 grid grid-cols-[1fr_1fr_auto]">
+    <div v-if="hasShape" class="gap-1 grid grid-cols-[1fr_1fr_auto]">
       <Field>
         <FieldLabel>
           Minimum Qualified
@@ -118,16 +58,13 @@ const shapeOptions = ['ex:MyNode', 'ex:MyNodeOther', 'ex:AddressShape', 'ex:Cont
             >
           </Tooltip>
         </FieldLabel>
-        <InputOptional v-model="minQualified" :create="() => 5" v-slot="{ remove }">
-          <InputGroup>
-            <InputGroupInput v-model="minQualified" type="number" :min="0" />
-            <InputGroupAddon align="inline-end">
-              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
-                <XIcon />
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </InputOptional>
+        <AddButton v-if="typeof qualifiedMinCount === 'undefined'" @click="qualifiedMinCount = 1" />
+        <InputGroup v-else>
+          <InputGroupInput v-model="qualifiedMinCount" type="number" :min="0" />
+          <InputGroupAddon align="inline-end">
+            <RemoveButton @click="qualifiedMinCount = undefined" />
+          </InputGroupAddon>
+        </InputGroup>
       </Field>
 
       <Field>
@@ -141,16 +78,20 @@ const shapeOptions = ['ex:MyNode', 'ex:MyNodeOther', 'ex:AddressShape', 'ex:Cont
             >
           </Tooltip>
         </FieldLabel>
-        <InputOptional v-model="maxQualified" :create="() => minQualified ?? 5" v-slot="{ remove }">
-          <InputGroup>
-            <InputGroupInput v-model="maxQualified" type="number" :min="minQualified ?? 0" />
-            <InputGroupAddon align="inline-end">
-              <Button size="icon-sm" variant="ghost" color="danger" @click="remove">
-                <XIcon />
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </InputOptional>
+        <AddButton
+          v-if="typeof qualifiedMaxCount === 'undefined'"
+          @click="qualifiedMaxCount = qualifiedMinCount ?? 1"
+        />
+        <InputGroup v-else>
+          <InputGroupInput
+            v-model="qualifiedMaxCount"
+            type="number"
+            :min="qualifiedMinCount ?? 0"
+          />
+          <InputGroupAddon align="inline-end">
+            <RemoveButton @click="qualifiedMaxCount = undefined" />
+          </InputGroupAddon>
+        </InputGroup>
       </Field>
 
       <Field>
@@ -164,7 +105,7 @@ const shapeOptions = ['ex:MyNode', 'ex:MyNodeOther', 'ex:AddressShape', 'ex:Cont
             >
           </Tooltip>
         </FieldLabel>
-        <Checkbox v-model="disjoint" />
+        <Checkbox v-model="qualifiedValueShapesDisjoint" />
       </Field>
     </div>
   </Constraint>

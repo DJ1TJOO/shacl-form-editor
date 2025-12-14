@@ -2,7 +2,7 @@
 import { Shacl } from '@/components/rdf'
 import { useGlobalName } from '@/composables/use-shacl'
 import { useStorage, watchIgnorable } from '@vueuse/core'
-import { graph, type IndexedFormula } from 'rdflib'
+import { graph, NamedNode, type IndexedFormula } from 'rdflib'
 import { createContext } from 'reka-ui'
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -80,6 +80,13 @@ const shapeIRI = computed(() => {
 })
 const shape = useGlobalName({ initialValue: shapeIRI, store })
 
+watch(shape.value, (iri) => {
+  if (!iri) return
+
+  const fileId = typeof route.params.fileId === 'string' ? route.params.fileId : 'MyShaclFile'
+  router.replace(`/file/${fileId}/${encodeURIComponent(iri)}`)
+})
+
 watch(
   [isStoreLoaded, store, shapeIRI],
   () => {
@@ -90,6 +97,7 @@ watch(
     const currentPath = route.path
 
     if (shapeIRI.value && Shacl.shapeExists(currentStore, shapeIRI.value)) {
+      shape.node.value = new NamedNode(shapeIRI.value)
       const targetPath = `/file/${fileId}/${encodeURIComponent(shapeIRI.value)}`
       if (currentPath !== targetPath) {
         router.replace(targetPath)
@@ -102,6 +110,7 @@ watch(
 
     const firstShape = allShapes[0]
     if (firstShape) {
+      shape.node.value = new NamedNode(firstShape.value)
       const targetPath = `/file/${fileId}/${encodeURIComponent(firstShape.value)}`
       if (currentPath !== targetPath) {
         router.replace(targetPath)
@@ -110,6 +119,7 @@ watch(
       return
     }
 
+    shape.node.value = undefined
     const targetPath = `/file/${fileId}/`
     if (currentPath !== targetPath) {
       router.replace(targetPath)
@@ -118,13 +128,6 @@ watch(
   },
   { immediate: true },
 )
-
-watch(shape.value, (iri) => {
-  if (!iri) return
-
-  const fileId = typeof route.params.fileId === 'string' ? route.params.fileId : 'MyShaclFile'
-  router.replace(`/file/${fileId}/${encodeURIComponent(iri)}`)
-})
 
 provideFileContext({
   store,

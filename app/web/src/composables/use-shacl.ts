@@ -15,8 +15,23 @@ export const useShapes = () => {
   const store = useFileStore()
   const shapes = computed(() => Shacl.getAllShapes(store.value))
 
-  function addShape(iri: string | NamedNode, type: 'node' | 'property') {
-    Shacl.addShape(store.value, iri, type)
+  function addShape(
+    iri: string | NamedNode,
+    type: 'node' | 'property',
+    targetClass?: (string | NamedNodeType)[],
+    targetNode?: (string | NamedNodeType)[],
+    targetSubjectsOf?: (string | NamedNodeType)[],
+    targetObjectsOf?: (string | NamedNodeType)[],
+  ) {
+    Shacl.addShape(
+      store.value,
+      iri,
+      type,
+      targetClass,
+      targetNode,
+      targetSubjectsOf,
+      targetObjectsOf,
+    )
   }
 
   function removeShape(iri: string | NamedNode) {

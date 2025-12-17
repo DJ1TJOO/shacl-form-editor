@@ -83,8 +83,6 @@ const { value: path } = useNamed({
   <DefineOptions>
     <AdditionalConstraints v-if="type" :type="type" :subject="currentShape.node.value" />
     <FieldSeparator v-if="type === 'node'" />
-    <TargetConstraints v-if="type === 'node'" :subject="currentShape.node.value" collapsible />
-    <FieldSeparator v-if="type === 'node'" />
     <ValidationConstraints v-if="type === 'node'" :subject="currentShape.node.value" collapsible />
   </DefineOptions>
   <div
@@ -104,7 +102,7 @@ const { value: path } = useNamed({
       <FieldGroup>
         <Field>
           <FieldLabel>
-            IRI
+            Shape IRI
             <Tooltip>
               <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
@@ -197,6 +195,12 @@ const { value: path } = useNamed({
         </Field>
       </FieldGroup>
     </FieldSet>
+    <TargetConstraints
+      class="mt-2"
+      v-if="type === 'node'"
+      :subject="currentShape.node.value"
+      collapsible
+    />
     <Button v-if="open" color="background-blue" class="mt-2 w-full" @click="openOptions">
       <PanelRightOpenIcon /> Additional options
     </Button>

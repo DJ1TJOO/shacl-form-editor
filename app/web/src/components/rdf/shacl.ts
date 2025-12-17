@@ -34,12 +34,34 @@ export function addShape(
   store: IndexedFormula,
   iri: string | NamedNodeType,
   type: 'node' | 'property',
+  targetClass?: (string | NamedNodeType)[],
+  targetNode?: (string | NamedNodeType)[],
+  targetSubjectsOf?: (string | NamedNodeType)[],
+  targetObjectsOf?: (string | NamedNodeType)[],
 ) {
-  store.add(
-    getNamedNode(iri),
-    RDF('type'),
-    type === 'node' ? SHACL('NodeShape') : SHACL('PropertyShape'),
-  )
+  const shape = getNamedNode(iri)
+  store.add(shape, RDF('type'), type === 'node' ? SHACL('NodeShape') : SHACL('PropertyShape'))
+
+  if (targetClass) {
+    targetClass.forEach((classEntry) => {
+      store.add(shape, SHACL('targetClass'), getNamedNode(classEntry))
+    })
+  }
+  if (targetNode) {
+    targetNode.forEach((nodeEntry) => {
+      store.add(shape, SHACL('targetNode'), getNamedNode(nodeEntry))
+    })
+  }
+  if (targetSubjectsOf) {
+    targetSubjectsOf.forEach((subjectEntry) => {
+      store.add(shape, SHACL('targetSubjectsOf'), getNamedNode(subjectEntry))
+    })
+  }
+  if (targetObjectsOf) {
+    targetObjectsOf.forEach((objectEntry) => {
+      store.add(shape, SHACL('targetObjectsOf'), getNamedNode(objectEntry))
+    })
+  }
 }
 
 export function removeShape(store: IndexedFormula, iri: string | NamedNodeType) {

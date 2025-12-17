@@ -8,7 +8,7 @@ import { PlusIcon } from 'lucide-vue-next'
   <NewItemDialog>
     <BarItem>
       <PlusIcon class="size-4" />
-      New node or property
+      New shape
     </BarItem>
   </NewItemDialog>
 </template>

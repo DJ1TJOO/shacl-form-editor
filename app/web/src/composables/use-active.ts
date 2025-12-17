@@ -17,6 +17,7 @@ export const ACTIVE_ATTRIBUTE = 'data-active'
 export const GROUPED_ATTRIBUTE = 'data-grouped'
 export const NO_GROUPING_ATTRIBUTE = 'data-no-grouping'
 export const ACTIVATABLE_ATTRIBUTE = 'data-activatable'
+export const PREVENT_ACTIVATION_ATTRIBUTE = 'data-prevent-activation'
 
 export const ADDED_TO_GROUP_EVENT = 'added-to-group'
 export const REMOVED_FROM_GROUP_EVENT = 'removed-from-group'
@@ -41,7 +42,6 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
         targetElement.value?.setAttribute(GROUPED_ATTRIBUTE, 'true')
         window.dispatchEvent(
           new CustomEvent(ADDED_TO_GROUP_EVENT, {
-            // @TODO: change to something useful when components are based on data
             detail: {
               id: targetElement.value?.id,
               activatedAt: activatedAt.value,
@@ -57,7 +57,6 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
         isGrouped.value = false
         window.dispatchEvent(
           new CustomEvent(REMOVED_FROM_GROUP_EVENT, {
-            // @TODO: change to something useful when components are based on data
             detail: {
               id: targetElement.value?.id,
             },
@@ -70,28 +69,32 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
   const activeElement = useActiveElement()
   const ctrlKey = useKeyModifier('Control')
 
-  function isOptionsElement(element: EventTarget | HTMLElement | null | undefined) {
-    return !!(element instanceof HTMLElement && element.closest('[data-slot="options-bar"]'))
+  function isPreventActivationElement(element: EventTarget | Element | null | undefined) {
+    return !!(element instanceof Element && element.closest(`[${PREVENT_ACTIVATION_ATTRIBUTE}]`))
   }
 
-  function getActivatableElement(element: EventTarget | HTMLElement | null | undefined) {
-    return element instanceof HTMLElement ? element.closest(`[${ACTIVATABLE_ATTRIBUTE}]`) : null
+  function isOptionsElement(element: EventTarget | Element | null | undefined) {
+    return !!(element instanceof Element && element.closest('[data-slot="options-bar"]'))
   }
 
-  function isActivatableElement(element: EventTarget | HTMLElement | null | undefined) {
+  function getActivatableElement(element: EventTarget | Element | null | undefined) {
+    return element instanceof Element ? element.closest(`[${ACTIVATABLE_ATTRIBUTE}]`) : null
+  }
+
+  function isActivatableElement(element: EventTarget | Element | null | undefined) {
     return !!getActivatableElement(element)
   }
 
-  function isNoGroupingElement(element: EventTarget | HTMLElement | null | undefined) {
-    return !!(element instanceof HTMLElement && element.closest(`[${NO_GROUPING_ATTRIBUTE}]`))
+  function isNoGroupingElement(element: EventTarget | Element | null | undefined) {
+    return !!(element instanceof Element && element.closest(`[${NO_GROUPING_ATTRIBUTE}]`))
   }
 
-  function isGroupedElement(element: EventTarget | HTMLElement | null | undefined) {
-    return !!(element instanceof HTMLElement && element.closest(`[${GROUPED_ATTRIBUTE}]`))
+  function isGroupedElement(element: EventTarget | Element | null | undefined) {
+    return !!(element instanceof Element && element.closest(`[${GROUPED_ATTRIBUTE}]`))
   }
 
-  function isInTarget(element: EventTarget | HTMLElement | null | undefined) {
-    return !!(element instanceof HTMLElement && targetElement.value?.contains(element))
+  function isInTarget(element: EventTarget | Element | null | undefined) {
+    return !!(element instanceof Element && targetElement.value?.contains(element))
   }
 
   function hasDismissableLayer() {
@@ -102,6 +105,7 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
     target: targetElement,
     onPressed: (e) => {
       if (e instanceof MouseEvent && e.button !== 0) return
+      if (isPreventActivationElement(e.target)) return
 
       if (getActivatableElement(e.target) !== targetElement.value) {
         setActive(false)
@@ -125,6 +129,8 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
   })
 
   onClickOutside(target, (event) => {
+    if (isPreventActivationElement(event.target)) return
+
     if (
       !isNoGrouping.value &&
       !isNoGroupingElement(event.target) &&
@@ -147,6 +153,8 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
   })
 
   watch(activeElement, (activeElement) => {
+    if (isPreventActivationElement(activeElement)) return
+
     if (isInTarget(activeElement) && getActivatableElement(activeElement) === targetElement.value) {
       setActive(true, ctrlKey.value && !isNoGrouping.value)
       return

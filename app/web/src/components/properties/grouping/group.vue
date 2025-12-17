@@ -27,6 +27,7 @@ import { useOptionsSidebar } from '@/composables/use-options-sidebar'
 import { useFileStore, useGlobalName, useLiteralList } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { useDraggable, useDroppable } from '@vue-dnd-kit/core'
+import { watchIgnorable } from '@vueuse/core'
 import { ChevronDownIcon, GripVerticalIcon, InfoIcon, UngroupIcon, XIcon } from 'lucide-vue-next'
 import { BlankNode, Literal, NamedNode } from 'rdflib'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
@@ -56,14 +57,34 @@ const {
   allowGrouping: false,
 })
 
-const isOpen = ref(true)
+const isOpen = ref(false)
 const { listOpen, indeterminate } = injectPropertiesListContext()
-watch(listOpen, (newVal) => {
-  if (newVal === 'indeterminate') return
-  isOpen.value = newVal === 'groups' ? true : newVal
+const wasLastSetByOptions = ref(false)
+
+watch(listOpen, (newListOpen) => {
+  if (newListOpen === 'indeterminate' || newListOpen === 'groups') return
+  ignoreIsOpenUpdates(() => {
+    wasLastSetByOptions.value = false
+    isOpen.value = newListOpen
+  })
 })
-watch(isOpen, (newVal) => {
-  if (newVal === listOpen.value || (newVal && listOpen.value === 'groups')) return
+
+watch(isOpenOptions, (newIsOpenOptions) => {
+  ignoreIsOpenUpdates(() => {
+    if (newIsOpenOptions && !isOpen.value) {
+      wasLastSetByOptions.value = true
+      isOpen.value = true
+    } else if (wasLastSetByOptions.value && isOpen.value) {
+      wasLastSetByOptions.value = false
+      isOpen.value = false
+    }
+  })
+})
+
+const { ignoreUpdates: ignoreIsOpenUpdates } = watchIgnorable(isOpen, (newVal) => {
+  wasLastSetByOptions.value = false
+
+  if (newVal === listOpen.value) return
   indeterminate()
 })
 
@@ -307,6 +328,7 @@ const { elementRef: dropzoneRef } = useDroppable({
           variant="ghost"
           size="icon"
           data-grip-button
+          data-prevent-activation
           @pointerdown="handleDragStart"
           @keydown.up.left.stop.prevent="() => handleMoveProperty(-1)"
           @keydown.down.right.stop.prevent="() => handleMoveProperty(1)"
@@ -314,23 +336,28 @@ const { elementRef: dropzoneRef } = useDroppable({
           <GripVerticalIcon />
         </Button>
 
-        <CollapsibleTrigger as-child class="group/property-collapsible-trigger">
-          <h2
-            class="flex justify-center justify-self-center items-center gap-1 w-fit font-bold text-branding"
+        <h2
+          class="flex justify-center justify-self-center items-center gap-1 w-fit font-bold text-branding"
+        >
+          {{ name }}
+          <CollapsibleTrigger
+            as-child
+            class="group/property-collapsible-trigger"
+            data-prevent-activation
           >
-            {{ name }}
             <Button variant="ghost" size="icon">
               <ChevronDownIcon
                 class="group-data-[state=open]/property-collapsible-trigger:-rotate-180 transition-transform"
               />
             </Button>
-          </h2>
-        </CollapsibleTrigger>
+          </CollapsibleTrigger>
+        </h2>
         <Button
           variant="ghost"
           size="icon"
           color="danger"
           class="justify-self-end"
+          data-prevent-activation
           @click="handleUngroup"
         >
           <XIcon />

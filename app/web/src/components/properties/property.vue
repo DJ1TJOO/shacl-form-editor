@@ -7,6 +7,7 @@ import {
 } from '@/components/properties/list/ordering'
 import { Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
 import { useFileStore, useNamed } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
@@ -118,6 +119,7 @@ async function handleMoveProperty(offset: number) {
       ref="target"
       :id="propertyId"
       :data-subject="subject.value"
+      :data-local-name="localName ?? label"
       default-open
       v-model:open="isOpen"
       :class="
@@ -151,27 +153,32 @@ async function handleMoveProperty(offset: number) {
             class="group/property-collapsible-trigger"
             data-prevent-activation
           >
-            <Button as="span" variant="ghost" size="icon">
+            <Button variant="ghost" size="icon">
               <ChevronDownIcon
                 class="group-data-[state=open]/property-collapsible-trigger:-rotate-180 transition-transform"
               />
             </Button>
           </CollapsibleTrigger>
         </h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          color="danger"
-          class="justify-self-end"
-          data-prevent-activation
-          @click="
+        <ConfirmDialog
+          title="Remove"
+          description="Are you sure you want to remove this property?"
+          @confirm="
             () => {
               $emit('remove')
             }
           "
         >
-          <XIcon />
-        </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            color="danger"
+            class="justify-self-end"
+            data-prevent-activation
+          >
+            <XIcon />
+          </Button>
+        </ConfirmDialog>
       </div>
       <CollapsibleContent class="mt-1">
         <slot />

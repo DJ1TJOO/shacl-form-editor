@@ -10,13 +10,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { useVModel } from '@vueuse/core'
-import { type Ref } from 'vue'
 
-const props = defineProps<{
+defineProps<{
   title: string
   description: string
-  open?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -24,9 +21,7 @@ const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
 }>()
 
-const open = useVModel(props, 'open', emit, {
-  passive: (props.open === undefined) as false,
-}) as Ref<boolean>
+const open = defineModel<boolean>('open')
 </script>
 
 <template>

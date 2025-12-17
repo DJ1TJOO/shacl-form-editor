@@ -20,6 +20,7 @@ import {
 } from '@/components/properties/list/ordering'
 import { RDFS, Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -304,10 +305,16 @@ const { elementRef: dropzoneRef } = useDroppable({
         </Field>
       </FieldGroup>
     </FieldSet>
-    <Button class="w-full" color="danger" @click="handleUngroup">
-      <UngroupIcon />
-      Ungroup
-    </Button>
+    <ConfirmDialog
+      title="Ungroup"
+      description="Are you sure you want to ungroup?"
+      @confirm="handleUngroup"
+    >
+      <Button class="w-full" color="danger">
+        <UngroupIcon />
+        Ungroup
+      </Button>
+    </ConfirmDialog>
   </DefineOptions>
   <li ref="draggableRef" class="list-none">
     <CollapsibleRoot
@@ -322,6 +329,7 @@ const { elementRef: dropzoneRef } = useDroppable({
       :unmountOnHide="false"
       :id="groupId"
       :data-subject="iri"
+      :data-local-name="name ?? 'Group'"
     >
       <div class="flex justify-between items-center gap-2 px-2">
         <Button
@@ -352,16 +360,21 @@ const { elementRef: dropzoneRef } = useDroppable({
             </Button>
           </CollapsibleTrigger>
         </h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          color="danger"
-          class="justify-self-end"
-          data-prevent-activation
-          @click="handleUngroup"
+        <ConfirmDialog
+          title="Ungroup"
+          description="Are you sure you want to ungroup?"
+          @confirm="handleUngroup"
         >
-          <XIcon />
-        </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            color="danger"
+            class="justify-self-end"
+            data-prevent-activation
+          >
+            <XIcon />
+          </Button>
+        </ConfirmDialog>
       </div>
       <CollapsibleContent>
         <ul ref="dropzoneRef" class="space-y-2 mt-1">

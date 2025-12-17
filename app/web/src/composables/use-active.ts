@@ -43,7 +43,7 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
         window.dispatchEvent(
           new CustomEvent(ADDED_TO_GROUP_EVENT, {
             detail: {
-              id: targetElement.value?.id,
+              target: targetElement.value,
               activatedAt: activatedAt.value,
             },
           }),
@@ -58,7 +58,7 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
         window.dispatchEvent(
           new CustomEvent(REMOVED_FROM_GROUP_EVENT, {
             detail: {
-              id: targetElement.value?.id,
+              target: targetElement.value,
             },
           }),
         )

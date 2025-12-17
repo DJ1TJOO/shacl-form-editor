@@ -33,18 +33,13 @@ const store = useFileStore()
 
 const properties = ref<
   {
-    id: string
     subject: string
+    localName: string | undefined
     activatedAt: number
   }[]
 >([])
 
-const propertyLabels = computed(() =>
-  properties.value.map(({ id }) => {
-    const path = decodeURIComponent(id.split('-').pop() ?? '')
-    return path ? Shacl.getLocalName(path) : ''
-  }),
-)
+const propertyLabels = computed(() => properties.value.map(({ localName }) => localName))
 
 function open() {
   optionsSidebar.open(id, propertyLabels.value.join(', '), Reuse)
@@ -59,12 +54,13 @@ onMounted(() => {
   window.addEventListener(ADDED_TO_GROUP_EVENT, (event) => {
     if (!(event instanceof CustomEvent)) return
 
-    const id = event.detail.id as string
+    const target = event.detail.target as HTMLElement | SVGElement | null | undefined
     const activatedAt = event.detail.activatedAt as number | undefined
-    const subject = document.getElementById(id)?.getAttribute('data-subject') as string | undefined
+    const subject = target?.getAttribute('data-subject') as string | undefined
+    const localName = target?.getAttribute('data-local-name') as string | undefined
     if (!subject || typeof activatedAt !== 'number') return
 
-    properties.value.push({ id, subject, activatedAt })
+    properties.value.push({ subject, localName, activatedAt })
     properties.value.sort((a, b) => a.activatedAt - b.activatedAt)
 
     open()
@@ -72,7 +68,11 @@ onMounted(() => {
   window.addEventListener(REMOVED_FROM_GROUP_EVENT, (event) => {
     if (!(event instanceof CustomEvent)) return
 
-    properties.value = properties.value.filter(({ id }) => id !== event.detail.id)
+    const target = event.detail.target as HTMLElement | SVGElement | null | undefined
+    const removedSubject = target?.getAttribute('data-subject') as string | undefined
+    if (!removedSubject) return
+
+    properties.value = properties.value.filter(({ subject }) => subject !== removedSubject)
     if (properties.value.length === 0) {
       optionsSidebar.close(id)
     } else {

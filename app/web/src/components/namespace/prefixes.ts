@@ -34,7 +34,11 @@ export function usePrefixSuggestionsList(
     Object.entries(prefixSuggestions.value)
       .filter(([prefix]) => activeNamespaces.value.includes(prefix))
       .map(([, suggestions]) => suggestions)
-      .reduce((acc, curr) => acc.concat(curr), store ? storedSuggestions.value : []),
+      .reduce(
+        (acc, curr) =>
+          acc.filter((suggestion) => curr.some((s) => s.iri === suggestion.iri)).concat(curr),
+        store ? storedSuggestions.value : [],
+      ),
   )
 }
 

@@ -105,7 +105,7 @@ function submit() {
     <DialogScrollContent :aria-describedby="undefined">
       <form @submit.prevent="submit" class="gap-4 grid">
         <DialogHeader>
-          <DialogTitle>Edit namespace</DialogTitle>
+          <DialogTitle>{{ props.defaultValues ? 'Edit' : 'Add' }} namespace</DialogTitle>
         </DialogHeader>
         <FieldSet>
           <FieldGroup>

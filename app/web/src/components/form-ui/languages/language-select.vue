@@ -3,16 +3,17 @@ import {
   Combobox,
   ComboboxAnchor,
   ComboboxEmpty,
+  ComboboxGroup,
   ComboboxInput,
   ComboboxItem,
   ComboboxItemIndicator,
   ComboboxList,
   ComboboxTrigger,
 } from '@/components/ui/combobox'
-import { languages, type Language } from './languages'
+import { languages } from './languages'
 
 import type { ComboboxRootEmits, ComboboxRootProps } from 'reka-ui'
-import { ComboboxVirtualizer, useFilter, useForwardPropsEmits } from 'reka-ui'
+import { useFilter, useForwardPropsEmits } from 'reka-ui'
 import { computed, ref } from 'vue'
 
 const props = defineProps<ComboboxRootProps>()
@@ -68,27 +69,20 @@ const filteredLanguages = computed(() => {
     <ComboboxList align="end" class="w-48">
       <ComboboxEmpty> No language found. </ComboboxEmpty>
 
-      <!-- @TODO: Breaks when using ComboboxGroup, why? -->
-      <!-- @TODO: opens and closes very slowly, even with virtualizer -->
-      <div class="p-1">
+      <ComboboxGroup>
         <ComboboxItem :value="null" v-if="!forwarded.multiple">
           <ComboboxItemIndicator />
           Unset
         </ComboboxItem>
-        <ComboboxVirtualizer
-          v-slot="{ option, virtualizer }"
-          :options="filteredLanguages"
-          :text-content="(x: Language) => x.label"
-          :estimate-size="32"
+        <ComboboxItem
+          v-for="language in filteredLanguages"
+          :key="language.code"
+          :value="language.code"
         >
-          <div :ref="(node) => virtualizer.measureElement(node as Element)" class="w-full">
-            <ComboboxItem :key="option.code" :value="option.code">
-              <ComboboxItemIndicator />
-              {{ option.label }}
-            </ComboboxItem>
-          </div>
-        </ComboboxVirtualizer>
-      </div>
+          <ComboboxItemIndicator />
+          {{ language.label }}
+        </ComboboxItem>
+      </ComboboxGroup>
     </ComboboxList>
   </Combobox>
 </template>

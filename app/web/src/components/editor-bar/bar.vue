@@ -2,9 +2,9 @@
 import FileItem from '@/components/editor-bar/file-item.vue'
 import NewItem from '@/components/editor-bar/new-item.vue'
 import ShapeItem from '@/components/editor-bar/shape-item.vue'
-import { absoluteToPrefixed } from '@/components/tmp-prefixes'
+import { Namespaces, Prefixes } from '@/components/namespace'
 import { injectTurtleEditorContext, scrollToShape } from '@/components/turtle-editor'
-import { useShapes } from '@/composables/use-shacl'
+import { useFileStore, useShapes } from '@/composables/use-shacl'
 import { useRoute, useRouter } from 'vue-router'
 
 defineProps<{
@@ -15,6 +15,9 @@ const router = useRouter()
 const route = useRoute()
 const { shapes, removeShape } = useShapes()
 const { editor } = injectTurtleEditorContext()
+
+const store = useFileStore()
+const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
 </script>
 
 <template>
@@ -30,7 +33,7 @@ const { editor } = injectTurtleEditorContext()
       @click="
         () => {
           if (activeTab !== 'turtle' || !editor) return
-          const prefixedShape = absoluteToPrefixed(shape.value)
+          const prefixedShape = Prefixes.absoluteToPrefixed(namespaces, shape.value)
           scrollToShape(prefixedShape, editor)
         }
       "

@@ -178,7 +178,7 @@ function create() {
                   <TooltipContent>The IRI of the node or property.</TooltipContent>
                 </Tooltip>
               </FieldLabel>
-              <PrefixInput v-model="iri" placeholder="ex:MyNode" />
+              <PrefixInput v-model="iri" placeholder="ex:MyNode" no-suggestions />
             </Field>
 
             <Field v-if="type === 'node'">

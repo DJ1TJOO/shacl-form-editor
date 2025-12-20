@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { EditorBar, NewItemDialog } from '@/components/editor-bar'
+import { Namespaces, Prefixes } from '@/components/namespace'
 import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
 import { PropertiesList } from '@/components/properties'
 import { FileProvider, Shacl } from '@/components/rdf'
 import { HeaderActions } from '@/components/sfe-header'
 import { Shape } from '@/components/shape'
 import { SideBar } from '@/components/side-bar'
-import { absoluteToPrefixed } from '@/components/tmp-prefixes'
 import { Toolbox } from '@/components/toolbox'
 import { scrollToShape, TurtleEditorProvider, TurtleFileEditor } from '@/components/turtle-editor'
 import { Button } from '@/components/ui/button'
@@ -40,6 +40,7 @@ const gridTemplateColumns = computed(() => {
 })
 
 const fileProviderRef = ref<InstanceType<typeof FileProvider> | null>(null)
+const store = computed(() => fileProviderRef.value?.store)
 const turtleEditorProviderRef = ref<InstanceType<typeof TurtleEditorProvider> | null>(null)
 const showNewItemDialog = ref(false)
 watch(
@@ -52,7 +53,7 @@ watch(
 
 const shapeExists = ref(false)
 watch(
-  () => [shapeIRI.value, fileProviderRef.value?.store] as const,
+  () => [shapeIRI.value, store.value] as const,
   ([shapeIRI, store]) => {
     if (!store) return false
     shapeExists.value = shapeIRI ? Shacl.shapeExists(store, shapeIRI) : false
@@ -61,10 +62,9 @@ watch(
 )
 
 const downloadTtl = (debug: boolean = false) => {
-  const store = fileProviderRef.value?.store
-  if (!store) return
+  if (!store.value) return
 
-  const serialized = Shacl.serialize(store)
+  const serialized = Shacl.serialize(store.value)
   if (!serialized) return
 
   if (debug) {
@@ -85,11 +85,12 @@ const downloadTtl = (debug: boolean = false) => {
   URL.revokeObjectURL(url)
 }
 
+const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
 async function goToTurtle() {
   params.tab = 'turtle'
   await nextTick()
   if (shapeIRI.value && turtleEditorProviderRef.value?.editor) {
-    const prefixedShape = absoluteToPrefixed(shapeIRI.value)
+    const prefixedShape = Prefixes.absoluteToPrefixed(namespaces.value, shapeIRI.value)
     scrollToShape(prefixedShape, turtleEditorProviderRef.value.editor)
   }
 }

@@ -13,8 +13,8 @@ import { InputGroup, InputGroupAddon, InputGroupComboboxInput } from '@/componen
 import { useFileStore } from '@/composables/use-shacl'
 import { reactiveOmit } from '@vueuse/core'
 import type { ComboboxRootEmits, ComboboxRootProps } from 'reka-ui'
-import { useForwardPropsEmits } from 'reka-ui'
-import { type HTMLAttributes, type InputHTMLAttributes } from 'vue'
+import { useFilter, useForwardPropsEmits } from 'reka-ui'
+import { computed, ref, type HTMLAttributes, type InputHTMLAttributes } from 'vue'
 
 defineOptions({
   inheritAttrs: false,
@@ -36,14 +36,27 @@ const prefix = defineModel<T>({ required: true })
 const store = useFileStore()
 const prefixSuggestions = Prefixes.usePrefixSuggestionsList(store)
 const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
+
+const searchTerm = ref('')
+const { contains, startsWith } = useFilter({ sensitivity: 'base' })
+const filteredPrefixSuggestions = computed(() => {
+  const [prefix, iri] = searchTerm.value.split(':')
+  return prefixSuggestions.value.filter(
+    (p) =>
+      (prefix && startsWith(p.iri, prefix)) ||
+      (iri && contains(p.iri, iri)) ||
+      contains(p.iri, searchTerm.value),
+  )
+})
 </script>
 
 <template>
-  <Combobox v-model="prefix" v-bind="comboboxProps">
+  <Combobox v-model="prefix" v-bind="comboboxProps" ignore-filter>
     <ComboboxAnchor>
       <InputGroup>
         <InputGroupComboboxInput
           v-bind="{ ...$attrs }"
+          v-model="searchTerm"
           :display-value="
             (prefix: T) => (prefix ? Prefixes.absoluteToPrefixed(namespaces, prefix) : '')
           "
@@ -64,7 +77,11 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
 
     <ComboboxList hide-when-empty>
       <ComboboxGroup v-if="!noSuggestions">
-        <ComboboxItem v-for="option in prefixSuggestions" :key="option.iri" :value="option.iri">
+        <ComboboxItem
+          v-for="option in filteredPrefixSuggestions"
+          :key="option.iri"
+          :value="option.iri"
+        >
           <div class="flex items-center gap-2">
             <ComboboxItemIndicator />
             <span> {{ option.label }}</span>

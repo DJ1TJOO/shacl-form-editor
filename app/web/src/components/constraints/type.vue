@@ -2,8 +2,8 @@
 import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
+import { Namespaces, Prefixes } from '@/components/namespace'
 import { Shacl } from '@/components/rdf'
-import { absoluteToPrefixed } from '@/components/tmp-prefixes'
 import { Field, FieldLabel } from '@/components/ui/field'
 import {
   InputGroup,
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/input-group'
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useNamed, useNamedList } from '@/composables/use-shacl'
+import { useFileStore, useNamed, useNamedList } from '@/composables/use-shacl'
 import { InfoIcon } from 'lucide-vue-next'
 import { NamedNode } from 'rdflib'
 
@@ -34,6 +34,9 @@ const {
 const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype') })
 const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
 const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind') })
+
+const store = useFileStore()
+const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
 </script>
 
 <template>
@@ -102,7 +105,7 @@ const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind
             :key="nodeKind.value"
             :value="nodeKind.value"
           >
-            {{ absoluteToPrefixed(nodeKind.value) }}
+            {{ Prefixes.absoluteToPrefixed(namespaces, nodeKind.value) }}
           </SelectItem>
         </SelectContent>
       </Select>

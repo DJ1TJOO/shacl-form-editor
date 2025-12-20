@@ -1,4 +1,5 @@
 <script lang="ts">
+import { Namespaces } from '@/components/namespace'
 import { Shacl } from '@/components/rdf'
 import { useGlobalName } from '@/composables/use-shacl'
 import { useStorage, watchIgnorable } from '@vueuse/core'
@@ -128,6 +129,8 @@ watch(
   },
   { immediate: true },
 )
+
+Namespaces.usePrefixSuggestionsForActiveNamespaces()
 
 provideFileContext({
   store,

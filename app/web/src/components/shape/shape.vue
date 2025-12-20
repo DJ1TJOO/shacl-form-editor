@@ -112,6 +112,7 @@ const { value: path } = useNamed({
             v-if="iri"
             v-model="iri"
             placeholder="ex:MyNode"
+            no-suggestions
             @blur="currentShape.value.value = iri ?? undefined"
           />
         </Field>

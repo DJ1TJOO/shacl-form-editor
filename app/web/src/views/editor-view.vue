@@ -64,7 +64,7 @@ watch(
 const downloadTtl = (debug: boolean = false) => {
   if (!store.value) return
 
-  const serialized = Shacl.serialize(store.value)
+  const serialized = Shacl.serialize(store.value, namespaces.value)
   if (!serialized) return
 
   if (debug) {

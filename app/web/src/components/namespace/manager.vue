@@ -102,6 +102,7 @@ function handleEdit(updatedNamespace: NamespaceDefinition) {
     customNamespaces.value[index] = updatedNamespace
   } else {
     customNamespaces.value.push(updatedNamespace)
+    toggleNamespace(updatedNamespace.prefix, true)
   }
 
   if (editingNamespace.value && activeNamespaces.value.includes(editingNamespace.value.prefix)) {

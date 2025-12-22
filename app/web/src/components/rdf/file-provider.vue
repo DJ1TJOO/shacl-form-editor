@@ -31,12 +31,12 @@ const showNewItemDialog = ref(false)
 function watchStore(store: IndexedFormula) {
   store.addDataCallback(() => {
     ignoreStoredStoreUpdates(() => {
-      storedStore.value = Shacl.serialize(store)
+      storedStore.value = Shacl.serialize(store, activeNamespacesDefinitions.value)
     })
   })
   store.addDataRemovalCallback(() => {
     ignoreStoredStoreUpdates(() => {
-      storedStore.value = Shacl.serialize(store)
+      storedStore.value = Shacl.serialize(store, activeNamespacesDefinitions.value)
     })
   })
 }
@@ -65,7 +65,7 @@ function resetFile() {
   watchStore(newStore)
   store.value = newStore
   ignoreStoredStoreUpdates(() => {
-    storedStore.value = Shacl.serialize(newStore)
+    storedStore.value = Shacl.serialize(newStore, activeNamespacesDefinitions.value)
   })
 }
 
@@ -130,7 +130,7 @@ watch(
   { immediate: true },
 )
 
-Namespaces.usePrefixSuggestionsForActiveNamespaces()
+const { activeNamespacesDefinitions } = Namespaces.usePrefixSuggestionsForActiveNamespaces()
 
 provideFileContext({
   store,

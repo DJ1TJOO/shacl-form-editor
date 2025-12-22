@@ -1,3 +1,4 @@
+import { type NamespaceDefinition } from '@/components/namespace'
 import { recalculateOrdersForShape } from '@/components/properties/list/ordering'
 import { Dash, getNamedNode, RDF } from '@/components/rdf'
 import type { IndexedFormula } from 'rdflib'
@@ -293,7 +294,11 @@ export function removeProperty(store: IndexedFormula, property: BlankNode | Name
   }
 }
 
-export function serialize(store: IndexedFormula) {
+export function serialize(store: IndexedFormula, namespaces: NamespaceDefinition[]) {
+  for (const namespace of namespaces) {
+    store.setPrefixForURI(namespace.prefix, namespace.iri)
+  }
+
   const serialized = store.serialize(null, null, null)
   if (!serialized) return null
 

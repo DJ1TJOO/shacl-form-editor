@@ -165,7 +165,7 @@ function handleCreate() {
           <FieldLabel>
             IRI
             <Tooltip>
-              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipTrigger><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
@@ -176,7 +176,7 @@ function handleCreate() {
             <FieldLabel>
               Label
               <Tooltip>
-                <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+                <TooltipTrigger><InfoIcon /></TooltipTrigger>
                 <TooltipContent>This is content in a tooltip.</TooltipContent>
               </Tooltip>
             </FieldLabel>
@@ -209,7 +209,7 @@ function handleCreate() {
           <FieldLabel>
             Description
             <Tooltip>
-              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipTrigger><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>

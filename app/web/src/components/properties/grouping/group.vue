@@ -227,7 +227,7 @@ const { elementRef: dropzoneRef } = useDroppable({
           <FieldLabel>
             IRI
             <Tooltip>
-              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipTrigger><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
@@ -238,7 +238,7 @@ const { elementRef: dropzoneRef } = useDroppable({
             <FieldLabel>
               Label
               <Tooltip>
-                <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+                <TooltipTrigger><InfoIcon /></TooltipTrigger>
                 <TooltipContent>This is content in a tooltip.</TooltipContent>
               </Tooltip>
             </FieldLabel>
@@ -273,7 +273,7 @@ const { elementRef: dropzoneRef } = useDroppable({
           <FieldLabel>
             Description
             <Tooltip>
-              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipTrigger><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>

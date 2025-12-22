@@ -2,6 +2,7 @@
 import { useFile } from '@/components/file'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
+import { properties, type PropertiesDefinition } from '@/components/properties'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,6 +13,13 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useShapes } from '@/composables/use-shacl'
 import { reactiveOmit, useVModel } from '@vueuse/core'
@@ -33,12 +41,15 @@ const delegatedProps = reactiveOmit(props, 'open', 'defaultOpen')
 
 const forward = useForwardPropsEmits(delegatedProps, emits)
 
-const { addShape } = useShapes()
+const { addNodeShape, addPropertyShape } = useShapes()
 const { fileId } = useFile()
 
 const router = useRouter()
 const type = ref<'node' | 'property'>('node')
 const iri = ref('')
+
+const property = ref<PropertiesDefinition | undefined>(undefined)
+
 const targetClass = ref<{ value: string }[]>([])
 const targetNode = ref<{ value: string }[]>([])
 const targetSubjectsOf = ref<{ value: string }[]>([])
@@ -82,6 +93,8 @@ const valid = computed(() => {
     if (target.value.trim().length < 1 || !target.value.includes(':')) return false
   }
 
+  if (type.value === 'property' && !property.value) return false
+
   return true
 })
 
@@ -90,16 +103,23 @@ function create() {
 
   const shapeIRI = iri.value.trim()
   if (type.value === 'node') {
-    addShape(
-      shapeIRI,
-      'node',
-      targetClass.value.map((classEntry) => classEntry.value),
-      targetNode.value.map((nodeEntry) => nodeEntry.value),
-      targetSubjectsOf.value.map((subjectEntry) => subjectEntry.value),
-      targetObjectsOf.value.map((objectEntry) => objectEntry.value),
-    )
+    addNodeShape({
+      iri: shapeIRI,
+      targetClass: targetClass.value.map((classEntry) => classEntry.value),
+      targetNode: targetNode.value.map((nodeEntry) => nodeEntry.value),
+      targetSubjectsOf: targetSubjectsOf.value.map((subjectEntry) => subjectEntry.value),
+      targetObjectsOf: targetObjectsOf.value.map((objectEntry) => objectEntry.value),
+    })
   } else {
-    addShape(shapeIRI, 'property')
+    if (!property.value || !property.value.editor || !property.value.viewer) return
+
+    addPropertyShape({
+      iri: shapeIRI,
+      editor: property.value.editor,
+      viewer: property.value.viewer,
+      datatype: property.value.datatype,
+      nodeKind: property.value.nodeKind,
+    })
   }
 
   router.push(`/file/${fileId.value}/${encodeURIComponent(shapeIRI)}`)
@@ -255,6 +275,25 @@ function create() {
                 </PrefixInput>
               </template>
               <AddButton @click="targetObjectsOf.push({ value: '' })" />
+            </Field>
+
+            <Field v-if="type === 'property'">
+              <FieldLabel> Editor </FieldLabel>
+              <Select v-model="property">
+                <SelectTrigger class="w-full">
+                  <SelectValue placeholder="Select a editor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="property in properties.filter((property) => !property.noPropertyShape)"
+                    :key="property.label"
+                    :value="property"
+                  >
+                    <component :is="property.icon" />
+                    {{ property.label }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </Field>
           </FieldGroup>
         </FieldSet>

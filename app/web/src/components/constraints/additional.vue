@@ -6,6 +6,7 @@ import { RDF, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { booleanFromCheckboxValue, useLiteral, useNamedList } from '@/composables/use-shacl'
 import { InfoIcon, XIcon } from 'lucide-vue-next'
@@ -19,10 +20,30 @@ const { items: ignoredProperties } = useNamedList({
   subject,
   predicate: Shacl.SHACL('ignoredProperties'),
 })
+const { value: defaultValue } = useLiteral({
+  subject,
+  predicate: Shacl.SHACL('defaultValue'),
+})
 </script>
 
 <template>
   <Constraint legend="Additional" :collapsible="collapsible">
+    <Field v-if="type === 'property'">
+      <FieldLabel>
+        Default Value
+        <Tooltip>
+          <TooltipTrigger><InfoIcon /></TooltipTrigger>
+          <TooltipContent>This is content in a tooltip.</TooltipContent>
+        </Tooltip>
+      </FieldLabel>
+      <InputGroup v-if="typeof defaultValue === 'string'">
+        <InputGroupInput v-model="defaultValue" />
+        <InputGroupAddon align="inline-end">
+          <RemoveButton @click="defaultValue = undefined" />
+        </InputGroupAddon>
+      </InputGroup>
+      <AddButton v-else @click="defaultValue = ''" />
+    </Field>
     <Field>
       <FieldLabel>
         Type

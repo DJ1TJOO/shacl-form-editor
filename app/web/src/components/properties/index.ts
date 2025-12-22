@@ -19,6 +19,8 @@ export { default as Empty } from './list/empty.vue'
 export { default as PropertiesList } from './list/list-with-data.vue'
 export { default as Property } from './property.vue'
 
+export * from './properties'
+
 export type PropertyProps = {
   subject: BlankNode | NamedNode
   order: number

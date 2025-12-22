@@ -79,8 +79,6 @@ function watchStore(store: IndexedFormula) {
         store: serialized,
         updated: new Date().toISOString(),
       })
-
-      routeToValidShape()
     })
   }
 

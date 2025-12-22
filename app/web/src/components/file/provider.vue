@@ -129,6 +129,7 @@ function routeToValidShape() {
   const currentPath = route.path
 
   if (currentShapeIRI.value && Shacl.shapeExists(store.value, currentShapeIRI.value)) {
+    currentShape.node.value = new NamedNode(currentShapeIRI.value)
     return
   }
 

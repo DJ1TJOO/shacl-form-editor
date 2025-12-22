@@ -10,7 +10,7 @@ import { createContext } from 'reka-ui'
 import { computed, readonly, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-interface FileContext {
+export interface FileContext {
   fileId: ComputedRef<string>
   fileInStorage: Ref<string>
   file: ComputedRef<Files.File>
@@ -31,8 +31,6 @@ export function useFileStore() {
 </script>
 
 <script setup lang="ts">
-const { activeNamespacesDefinitions } = Namespaces.usePrefixSuggestionsForActiveNamespaces()
-
 const router = useRouter()
 const route = useRoute()
 
@@ -59,6 +57,12 @@ const file = computed(() => {
 
   return newFile
 })
+
+const activeNamespacesDefinitions = Namespaces.useActiveNamespacesDefinitionsWithoutContext({
+  file,
+  fileInStorage,
+})
+Namespaces.usePrefixSuggestionsForActiveNamespaces(activeNamespacesDefinitions)
 
 // Keep track of the store
 const store = ref(graph()) as Ref<IndexedFormula>

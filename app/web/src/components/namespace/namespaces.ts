@@ -1,3 +1,4 @@
+import { Files, useFile, type FileContext } from '@/components/file'
 import { useStorage } from '@vueuse/core'
 import { graph, IndexedFormula, parse } from 'rdflib'
 import { computed, watch, type ComputedRef, type Ref } from 'vue'
@@ -5,15 +6,35 @@ import type { NamespaceDefinition, PrefixSuggestion } from '.'
 import { packagedNamespaces } from './packaged/packaged'
 import { usePrefixSuggestions } from './prefixes'
 
-export function useActiveNamespaces() {
-  return useStorage<NamespaceDefinition['prefix'][]>('active-namespaces', ['xsd', 'sh'])
+export const DEFAULT_ACTIVE_NAMESPACES = ['xsd', 'sh']
+
+export function useActiveNamespacesWithoutContext({
+  file,
+  fileInStorage,
+}: Pick<FileContext, 'file' | 'fileInStorage'>) {
+  const activeNamespaces = computed({
+    get: () => file.value.activeNamespaces,
+    set: (value) => {
+      fileInStorage.value = Files.serializeFile({
+        ...file.value,
+        activeNamespaces: value,
+      })
+    },
+  })
+  return activeNamespaces
 }
 
-export function useActiveNamespacesDefinitions(
+export function useActiveNamespaces() {
+  const { file, fileInStorage } = useFile()
+  return useActiveNamespacesWithoutContext({ file, fileInStorage })
+}
+
+export function useActiveNamespacesDefinitionsWithoutContext(
+  { file, fileInStorage }: Pick<FileContext, 'file' | 'fileInStorage'>,
   store?: Ref<IndexedFormula | undefined> | ComputedRef<IndexedFormula | undefined>,
 ): ComputedRef<NamespaceDefinition[]> {
   const customNamespaces = useCustomNamespaces()
-  const activeNamespaces = useActiveNamespaces()
+  const activeNamespaces = useActiveNamespacesWithoutContext({ file, fileInStorage })
 
   return computed(() => {
     const storeNamespaces = store?.value
@@ -36,25 +57,18 @@ export function useActiveNamespacesDefinitions(
   })
 }
 
+export function useActiveNamespacesDefinitions(): ComputedRef<NamespaceDefinition[]> {
+  const { file, fileInStorage, store } = useFile()
+  return useActiveNamespacesDefinitionsWithoutContext({ file, fileInStorage }, store)
+}
+
 export function useCustomNamespaces() {
   return useStorage<NamespaceDefinition[]>('custom-namespaces', [])
 }
 
-export function usePrefixSuggestionsForActiveNamespaces() {
-  const customNamespaces = useCustomNamespaces()
-
-  const activeNamespaces = useActiveNamespaces()
-  const activeNamespacesDefinitions = computed(() =>
-    activeNamespaces.value
-      .map(
-        (prefix) =>
-          customNamespaces.value.find((namespace) => namespace.prefix === prefix) ??
-          packagedNamespaces.find((namespace) => namespace.prefix === prefix) ??
-          null,
-      )
-      .filter((namespace) => namespace !== null),
-  )
-
+export function usePrefixSuggestionsForActiveNamespaces(
+  activeNamespaces: ComputedRef<NamespaceDefinition[]>,
+) {
   const prefixSuggestions = usePrefixSuggestions()
 
   async function updatePrefixSuggestionsFromFile(
@@ -116,7 +130,7 @@ export function usePrefixSuggestionsForActiveNamespaces() {
   }
 
   watch(
-    activeNamespacesDefinitions,
+    activeNamespaces,
     async (newActiveNamespacesDefinitions) => {
       await updatePrefixSuggestionsFromFile(newActiveNamespacesDefinitions)
       updatePrefixSuggestionsFromSuggestions(newActiveNamespacesDefinitions)
@@ -125,11 +139,7 @@ export function usePrefixSuggestionsForActiveNamespaces() {
     { immediate: true },
   )
 
-  return {
-    activeNamespaces,
-    activeNamespacesDefinitions,
-    prefixSuggestions,
-  }
+  return prefixSuggestions
 }
 
 export function getNamedNodesFromStore(store: IndexedFormula, ignoreDefaultNamespaces = false) {

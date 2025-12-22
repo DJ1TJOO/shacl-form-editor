@@ -1,7 +1,7 @@
+import { useFileStore } from '@/components/file'
 import { Shacl } from '@/components/rdf'
 import { useStorage } from '@vueuse/core'
-import type { IndexedFormula } from 'rdflib'
-import { computed, type ComputedRef, type Ref } from 'vue'
+import { computed } from 'vue'
 import { type NamespaceDefinition, type PrefixSuggestion } from '.'
 import { getNamedNodesFromStore, useActiveNamespaces } from './namespaces'
 
@@ -9,13 +9,10 @@ export function usePrefixSuggestions() {
   return useStorage<Record<string, PrefixSuggestion[]>>('prefix-suggestions', {})
 }
 
-export function usePrefixSuggestionsList(
-  store?: Ref<IndexedFormula | undefined> | ComputedRef<IndexedFormula | undefined>,
-) {
-  const storedSuggestions = computed(() => {
-    if (!store) return []
-    if (!store.value) return []
+export function usePrefixSuggestionsList() {
+  const store = useFileStore()
 
+  const storedSuggestions = computed(() => {
     const namedNodes = getNamedNodesFromStore(store.value, true)
     const namespaces = Object.entries(store.value.namespaces).map(([prefix, iri]) => ({
       prefix,

@@ -1,5 +1,4 @@
 <script setup lang="ts" generic="T extends string | undefined">
-import { useFileStore } from '@/components/file'
 import { Namespaces, Prefixes } from '@/components/namespace'
 import {
   Combobox,
@@ -33,9 +32,8 @@ const comboboxProps = useForwardPropsEmits(comboboxPropsWithoutModel, emits)
 
 const prefix = defineModel<T>({ required: true })
 
-const store = useFileStore()
-const prefixSuggestions = Prefixes.usePrefixSuggestionsList(store)
-const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
+const prefixSuggestions = Prefixes.usePrefixSuggestionsList()
+const namespaces = Namespaces.useActiveNamespacesDefinitions()
 
 const searchTerm = ref('')
 const { contains, startsWith } = useFilter({ sensitivity: 'base' })

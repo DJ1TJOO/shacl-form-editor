@@ -17,8 +17,8 @@ const route = useRoute()
 const { shapes, removeShape } = useShapes()
 const { editor } = injectTurtleEditorContext()
 
-const { store, fileId } = useFile()
-const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
+const { fileId } = useFile()
+const namespaces = Namespaces.useActiveNamespacesDefinitions()
 </script>
 
 <template>

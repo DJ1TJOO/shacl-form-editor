@@ -1,3 +1,4 @@
+import { Namespaces, type NamespaceDefinition } from '@/components/namespace'
 import { useEventListener } from '@vueuse/core'
 import { ref } from 'vue'
 
@@ -6,6 +7,7 @@ export interface File {
   name: string
   created: string
   updated: string
+  activeNamespaces: NamespaceDefinition['prefix'][]
 }
 
 export interface FileWithId extends File {
@@ -18,12 +20,14 @@ export function parseFile(file: string): File | null {
   if (typeof fileData.name !== 'string') return null
   if (typeof fileData.created !== 'string' || isNaN(Date.parse(fileData.created))) return null
   if (typeof fileData.updated !== 'string' || isNaN(Date.parse(fileData.updated))) return null
+  if (!Array.isArray(fileData.activeNamespaces)) return null
 
   return {
     store: fileData.store,
     name: fileData.name,
     created: fileData.created,
     updated: fileData.updated,
+    activeNamespaces: fileData.activeNamespaces,
   }
 }
 
@@ -67,6 +71,7 @@ export function createFile(fileId: string, fileName: string) {
     name: fileName,
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
+    activeNamespaces: Namespaces.DEFAULT_ACTIVE_NAMESPACES,
   } satisfies File
 
   const stringifiedFile = JSON.stringify(file)
@@ -74,7 +79,12 @@ export function createFile(fileId: string, fileName: string) {
   dispatchFileUpdateEvent(fileId, null, stringifiedFile)
 }
 
-export function renameFile(fileId: string, newFileId: string, fileName: string) {
+export function renameFile(
+  fileId: string,
+  newFileId: string,
+  fileName: string,
+  disableDispatch = false,
+) {
   const file = window.localStorage.getItem(`file-${fileId}`)
   if (!file) return false
   const fileData = parseFile(file)
@@ -85,11 +95,31 @@ export function renameFile(fileId: string, newFileId: string, fileName: string) 
 
   const stringifiedFile = JSON.stringify(fileData)
   window.localStorage.setItem(`file-${newFileId}`, stringifiedFile)
-  dispatchFileUpdateEvent(newFileId, null, stringifiedFile)
+  if (!disableDispatch) {
+    dispatchFileUpdateEvent(newFileId, null, stringifiedFile)
+  }
 
   window.localStorage.removeItem(`file-${fileId}`)
-  dispatchFileUpdateEvent(fileId, file, null)
+  if (!disableDispatch) {
+    dispatchFileUpdateEvent(fileId, file, null)
+  }
   return true
+}
+
+export function updateActiveNamespaces(
+  fileId: string,
+  activeNamespaces: NamespaceDefinition['prefix'][],
+) {
+  const existingFile = window.localStorage.getItem(`file-${fileId}`)
+  if (!existingFile) return false
+  const existingFileData = parseFile(existingFile)
+  if (!existingFileData) return false
+
+  existingFileData.activeNamespaces = activeNamespaces
+
+  const stringifiedFile = JSON.stringify(existingFileData)
+  window.localStorage.setItem(`file-${fileId}`, stringifiedFile)
+  dispatchFileUpdateEvent(fileId, existingFile, stringifiedFile)
 }
 
 export function deleteFile(fileId: string) {
@@ -112,6 +142,7 @@ export function dispatchFileUpdateEvent(
       key: `file-${fileId}`,
       oldValue,
       newValue,
+      storageArea: window.localStorage,
     }),
   )
 }

@@ -48,7 +48,7 @@ const valid = computed(() => {
 function rename() {
   if (!valid.value) return
 
-  const success = Files.renameFile(props.fileId, slug.value, fileId.value)
+  const success = Files.renameFile(props.fileId, slug.value, fileId.value, true)
   if (!success) return
 
   if (props.redirectOnRename) {

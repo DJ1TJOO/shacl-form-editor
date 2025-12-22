@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { useFileStore } from '@/components/file'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { Namespaces, Prefixes } from '@/components/namespace'
@@ -36,8 +35,7 @@ const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype
 const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
 const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind') })
 
-const store = useFileStore()
-const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
+const namespaces = Namespaces.useActiveNamespacesDefinitions()
 </script>
 
 <template>

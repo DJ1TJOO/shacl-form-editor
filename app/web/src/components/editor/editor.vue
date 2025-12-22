@@ -38,7 +38,7 @@ const params = useUrlSearchParams<{ tab: 'editor' | 'turtle' }>('history', {
 const turtleEditorProviderRef = ref<InstanceType<typeof TurtleEditorProvider> | null>(null)
 
 const { store, currentShapeIRI } = useFile()
-const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
+const namespaces = Namespaces.useActiveNamespacesDefinitions()
 
 async function goToTurtle() {
   params.tab = 'turtle'

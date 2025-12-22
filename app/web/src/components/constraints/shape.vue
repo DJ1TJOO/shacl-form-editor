@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { useFile } from '@/components/file'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { getNamedNode, injectFileContext, RDF, Shacl } from '@/components/rdf'
+import { getNamedNode, RDF, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
@@ -11,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useLiteral, useNamed } from '@/composables/use-shacl'
 import { ForwardIcon, InfoIcon } from 'lucide-vue-next'
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 const { subject } = defineProps<ConstraintProps>()
 
@@ -31,9 +32,8 @@ const { value: qualifiedValueShapesDisjoint } = useLiteral<boolean>({
 
 const hasShape = computed(() => typeof node !== 'undefined')
 
-const { store } = injectFileContext()
+const { store, fileId } = useFile()
 const router = useRouter()
-const route = useRoute()
 
 const canGoToNode = computed(() => {
   if (!node.value) {
@@ -45,8 +45,7 @@ const canGoToNode = computed(() => {
 
 function goToNode() {
   if (!node.value) return
-  const fileId = typeof route.params.fileId === 'string' ? route.params.fileId : 'MyShaclFile'
-  router.push(`/file/${fileId}/${encodeURIComponent(node.value)}`)
+  router.push(`/file/${fileId.value}/${encodeURIComponent(node.value)}`)
 }
 </script>
 <template>

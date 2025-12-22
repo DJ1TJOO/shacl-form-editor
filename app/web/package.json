@@ -18,6 +18,7 @@
   "dependencies": {
     "@codemirror/search": "^6.5.11",
     "@shacl-form-editor/turtle-lang": "workspace:*",
+    "@sindresorhus/slugify": "^3.0.0",
     "@uiw/codemirror-theme-vscode": "^4.25.3",
     "@vue-dnd-kit/core": "^1.7.0",
     "@vueuse/core": "^14.0.0",

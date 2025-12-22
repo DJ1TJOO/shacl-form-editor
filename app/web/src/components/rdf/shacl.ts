@@ -311,3 +311,25 @@ export function deserialize(serialized: string) {
   parse(serialized, store, 'http://localhost:3000/')
   return store
 }
+
+export function download(store: IndexedFormula, namespaces: NamespaceDefinition[], debug = false) {
+  const serialized = serialize(store, namespaces)
+  if (!serialized) return
+
+  if (debug) {
+    console.log(serialized)
+    return
+  }
+
+  const blob = new Blob([serialized], { type: 'text/turtle;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'data.ttl'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+
+  URL.revokeObjectURL(url)
+}

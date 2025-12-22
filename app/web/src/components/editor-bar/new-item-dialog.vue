@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFile } from '@/components/file'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { Button } from '@/components/ui/button'
@@ -33,6 +34,7 @@ const delegatedProps = reactiveOmit(props, 'open', 'defaultOpen')
 const forward = useForwardPropsEmits(delegatedProps, emits)
 
 const { addShape } = useShapes()
+const { fileId } = useFile()
 
 const router = useRouter()
 const type = ref<'node' | 'property'>('node')
@@ -100,7 +102,7 @@ function create() {
     addShape(shapeIRI, 'property')
   }
 
-  router.push(`/file/MyShaclFile/${encodeURIComponent(shapeIRI)}`)
+  router.push(`/file/${fileId.value}/${encodeURIComponent(shapeIRI)}`)
   reset()
   close()
 }

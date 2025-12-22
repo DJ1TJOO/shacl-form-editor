@@ -10,7 +10,6 @@ import {
   ComboboxTrigger,
 } from '@/components/ui/combobox'
 import { InputGroup, InputGroupAddon, InputGroupComboboxInput } from '@/components/ui/input-group'
-import { useFileStore } from '@/composables/use-shacl'
 import { reactiveOmit } from '@vueuse/core'
 import type { ComboboxRootEmits, ComboboxRootProps } from 'reka-ui'
 import { useFilter, useForwardPropsEmits } from 'reka-ui'
@@ -33,9 +32,8 @@ const comboboxProps = useForwardPropsEmits(comboboxPropsWithoutModel, emits)
 
 const prefix = defineModel<T>({ required: true })
 
-const store = useFileStore()
-const prefixSuggestions = Prefixes.usePrefixSuggestionsList(store)
-const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
+const prefixSuggestions = Prefixes.usePrefixSuggestionsList()
+const namespaces = Namespaces.useActiveNamespacesDefinitions()
 
 const searchTerm = ref('')
 const { contains, startsWith } = useFilter({ sensitivity: 'base' })

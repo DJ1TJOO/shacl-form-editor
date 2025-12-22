@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Files } from '@/components/file'
 import { RemoveButton } from '@/components/form-ui/buttons'
 import { Namespaces, Prefixes, type NamespaceDefinition } from '@/components/namespace'
 import EditNamespaceDialog from '@/components/namespace/edit-namespace-dialog.vue'
@@ -16,6 +17,7 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/cn'
+import { tryCatch } from '@/lib/try-catch'
 import { reactiveOmit } from '@vueuse/core'
 import { EditIcon, PlusIcon, SearchIcon, TrashIcon } from 'lucide-vue-next'
 import { useForwardPropsEmits, type DialogRootEmits, type DialogRootProps } from 'reka-ui'
@@ -30,21 +32,26 @@ const forward = useForwardPropsEmits(delegatedProps, emits)
 const open = defineModel<boolean>('open')
 
 const prefixSuggestions = Prefixes.usePrefixSuggestions()
-const activeNamespaces = Namespaces.useActiveNamespaces()
+const [, activeNamespaces] = tryCatch(Namespaces.useActiveNamespaces)
+const files = Files.useFiles()
+
 const customNamespaces = Namespaces.useCustomNamespaces()
 const allNamespaces = computed(() =>
   [
     ...customNamespaces.value.map((ns) => ({
       ...ns,
       type: 'custom',
-      active: activeNamespaces.value.includes(ns.prefix),
+      active: activeNamespaces?.value.includes(ns.prefix) ?? false,
     })),
     ...packagedNamespaces
-      .filter((ns) => !customNamespaces.value.some((cns) => cns.prefix === ns.prefix))
+      .filter(
+        (ns) =>
+          !customNamespaces.value.some((cns) => cns.prefix === ns.prefix || cns.iri === ns.iri),
+      )
       .map((ns) => ({
         ...ns,
         type: 'packaged',
-        active: activeNamespaces.value.includes(ns.prefix),
+        active: activeNamespaces?.value.includes(ns.prefix) ?? false,
       })),
   ].toSorted((a, b) => {
     if (a.active && !b.active) return -1
@@ -54,6 +61,8 @@ const allNamespaces = computed(() =>
 )
 
 function toggleNamespace(prefix: string, value: boolean) {
+  if (!activeNamespaces) return
+
   if (value) {
     if (activeNamespaces.value.includes(prefix)) return
     activeNamespaces.value.push(prefix)
@@ -105,16 +114,31 @@ function handleEdit(updatedNamespace: NamespaceDefinition) {
     toggleNamespace(updatedNamespace.prefix, true)
   }
 
-  if (editingNamespace.value && activeNamespaces.value.includes(editingNamespace.value.prefix)) {
-    toggleNamespace(editingNamespace.value.prefix, false)
-    toggleNamespace(updatedNamespace.prefix, true)
+  if (editingNamespace.value) {
+    const oldPrefix = editingNamespace.value.prefix
+    const newPrefix = updatedNamespace.prefix
+
+    for (const file of files.value) {
+      if (!file.activeNamespaces.includes(oldPrefix)) continue
+
+      Files.updateActiveNamespaces(file.id, [
+        ...file.activeNamespaces.filter((ns) => ns !== oldPrefix),
+        newPrefix,
+      ])
+    }
   }
 
   editingNamespace.value = null
 }
 
 function removeNamespace(prefix: string) {
-  toggleNamespace(prefix, false)
+  for (const file of files.value) {
+    if (!file.activeNamespaces.includes(prefix)) continue
+    Files.updateActiveNamespaces(
+      file.id,
+      file.activeNamespaces.filter((ns) => ns !== prefix),
+    )
+  }
   customNamespaces.value = customNamespaces.value.filter((ns) => ns.prefix !== prefix)
 }
 </script>
@@ -158,6 +182,7 @@ function removeNamespace(prefix: string) {
           class="flex items-center gap-2 hover:bg-background-highlighted p-1 rounded-sm transition-colors"
         >
           <Checkbox
+            v-if="activeNamespaces"
             :model-value="activeNamespaces.includes(namespace.prefix)"
             @update:model-value="(value) => toggleNamespace(namespace.prefix, value === true)"
           />
@@ -212,7 +237,7 @@ function removeNamespace(prefix: string) {
             <ConfirmDialog
               v-if="namespace.type === 'custom'"
               title="Remove namespace"
-              description="Are you sure you want to remove this namespace?"
+              description="Are you sure you want to remove this namespace? This will remove it from all files."
               @confirm="removeNamespace(namespace.prefix)"
             >
               <Button size="icon-sm" color="danger-hover">

@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/input-group'
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useFileStore, useNamed, useNamedList } from '@/composables/use-shacl'
+import { useNamed, useNamedList } from '@/composables/use-shacl'
 import { InfoIcon } from 'lucide-vue-next'
 import { NamedNode } from 'rdflib'
 
@@ -35,8 +35,7 @@ const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype
 const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
 const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind') })
 
-const store = useFileStore()
-const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
+const namespaces = Namespaces.useActiveNamespacesDefinitions()
 </script>
 
 <template>

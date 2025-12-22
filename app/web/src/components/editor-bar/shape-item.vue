@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import BarItem from '@/components/editor-bar/bar-item.vue'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from '@/components/ui/conext-menu'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+} from '@/components/ui/context-menu'
 import { CircleIcon, DiamondIcon, TrashIcon } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'

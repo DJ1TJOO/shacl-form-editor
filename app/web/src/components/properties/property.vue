@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFileStore } from '@/components/file'
 import type { PropertyProps } from '@/components/properties'
 import { injectPropertiesListContext } from '@/components/properties/list/list.vue'
 import {
@@ -9,7 +10,7 @@ import { Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
-import { useFileStore, useNamed } from '@/composables/use-shacl'
+import { useNamed } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { useDraggable } from '@vue-dnd-kit/core'
 import { watchIgnorable } from '@vueuse/core'

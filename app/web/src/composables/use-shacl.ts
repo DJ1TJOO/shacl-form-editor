@@ -1,39 +1,47 @@
 import { useFileStore } from '@/components/file'
-import { Dash, Shacl, Xsd } from '@/components/rdf'
+import { RDF, Shacl, Xsd } from '@/components/rdf'
 import { watchIgnorable } from '@vueuse/core'
 import { BlankNode, IndexedFormula, Literal, NamedNode, Node } from 'rdflib'
 import type { NamedNode as NamedNodeType, Quad_Predicate, Quad_Subject } from 'rdflib/lib/tf-types'
 import type { Ref } from 'vue'
 import { computed, reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 
+export const useShapeType = ({
+  subject,
+}: {
+  subject?: MaybeRefOrGetter<Quad_Subject | undefined>
+}) => {
+  const { items: types } = useNamedList({ subject, predicate: RDF('type') })
+  return computed(() => {
+    if (types.some((type) => type.value === Shacl.SHACL('NodeShape').value)) return 'node'
+    if (types.some((type) => type.value === Shacl.SHACL('PropertyShape').value)) return 'property'
+    return undefined
+  })
+}
+
 export const useShapes = () => {
   const store = useFileStore()
   const shapes = computed(() => Shacl.getAllShapes(store.value))
 
-  function addShape(
-    iri: string | NamedNode,
-    type: 'node' | 'property',
-    targetClass?: (string | NamedNodeType)[],
-    targetNode?: (string | NamedNodeType)[],
-    targetSubjectsOf?: (string | NamedNodeType)[],
-    targetObjectsOf?: (string | NamedNodeType)[],
-  ) {
-    Shacl.addShape(
-      store.value,
-      iri,
-      type,
-      targetClass,
-      targetNode,
-      targetSubjectsOf,
-      targetObjectsOf,
-    )
+  function addNodeShape(props: Omit<Shacl.AddNodeShape, 'store'>) {
+    Shacl.addNodeShape({
+      store: store.value,
+      ...props,
+    })
+  }
+
+  function addPropertyShape(props: Omit<Shacl.AddPropertyShape, 'store'>) {
+    Shacl.addPropertyShape({
+      store: store.value,
+      ...props,
+    })
   }
 
   function removeShape(iri: string | NamedNode) {
     Shacl.removeShape(store.value, iri)
   }
 
-  return { shapes, addShape, removeShape }
+  return { shapes, addNodeShape, addPropertyShape, removeShape }
 }
 
 export const useNodeProperties = ({
@@ -82,15 +90,7 @@ export const useNodeProperties = ({
     Shacl.removeProperty(store.value, property)
   }
 
-  function createProperty(
-    shape: string | NamedNode,
-    editor: keyof typeof Dash.editors,
-    viewer: keyof typeof Dash.viewers,
-  ) {
-    Shacl.createProperty(store.value, shape, editor, viewer)
-  }
-
-  return { properties, removeProperty, createProperty }
+  return { properties, removeProperty }
 }
 
 export const useGlobalNamed = ({

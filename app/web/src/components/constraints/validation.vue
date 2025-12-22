@@ -89,7 +89,7 @@ const severityOptions = [
         <FieldLabel>
           Message
           <Tooltip>
-            <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+            <TooltipTrigger><InfoIcon /></TooltipTrigger>
             <TooltipContent
               >Human-readable validation messages in one or more languages.</TooltipContent
             >

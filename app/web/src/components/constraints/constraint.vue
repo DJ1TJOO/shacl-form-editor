@@ -18,8 +18,8 @@ defineProps<ConstraintProps & { legend: string }>()
       <FieldLegend>{{ legend }}</FieldLegend>
     </FieldSetTrigger>
     <component
+      v-bind="collapsible ? { as: FieldGroup } : {}"
       :is="collapsible ? CollapsibleContent : FieldGroup"
-      :as="collapsible ? FieldGroup : undefined"
     >
       <slot />
     </component>

@@ -8,7 +8,7 @@ import { useFile } from '@/components/file'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { RDF, Shacl, Xsd } from '@/components/rdf'
+import { Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import {
   Field,
@@ -23,11 +23,11 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
-import { useLiteralList, useNamed, useNamedList } from '@/composables/use-shacl'
+import { useLiteralList, useNamed, useShapeType } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { CircleIcon, DiamondIcon, InfoIcon, PanelRightOpenIcon, TypeIcon } from 'lucide-vue-next'
 import { Literal } from 'rdflib'
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 
 defineProps<{
   open: boolean
@@ -37,12 +37,7 @@ defineEmits<{
 }>()
 
 const { currentShape } = useFile()
-const { items: types } = useNamedList({ subject: currentShape.node, predicate: RDF('type') })
-const type = computed(() => {
-  if (types.some((type) => type.value === Shacl.SHACL('NodeShape').value)) return 'node'
-  if (types.some((type) => type.value === Shacl.SHACL('PropertyShape').value)) return 'property'
-  return undefined
-})
+const type = useShapeType({ subject: currentShape.node })
 
 const iri = ref<string | undefined>(currentShape.value.value)
 watch(
@@ -105,7 +100,7 @@ const { value: path } = useNamed({
           <FieldLabel>
             Shape IRI
             <Tooltip>
-              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipTrigger><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
@@ -121,7 +116,7 @@ const { value: path } = useNamed({
           <FieldLabel>
             Path
             <Tooltip>
-              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipTrigger><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
@@ -132,7 +127,7 @@ const { value: path } = useNamed({
             <FieldLabel>
               Label
               <Tooltip>
-                <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+                <TooltipTrigger><InfoIcon /></TooltipTrigger>
                 <TooltipContent>This is content in a tooltip.</TooltipContent>
               </Tooltip>
             </FieldLabel>
@@ -167,7 +162,7 @@ const { value: path } = useNamed({
           <FieldLabel>
             Description
             <Tooltip>
-              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipTrigger><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>

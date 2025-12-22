@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ConstraintsList } from '@/components/constraints'
 import { EditorBar, NewItemDialog } from '@/components/editor-bar'
 import { useFile } from '@/components/file'
 import { Namespaces, Prefixes } from '@/components/namespace'
@@ -11,6 +12,7 @@ import { SideBar } from '@/components/side-bar'
 import { Toolbox } from '@/components/toolbox'
 import { scrollToShape, TurtleEditorProvider, TurtleFileEditor } from '@/components/turtle-editor'
 import { Button } from '@/components/ui/button'
+import { useShapeType } from '@/composables/use-shacl'
 import { useUrlSearchParams } from '@vueuse/core'
 import { CodeIcon, DownloadIcon, FormIcon, LayoutTemplateIcon } from 'lucide-vue-next'
 import { computed, nextTick, ref } from 'vue'
@@ -37,7 +39,9 @@ const params = useUrlSearchParams<{ tab: 'editor' | 'turtle' }>('history', {
 
 const turtleEditorProviderRef = ref<InstanceType<typeof TurtleEditorProvider> | null>(null)
 
-const { store, currentShapeIRI } = useFile()
+const { store, currentShapeIRI, currentShape } = useFile()
+const type = useShapeType({ subject: currentShape.node })
+
 const namespaces = Namespaces.useActiveNamespacesDefinitions()
 
 async function goToTurtle() {
@@ -99,17 +103,17 @@ const showNewItemDialog = computed(() => !route.params.shapeId && params.tab ===
 
     <OptionsSidebarProvider ref="optionsSidebarProviderRef">
       <EditorBar :activeTab="params.tab" />
-      <div
-        :key="currentShapeIRI"
-        v-if="params.tab === 'editor'"
-        class="gap-3 grid p-1"
-        :style="{ gridTemplateColumns }"
-      >
+      <div v-if="params.tab === 'editor'" class="gap-3 grid p-1" :style="{ gridTemplateColumns }">
         <SideBar :child-class="!isLeftSideBarOpen && 'h-full justify-center'">
           <Shape :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
-          <Toolbox :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
+          <Toolbox
+            v-if="type === 'node'"
+            :open="isLeftSideBarOpen"
+            @update:open="isLeftSideBarOpen = $event"
+          />
         </SideBar>
-        <PropertiesList as="main" />
+        <PropertiesList v-if="type === 'node'" as="main" />
+        <ConstraintsList v-if="type === 'property'" as="main" />
         <OptionsBar />
       </div>
       <main v-else-if="params.tab === 'turtle'" class="bg-background-highlighted p-1">

@@ -35,7 +35,7 @@ const { value: defaultValue } = useLiteral({
         <FieldLabel>
           Path
           <Tooltip>
-            <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+            <TooltipTrigger><InfoIcon /></TooltipTrigger>
             <TooltipContent>This is content in a tooltip.</TooltipContent>
           </Tooltip>
         </FieldLabel>
@@ -46,7 +46,7 @@ const { value: defaultValue } = useLiteral({
           <FieldLabel>
             Label
             <Tooltip>
-              <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+              <TooltipTrigger><InfoIcon /></TooltipTrigger>
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
@@ -81,7 +81,7 @@ const { value: defaultValue } = useLiteral({
         <FieldLabel>
           Description
           <Tooltip>
-            <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+            <TooltipTrigger><InfoIcon /></TooltipTrigger>
             <TooltipContent>This is content in a tooltip.</TooltipContent>
           </Tooltip>
         </FieldLabel>
@@ -114,7 +114,7 @@ const { value: defaultValue } = useLiteral({
         <FieldLabel>
           Default Value
           <Tooltip>
-            <TooltipTrigger as-child><InfoIcon /></TooltipTrigger>
+            <TooltipTrigger><InfoIcon /></TooltipTrigger>
             <TooltipContent>This is content in a tooltip.</TooltipContent>
           </Tooltip>
         </FieldLabel>

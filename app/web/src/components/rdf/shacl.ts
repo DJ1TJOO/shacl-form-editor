@@ -3,7 +3,11 @@ import { recalculateOrdersForShape } from '@/components/properties/list/ordering
 import { Dash, getNamedNode, RDF } from '@/components/rdf'
 import type { IndexedFormula } from 'rdflib'
 import { BlankNode, graph, Literal, NamedNode, Namespace, Node, parse } from 'rdflib'
-import type { NamedNode as NamedNodeType, Quad_Subject } from 'rdflib/lib/tf-types'
+import type {
+  BlankNode as BlankNodeType,
+  NamedNode as NamedNodeType,
+  Quad_Subject,
+} from 'rdflib/lib/tf-types'
 
 export const SHACL = Namespace('http://www.w3.org/ns/shacl#')
 export const nodeKinds = [
@@ -31,38 +35,38 @@ export function getLocalName(iri?: string | NamedNodeType) {
   return iriValue
 }
 
-export function addShape(
-  store: IndexedFormula,
-  iri: string | NamedNodeType,
-  type: 'node' | 'property',
-  targetClass?: (string | NamedNodeType)[],
-  targetNode?: (string | NamedNodeType)[],
-  targetSubjectsOf?: (string | NamedNodeType)[],
-  targetObjectsOf?: (string | NamedNodeType)[],
-) {
-  const shape = getNamedNode(iri)
-  store.add(shape, RDF('type'), type === 'node' ? SHACL('NodeShape') : SHACL('PropertyShape'))
+export interface AddNodeShape {
+  store: IndexedFormula
+  iri: string | NamedNodeType
+  targetClass: (string | NamedNodeType)[]
+  targetNode: (string | NamedNodeType)[]
+  targetSubjectsOf: (string | NamedNodeType)[]
+  targetObjectsOf: (string | NamedNodeType)[]
+}
 
-  if (targetClass) {
-    targetClass.forEach((classEntry) => {
-      store.add(shape, SHACL('targetClass'), getNamedNode(classEntry))
-    })
-  }
-  if (targetNode) {
-    targetNode.forEach((nodeEntry) => {
-      store.add(shape, SHACL('targetNode'), getNamedNode(nodeEntry))
-    })
-  }
-  if (targetSubjectsOf) {
-    targetSubjectsOf.forEach((subjectEntry) => {
-      store.add(shape, SHACL('targetSubjectsOf'), getNamedNode(subjectEntry))
-    })
-  }
-  if (targetObjectsOf) {
-    targetObjectsOf.forEach((objectEntry) => {
-      store.add(shape, SHACL('targetObjectsOf'), getNamedNode(objectEntry))
-    })
-  }
+export function addNodeShape({
+  store,
+  iri,
+  targetClass,
+  targetNode,
+  targetSubjectsOf,
+  targetObjectsOf,
+}: AddNodeShape) {
+  const shape = getNamedNode(iri)
+  store.add(shape, RDF('type'), SHACL('NodeShape'))
+
+  targetClass.forEach((classEntry) => {
+    store.add(shape, SHACL('targetClass'), getNamedNode(classEntry))
+  })
+  targetNode.forEach((nodeEntry) => {
+    store.add(shape, SHACL('targetNode'), getNamedNode(nodeEntry))
+  })
+  targetSubjectsOf.forEach((subjectEntry) => {
+    store.add(shape, SHACL('targetSubjectsOf'), getNamedNode(subjectEntry))
+  })
+  targetObjectsOf.forEach((objectEntry) => {
+    store.add(shape, SHACL('targetObjectsOf'), getNamedNode(objectEntry))
+  })
 }
 
 export function removeShape(store: IndexedFormula, iri: string | NamedNodeType) {
@@ -243,17 +247,32 @@ export function getMaxOrderOfNode(store: IndexedFormula, shape: Quad_Subject) {
   return orders.length > 0 ? Math.max(...orders, 0) : null
 }
 
-export function createProperty(
-  store: IndexedFormula,
-  shape: string | NamedNodeType,
-  editor: keyof typeof Dash.editors,
-  viewer: keyof typeof Dash.viewers,
-  order?: number,
-  group?: BlankNode | NamedNodeType,
-  datatype?: string | NamedNodeType,
-  nodeKind?: string | NamedNodeType,
-) {
-  const property = new BlankNode()
+export interface AddPropertyShape {
+  store: IndexedFormula
+  iri?: string | NamedNodeType
+  editor: keyof typeof Dash.editors
+  viewer: keyof typeof Dash.viewers
+  order?: number
+  group?: BlankNodeType | NamedNodeType
+  datatype?: string | NamedNodeType
+  nodeKind?: string | NamedNodeType
+}
+
+export function addPropertyShape({
+  store,
+  iri,
+  editor,
+  viewer,
+  order,
+  group,
+  datatype,
+  nodeKind,
+}: AddPropertyShape) {
+  const property = iri ? getNamedNode(iri) : new BlankNode()
+  if (iri) {
+    store.add(property, RDF('type'), SHACL('PropertyShape'))
+  }
+
   store.add(property, Dash.DASH('editor'), Dash.editors[editor])
   store.add(property, Dash.DASH('viewer'), Dash.viewers[viewer])
   if (datatype !== undefined) {
@@ -262,21 +281,38 @@ export function createProperty(
   if (nodeKind !== undefined) {
     store.add(property, SHACL('nodeKind'), getNamedNode(nodeKind))
   }
-  store.add(getNamedNode(shape), SHACL('property'), property)
   if (group !== undefined) {
     store.add(property, SHACL('group'), group)
   }
   if (order !== undefined) {
     store.add(property, SHACL('order'), Literal.fromValue<Literal>(order))
-  } else {
-    const shapeNode = getNamedNode(shape)
-    const maxOrder = getMaxOrderOfNode(store, shapeNode)
-    store.add(
-      property,
-      SHACL('order'),
-      Literal.fromValue<Literal>(maxOrder !== null ? maxOrder + 1 : 0),
-    )
   }
+
+  return property
+}
+
+export function createPropertyForShape({
+  shape,
+  store,
+  order,
+  ...props
+}: Omit<AddPropertyShape, 'iri'> & {
+  shape: string | NamedNodeType
+}) {
+  const shapeNode = getNamedNode(shape)
+
+  let propertyOrder = order
+  if (propertyOrder === undefined) {
+    const maxOrder = getMaxOrderOfNode(store, shapeNode)
+    propertyOrder = maxOrder !== null ? maxOrder + 1 : 0
+  }
+
+  const property = addPropertyShape({
+    order: propertyOrder,
+    store,
+    ...props,
+  })
+  store.add(shapeNode, SHACL('property'), property)
 
   return property
 }

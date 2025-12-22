@@ -2,9 +2,10 @@
 import FileItem from '@/components/editor-bar/file-item.vue'
 import NewItem from '@/components/editor-bar/new-item.vue'
 import ShapeItem from '@/components/editor-bar/shape-item.vue'
+import { useFile } from '@/components/file'
 import { Namespaces, Prefixes } from '@/components/namespace'
 import { injectTurtleEditorContext, scrollToShape } from '@/components/turtle-editor'
-import { useFileStore, useShapes } from '@/composables/use-shacl'
+import { useShapes } from '@/composables/use-shacl'
 import { useRoute, useRouter } from 'vue-router'
 
 defineProps<{
@@ -16,7 +17,7 @@ const route = useRoute()
 const { shapes, removeShape } = useShapes()
 const { editor } = injectTurtleEditorContext()
 
-const store = useFileStore()
+const { store, fileId } = useFile()
 const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
 </script>
 
@@ -29,7 +30,7 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
     <ShapeItem
       v-for="shape in shapes"
       :key="shape.value"
-      :to="`/file/MyShaclFile/${encodeURIComponent(shape.value)}`"
+      :to="`/file/${fileId}/${encodeURIComponent(shape.value)}`"
       @click="
         () => {
           if (activeTab !== 'turtle' || !editor) return
@@ -46,9 +47,9 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions(store)
 
           const nextShape = shapes[0]
           if (nextShape) {
-            router.push(`/file/MyShaclFile/${encodeURIComponent(nextShape.value)}`)
+            router.push(`/file/${fileId}/${encodeURIComponent(nextShape.value)}`)
           } else {
-            router.push('/file/MyShaclFile/')
+            router.push(`/file/${fileId}/`)
           }
         }
       "

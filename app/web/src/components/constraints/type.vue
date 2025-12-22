@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { useFileStore } from '@/components/file'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { Namespaces, Prefixes } from '@/components/namespace'
@@ -13,7 +14,7 @@ import {
 } from '@/components/ui/input-group'
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useFileStore, useNamed, useNamedList } from '@/composables/use-shacl'
+import { useNamed, useNamedList } from '@/composables/use-shacl'
 import { InfoIcon } from 'lucide-vue-next'
 import { NamedNode } from 'rdflib'
 

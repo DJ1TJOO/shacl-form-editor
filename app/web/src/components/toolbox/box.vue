@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { getNamedNode, injectFileContext, RDF, Shacl, Xsd } from '@/components/rdf'
+import { useFile } from '@/components/file'
+import { getNamedNode, RDF, Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useNamedList } from '@/composables/use-shacl'
@@ -38,7 +39,7 @@ defineEmits<{
   (e: 'update:open', payload: boolean): void
 }>()
 
-const { currentShape, store } = injectFileContext()
+const { currentShape, store } = useFile()
 const { items: types } = useNamedList({
   subject: currentShape.node,
   predicate: RDF('type'),

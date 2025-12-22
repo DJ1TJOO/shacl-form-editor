@@ -4,10 +4,11 @@ import {
   TargetConstraints,
   ValidationConstraints,
 } from '@/components/constraints'
+import { useFile } from '@/components/file'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { injectFileContext, RDF, Shacl, Xsd } from '@/components/rdf'
+import { RDF, Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import {
   Field,
@@ -35,7 +36,7 @@ defineEmits<{
   (e: 'update:open', payload: boolean): void
 }>()
 
-const { currentShape } = injectFileContext()
+const { currentShape } = useFile()
 const { items: types } = useNamedList({ subject: currentShape.node, predicate: RDF('type') })
 const type = computed(() => {
   if (types.some((type) => type.value === Shacl.SHACL('NodeShape').value)) return 'node'

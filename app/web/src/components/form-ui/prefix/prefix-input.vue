@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T extends string | undefined">
+import { useFileStore } from '@/components/file'
 import { Namespaces, Prefixes } from '@/components/namespace'
 import {
   Combobox,
@@ -10,7 +11,6 @@ import {
   ComboboxTrigger,
 } from '@/components/ui/combobox'
 import { InputGroup, InputGroupAddon, InputGroupComboboxInput } from '@/components/ui/input-group'
-import { useFileStore } from '@/composables/use-shacl'
 import { reactiveOmit } from '@vueuse/core'
 import type { ComboboxRootEmits, ComboboxRootProps } from 'reka-ui'
 import { useFilter, useForwardPropsEmits } from 'reka-ui'

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFileStore } from '@/components/file'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { injectPropertiesListContext } from '@/components/properties/list/list.vue'
 import {
@@ -25,7 +26,7 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
-import { useFileStore, useGlobalName, useLiteralList } from '@/composables/use-shacl'
+import { useGlobalNamed, useLiteralList } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
 import { useDraggable, useDroppable } from '@vue-dnd-kit/core'
 import { watchIgnorable } from '@vueuse/core'
@@ -44,7 +45,7 @@ const { subject, order, properties } = defineProps<{
 }>()
 
 const store = useFileStore()
-const { value: iri, node: iriNode } = useGlobalName({ initialValue: subject.value })
+const { value: iri, node: iriNode } = useGlobalNamed({ initialValue: subject.value })
 const name = computed(() => Shacl.getLocalName(iri.value))
 const optionsTitle = computed(() => 'Options for ' + name.value)
 const { items: labels } = useLiteralList({ subject: iriNode, predicate: RDFS('label') })

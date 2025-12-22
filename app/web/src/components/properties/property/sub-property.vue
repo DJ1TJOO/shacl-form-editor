@@ -1,19 +1,20 @@
 <script setup lang="ts">
+import { useFile } from '@/components/file'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { Property, type PropertyProps } from '@/components/properties'
-import { getNamedNode, injectFileContext, RDF, Shacl } from '@/components/rdf'
+import { getNamedNode, RDF, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Field, FieldLabel, FieldSet } from '@/components/ui/field'
 import { CircleIcon, ForwardIcon } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 const { subject, order, groupOrder, groupSubject } = defineProps<PropertyProps>()
 defineEmits<{
   (e: 'remove'): void
 }>()
 
-const { store, currentShape } = injectFileContext()
+const { store, currentShape, fileId } = useFile()
 
 const property = ref<string>(subject.value)
 watch(property, (newPropertyValue, oldPropertyValue) => {
@@ -28,7 +29,6 @@ watch(property, (newPropertyValue, oldPropertyValue) => {
 })
 
 const router = useRouter()
-const route = useRoute()
 
 const canGoToProperty = computed(() => {
   if (!property.value) {
@@ -39,8 +39,7 @@ const canGoToProperty = computed(() => {
 })
 
 function goToProperty() {
-  const fileId = typeof route.params.fileId === 'string' ? route.params.fileId : 'MyShaclFile'
-  router.push(`/file/${fileId}/${encodeURIComponent(subject.value)}`)
+  router.push(`/file/${fileId.value}/${encodeURIComponent(subject.value)}`)
 }
 </script>
 

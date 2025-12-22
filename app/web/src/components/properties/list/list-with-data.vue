@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFile } from '@/components/file'
 import {
   BooleanProperty,
   ComboboxProperty,
@@ -28,7 +29,7 @@ import {
   type DraggingExistingPropertiesInGroup,
   type DraggingExistingPropertiesNotInGroup,
 } from '@/components/properties/list/ordering'
-import { Dash, injectFileContext } from '@/components/rdf'
+import { Dash } from '@/components/rdf'
 import { useNodeProperties } from '@/composables/use-shacl'
 import { useDroppable } from '@vue-dnd-kit/core'
 import { BlankNode, NamedNode, Node } from 'rdflib'
@@ -97,7 +98,7 @@ const propertyEditorTypes: {
   },
 ] as const
 
-const { currentShape, store } = injectFileContext()
+const { currentShape, store } = useFile()
 const { properties, removeProperty } = useNodeProperties({ subject: currentShape.node })
 
 function getPropertyEditorType(property: {

@@ -1,0 +1,6 @@
+export { default as DeleteFileDialog } from './delete-file-dialog.vue'
+export * as Files from './files'
+export { default as FilesList } from './list.vue'
+export { default as NewFileDialog } from './new-file-dialog.vue'
+export { default as FileProvider, useFile, useFileStore } from './provider.vue'
+export { default as RenameFileDialog } from './rename-file-dialog.vue'

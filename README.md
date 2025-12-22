@@ -26,7 +26,7 @@ Build validation schemas visually
    pnpm dev
    ```
 
-3. Open your browser and navigate to http://localhost:5173/file/MyShaclFile/
+3. Open your browser and navigate to http://localhost:5173/
 
 Current capabilities:
 

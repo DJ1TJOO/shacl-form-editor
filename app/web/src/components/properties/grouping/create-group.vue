@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFileStore } from '@/components/file'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
@@ -18,7 +19,6 @@ import {
   DEACTIVATE_GROUPED_EVENT,
   REMOVED_FROM_GROUP_EVENT,
 } from '@/composables/use-active'
-import { useFileStore } from '@/composables/use-shacl'
 import { createReusableTemplate } from '@vueuse/core'
 import { GroupIcon, InfoIcon } from 'lucide-vue-next'
 import { BlankNode, Literal, NamedNode, Node } from 'rdflib'

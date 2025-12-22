@@ -2,7 +2,6 @@ import { NamedNode, Namespace } from 'rdflib'
 import type { NamedNode as NamedNodeType } from 'rdflib/lib/tf-types'
 
 export * as Dash from './dash'
-export { default as FileProvider, injectFileContext, provideFileContext } from './file-provider.vue'
 export * as Shacl from './shacl'
 export * as Xsd from './xsd'
 

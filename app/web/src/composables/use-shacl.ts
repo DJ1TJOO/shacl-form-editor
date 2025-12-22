@@ -1,15 +1,10 @@
-import { Dash, injectFileContext, Shacl, Xsd } from '@/components/rdf'
+import { useFileStore } from '@/components/file'
+import { Dash, Shacl, Xsd } from '@/components/rdf'
 import { watchIgnorable } from '@vueuse/core'
 import { BlankNode, IndexedFormula, Literal, NamedNode, Node } from 'rdflib'
 import type { NamedNode as NamedNodeType, Quad_Predicate, Quad_Subject } from 'rdflib/lib/tf-types'
 import type { Ref } from 'vue'
 import { computed, reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
-
-export function useFileStore() {
-  const { store } = injectFileContext()
-
-  return store
-}
 
 export const useShapes = () => {
   const store = useFileStore()
@@ -98,7 +93,7 @@ export const useNodeProperties = ({
   return { properties, removeProperty, createProperty }
 }
 
-export const useGlobalName = ({
+export const useGlobalNamed = ({
   initialValue,
   store: customStore,
 }: {

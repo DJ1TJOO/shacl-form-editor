@@ -3,38 +3,55 @@ import { Shacl } from '@/components/rdf'
 import { useStorage } from '@vueuse/core'
 import { computed } from 'vue'
 import { type NamespaceDefinition, type PrefixSuggestion } from '.'
-import { getNamedNodesFromStore, useActiveNamespaces } from './namespaces'
+import { getNamedNodesFromStoreWithTypes, useActiveNamespaces } from './namespaces'
 
 export function usePrefixSuggestions() {
   return useStorage<Record<string, PrefixSuggestion[]>>('prefix-suggestions', {})
 }
 
-export function usePrefixSuggestionsList() {
+export function usePrefixSuggestionsList(types?: readonly [string, ...string[]]) {
   const store = useFileStore()
 
   const storedSuggestions = computed(() => {
-    const namedNodes = getNamedNodesFromStore(store.value, true)
+    const namedNodes = getNamedNodesFromStoreWithTypes(store.value, true)
     const namespaces = Object.entries(store.value.namespaces).map(([prefix, iri]) => ({
       prefix,
       iri,
     }))
 
-    return namedNodes.map((iri) => ({
+    return namedNodes.map(({ iri, types }) => ({
       label: absoluteToPrefixed(namespaces, iri),
       iri,
+      types,
     }))
   })
 
   const activeNamespaces = useActiveNamespaces()
   const prefixSuggestions = usePrefixSuggestions()
-  return computed(() =>
+  return computed<PrefixSuggestion[]>(() =>
     Object.entries(prefixSuggestions.value)
       .filter(([prefix]) => activeNamespaces.value.includes(prefix))
       .map(([, suggestions]) => suggestions)
       .reduce(
-        (acc, curr) =>
-          acc.filter((suggestion) => curr.some((s) => s.iri === suggestion.iri)).concat(curr),
+        (acc, curr) => {
+          const merged = [...acc]
+
+          for (const suggestion of curr) {
+            const existing = merged.find((s) => s.iri === suggestion.iri)
+
+            if (!existing) {
+              merged.push(suggestion)
+            } else {
+              existing.types = Array.from(new Set([...existing.types, ...suggestion.types]))
+            }
+          }
+
+          return merged
+        },
         store ? storedSuggestions.value : [],
+      )
+      .filter((suggestion) =>
+        types ? types.some((type) => suggestion.types.includes(type)) : true,
       ),
   )
 }

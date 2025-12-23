@@ -3,7 +3,7 @@ import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { Namespaces, Prefixes } from '@/components/namespace'
-import { Shacl } from '@/components/rdf'
+import { RDF_CLASS_TYPES, RDFS, Shacl } from '@/components/rdf'
 import { Field, FieldLabel } from '@/components/ui/field'
 import {
   InputGroup,
@@ -55,7 +55,12 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
         :disabled="fixedDatatype"
       />
       <!-- @TODO: fix when on blur is called in the prefix input the value is set to undefined, this also happens when a user tries to click a option from the list -->
-      <PrefixInput v-model="datatype" v-else :disabled="fixedDatatype">
+      <PrefixInput
+        v-model="datatype"
+        v-else
+        :disabled="fixedDatatype"
+        :types="[RDFS('Datatype').value]"
+      >
         <RemoveButton @click="datatype = undefined" :disabled="fixedDatatype" />
       </PrefixInput>
     </Field>
@@ -69,7 +74,12 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
         </Tooltip>
       </FieldLabel>
 
-      <PrefixInput v-for="(classEntry, index) in classes" :key="index" v-model="classEntry.value">
+      <PrefixInput
+        v-for="(classEntry, index) in classes"
+        :key="index"
+        v-model="classEntry.value"
+        :types="RDF_CLASS_TYPES"
+      >
         <RemoveButton @click="classes.splice(index, 1)" />
       </PrefixInput>
       <AddButton @click="classes.push({ value: '', node: new NamedNode(':') })" />

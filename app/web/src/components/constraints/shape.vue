@@ -65,7 +65,7 @@ function goToNode() {
       </FieldLabel>
 
       <AddButton v-if="typeof node === 'undefined'" @click="node = 'http://example.com/MyNode'" />
-      <PrefixInput v-model="node" v-else>
+      <PrefixInput v-model="node" v-else :types="[Shacl.SHACL('NodeShape').value]">
         <RemoveButton @click="node = undefined" />
       </PrefixInput>
     </Field>

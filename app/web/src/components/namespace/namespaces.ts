@@ -1,6 +1,7 @@
 import { Files, useFile, type FileContext } from '@/components/file'
+import { RDF } from '@/components/rdf'
 import { useStorage } from '@vueuse/core'
-import { graph, IndexedFormula, parse } from 'rdflib'
+import { graph, IndexedFormula, NamedNode, parse } from 'rdflib'
 import { computed, watch, type ComputedRef, type Ref } from 'vue'
 import type { NamespaceDefinition, PrefixSuggestion } from '.'
 import { packagedNamespaces } from './packaged/packaged'
@@ -158,6 +159,20 @@ export function getNamedNodesFromStore(store: IndexedFormula, ignoreDefaultNames
   return [...new Set(all)]
 }
 
+export function getNamedNodesFromStoreWithTypes(
+  store: IndexedFormula,
+  ignoreDefaultNamespaces = false,
+) {
+  const namedNodes = getNamedNodesFromStore(store, ignoreDefaultNamespaces)
+  return namedNodes.map((iri) => {
+    const types = store.each(new NamedNode(iri), RDF('type'))
+    return {
+      iri,
+      types: types.map((type) => type.value),
+    }
+  })
+}
+
 export async function fetchPrefixSuggestionFromNamespace(
   namespace: NamespaceDefinition,
 ): Promise<PrefixSuggestion[]> {
@@ -180,17 +195,6 @@ export async function parsePrefixSuggestionsFromFile(
 ): Promise<PrefixSuggestion[]> {
   const tmpStore = graph()
 
-  // The JSON-LD parser in rdflib cannot parse just the @context
-  // @TODO: Test if this works for all cases
-  if (namespace.contentType === 'application/ld+json') {
-    const jsonld = JSON.parse(file)
-
-    if (Object.keys(jsonld).length === 1 && jsonld['@context']) {
-      const namedNodes = prefixSuggestionsFromJsonLdContext(jsonld['@context'], namespace.prefix)
-      return namedNodes
-    }
-  }
-
   await new Promise((resolve, reject) =>
     parse(file, tmpStore, namespace.iri, namespace.contentType || 'application/html', (error) => {
       if (error) {
@@ -200,64 +204,13 @@ export async function parsePrefixSuggestionsFromFile(
     }),
   )
 
-  const namedNodes = getNamedNodesFromStore(tmpStore).filter(
-    (iri) => iri.startsWith(namespace.iri) && iri !== namespace.iri,
+  const namedNodes = getNamedNodesFromStoreWithTypes(tmpStore).filter(
+    ({ iri }) => iri.startsWith(namespace.iri) && iri !== namespace.iri,
   )
 
-  return namedNodes.map((iri) => ({
+  return namedNodes.map(({ iri, types }) => ({
     label: `${namespace.prefix}:${iri.split(namespace.iri)[1]}`,
     iri,
+    types,
   }))
-}
-
-type JsonLdContext = Record<
-  string,
-  string | { '@id'?: string; '@type'?: string; '@container'?: string }
->
-export function prefixSuggestionsFromJsonLdContext(
-  jsonLdContext: JsonLdContext,
-  prefix: string,
-): PrefixSuggestion[] {
-  const namespaceIri = jsonLdContext[prefix]
-  if (typeof namespaceIri !== 'string') {
-    return []
-  }
-
-  const results: PrefixSuggestion[] = []
-  for (const [term, definition] of Object.entries(jsonLdContext)) {
-    if (term === prefix || term.startsWith('@')) {
-      continue
-    }
-
-    let iri: string | undefined
-
-    if (typeof definition === 'string') {
-      if (definition.startsWith(namespaceIri)) {
-        iri = definition
-      } else if (definition.startsWith(`${prefix}:`)) {
-        const localPart = definition.substring(prefix.length + 1)
-        iri = `${namespaceIri}${localPart}`
-      }
-    } else if (definition && typeof definition === 'object') {
-      const id = definition['@id']
-      if (typeof id === 'string') {
-        if (id.startsWith(namespaceIri)) {
-          iri = id
-        } else if (id.startsWith(`${prefix}:`)) {
-          const localPart = id.substring(prefix.length + 1)
-          iri = `${namespaceIri}${localPart}`
-        }
-      }
-    }
-
-    if (iri && iri.startsWith(namespaceIri)) {
-      const localPart = iri.substring(namespaceIri.length)
-      results.push({
-        label: `${prefix}:${localPart}`,
-        iri,
-      })
-    }
-  }
-
-  return results.sort((a, b) => a.label.localeCompare(b.label))
 }

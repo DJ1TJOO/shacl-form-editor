@@ -2,7 +2,7 @@
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { Shacl, Xsd } from '@/components/rdf'
+import { RDF_PROPERTY_TYPES, Shacl, Xsd } from '@/components/rdf'
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Textarea } from '@/components/ui/textarea'
@@ -39,7 +39,7 @@ const { value: defaultValue } = useLiteral({
             <TooltipContent>This is content in a tooltip.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <PrefixInput v-model="path" placeholder="ex:path" />
+        <PrefixInput v-model="path" placeholder="ex:path" :types="RDF_PROPERTY_TYPES" />
       </Field>
       <Field class="gap-0.5 grid grid-cols-[1fr_--spacing(20)]">
         <div class="grid grid-cols-subgrid col-span-2">

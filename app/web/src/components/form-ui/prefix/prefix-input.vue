@@ -23,6 +23,7 @@ const props = defineProps<
   ComboboxRootProps & {
     onBlur?: HTMLAttributes['onBlur']
     noSuggestions?: boolean
+    types?: readonly [string, ...string[]]
   } & /* @vue-ignore */ InputHTMLAttributes
 >()
 const emits = defineEmits<ComboboxRootEmits>()
@@ -32,7 +33,7 @@ const comboboxProps = useForwardPropsEmits(comboboxPropsWithoutModel, emits)
 
 const prefix = defineModel<T>({ required: true })
 
-const prefixSuggestions = Prefixes.usePrefixSuggestionsList()
+const prefixSuggestions = Prefixes.usePrefixSuggestionsList(props.types)
 const namespaces = Namespaces.useActiveNamespacesDefinitions()
 
 const searchTerm = ref('')

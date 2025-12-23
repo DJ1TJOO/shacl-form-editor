@@ -27,8 +27,9 @@ export const packagedNamespaces: NamespaceDefinition[] = [
   {
     prefix: 'as',
     iri: 'https://www.w3.org/ns/activitystreams#',
-    fetchUrl: 'https://www.w3.org/ns/activitystreams.jsonld',
-    contentType: 'application/ld+json',
+    fetchUrl:
+      'https://raw.githubusercontent.com/w3c/activitystreams/refs/heads/main/vocabulary/activitystreams2.owl',
+    contentType: 'text/turtle',
   },
   {
     prefix: 'bibo',

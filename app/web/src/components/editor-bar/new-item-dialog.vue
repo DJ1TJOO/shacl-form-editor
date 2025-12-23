@@ -3,6 +3,7 @@ import { useFile } from '@/components/file'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { properties, type PropertiesDefinition } from '@/components/properties'
+import { RDF_CLASS_TYPES } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -215,7 +216,7 @@ function create() {
               </FieldLabel>
 
               <template v-for="(classEntry, index) in targetClass" :key="index">
-                <PrefixInput v-model="classEntry.value">
+                <PrefixInput v-model="classEntry.value" :types="RDF_CLASS_TYPES">
                   <RemoveButton @click="targetClass.splice(index, 1)" />
                 </PrefixInput>
               </template>
@@ -232,7 +233,7 @@ function create() {
               </FieldLabel>
 
               <template v-for="(nodeEntry, index) in targetNode" :key="index">
-                <PrefixInput v-model="nodeEntry.value">
+                <PrefixInput v-model="nodeEntry.value" :types="RDF_CLASS_TYPES">
                   <RemoveButton @click="targetNode.splice(index, 1)" />
                 </PrefixInput>
               </template>
@@ -251,7 +252,7 @@ function create() {
               </FieldLabel>
 
               <template v-for="(subjectEntry, index) in targetSubjectsOf" :key="index">
-                <PrefixInput v-model="subjectEntry.value">
+                <PrefixInput v-model="subjectEntry.value" :types="RDF_CLASS_TYPES">
                   <RemoveButton @click="targetSubjectsOf.splice(index, 1)" />
                 </PrefixInput>
               </template>
@@ -270,7 +271,7 @@ function create() {
               </FieldLabel>
 
               <template v-for="(objectEntry, index) in targetObjectsOf" :key="index">
-                <PrefixInput v-model="objectEntry.value">
+                <PrefixInput v-model="objectEntry.value" :types="RDF_CLASS_TYPES">
                   <RemoveButton @click="targetObjectsOf.splice(index, 1)" />
                 </PrefixInput>
               </template>

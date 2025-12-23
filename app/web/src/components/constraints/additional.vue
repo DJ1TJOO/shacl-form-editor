@@ -2,7 +2,7 @@
 import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { RDF, Shacl } from '@/components/rdf'
+import { RDF, RDF_CLASS_TYPES, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
@@ -55,6 +55,7 @@ const { value: defaultValue } = useLiteral({
 
       <template v-for="(type, index) in types" :key="index">
         <PrefixInput
+          :types="RDF_CLASS_TYPES"
           v-model="type.value"
           v-if="
             type.value !== Shacl.SHACL('NodeShape').value &&
@@ -94,7 +95,7 @@ const { value: defaultValue } = useLiteral({
       </FieldLabel>
 
       <template v-for="(property, index) in ignoredProperties" :key="index">
-        <PrefixInput v-model="property.value">
+        <PrefixInput v-model="property.value" :types="[Shacl.SHACL('PropertyShape').value]">
           <Button
             size="icon-sm"
             variant="ghost"

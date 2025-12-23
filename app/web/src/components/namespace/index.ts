@@ -26,4 +26,5 @@ export type NamespaceDefinition = {
 export type PrefixSuggestion = {
   label: string
   iri: string
+  types: string[]
 }

@@ -2,7 +2,7 @@
 import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { Dash } from '@/components/rdf'
+import { Dash, RDF_CLASS_TYPES } from '@/components/rdf'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useNamed } from '@/composables/use-shacl'
@@ -29,7 +29,7 @@ const { value: rootClass } = useNamed({ subject, predicate: Dash.DASH('rootClass
         v-if="typeof rootClass === 'undefined'"
         @click="rootClass = 'http://www.w3.org/2000/01/rdf-schema#Resource'"
       />
-      <PrefixInput v-model="rootClass" v-else>
+      <PrefixInput v-model="rootClass" v-else :types="RDF_CLASS_TYPES">
         <RemoveButton @click="rootClass = undefined" />
       </PrefixInput>
     </Field>

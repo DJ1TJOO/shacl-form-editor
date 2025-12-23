@@ -43,7 +43,7 @@ const canHaveLessThanConstraints = computed(() => {
       </FieldLabel>
 
       <template v-for="(equalsEntry, index) in equals" :key="index">
-        <PrefixInput v-model="equalsEntry.value">
+        <PrefixInput v-model="equalsEntry.value" :types="[Shacl.SHACL('PropertyShape').value]">
           <RemoveButton @click="equals.splice(index, 1)" />
         </PrefixInput>
       </template>
@@ -62,7 +62,7 @@ const canHaveLessThanConstraints = computed(() => {
       </FieldLabel>
 
       <template v-for="(disjointEntry, index) in disjoint" :key="index">
-        <PrefixInput v-model="disjointEntry.value">
+        <PrefixInput v-model="disjointEntry.value" :types="[Shacl.SHACL('PropertyShape').value]">
           <RemoveButton @click="disjoint.splice(index, 1)" />
         </PrefixInput>
       </template>
@@ -93,7 +93,7 @@ const canHaveLessThanConstraints = computed(() => {
         v-for="(lessThanEntry, index) in lessThan"
         :key="lessThanEntry.node.value"
       >
-        <PrefixInput v-model="lessThanEntry.value">
+        <PrefixInput v-model="lessThanEntry.value" :types="[Shacl.SHACL('PropertyShape').value]">
           <RemoveButton @click="lessThan.splice(index, 1)" />
         </PrefixInput>
         <Checkbox
@@ -114,7 +114,10 @@ const canHaveLessThanConstraints = computed(() => {
         v-for="(lessThanOrEqualsEntry, index) in lessThanOrEquals"
         :key="lessThanOrEqualsEntry.node.value"
       >
-        <PrefixInput v-model="lessThanOrEqualsEntry.value">
+        <PrefixInput
+          v-model="lessThanOrEqualsEntry.value"
+          :types="[Shacl.SHACL('PropertyShape').value]"
+        >
           <RemoveButton @click="lessThanOrEquals.splice(index, 1)" />
         </PrefixInput>
         <Checkbox

@@ -231,7 +231,7 @@ const { elementRef: dropzoneRef } = useDroppable({
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <PrefixInput v-model="iri" placeholder="ex:MyGroup" />
+          <PrefixInput v-model="iri" placeholder="ex:MyGroup" no-suggestions />
         </Field>
         <Field class="gap-0.5 grid grid-cols-[1fr_--spacing(20)]">
           <div class="grid grid-cols-subgrid col-span-2">

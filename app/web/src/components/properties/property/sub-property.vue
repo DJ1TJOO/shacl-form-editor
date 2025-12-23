@@ -67,7 +67,11 @@ function goToProperty() {
     <FieldSet>
       <Field>
         <FieldLabel>Property</FieldLabel>
-        <PrefixInput v-model="property" placeholder="ex:MyProperty" />
+        <PrefixInput
+          v-model="property"
+          placeholder="ex:MyProperty"
+          :types="[Shacl.SHACL('PropertyShape').value]"
+        />
       </Field>
     </FieldSet>
   </Property>

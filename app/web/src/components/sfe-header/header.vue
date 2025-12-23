@@ -8,7 +8,7 @@ const { actions } = injectHeaderProviderContext()
 <template>
   <header
     data-slot="header"
-    class="items-center gap-4 grid grid-cols-[1fr_2fr_1fr] bg-background px-4 lg:px-10 py-2 w-full"
+    class="items-center gap-4 grid grid-cols-[1fr_1.5fr_1fr] bg-background px-4 lg:px-10 py-2 w-full"
   >
     <router-link to="/" class="max-lg:hidden flex flex-col text-branding">
       <h1 class="font-bold text-3xl leading-none whitespace-nowrap">SHACL Form Editor</h1>

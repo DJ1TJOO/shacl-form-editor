@@ -50,7 +50,10 @@ function openDeleteFileDialog(file: Files.FileWithId) {
     <li v-for="file in sortedFiles" :key="file.id">
       <ContextMenu>
         <ContextMenuTrigger>
-          <RouterLink :to="`/file/${file.id}`" class="block bg-light p-1 pb-2 rounded-lg size-full">
+          <RouterLink
+            :to="`/file/${file.id}`"
+            class="block bg-light p-1 pb-2 rounded-lg max-w-[calc(100vw-1.5rem)] size-full"
+          >
             <span class="block bg-branding/10 p-2 rounded-sm h-28 text-xs">
               <code class="line-clamp-6 whitespace-pre">{{ file.store.trim() }}</code>
             </span>

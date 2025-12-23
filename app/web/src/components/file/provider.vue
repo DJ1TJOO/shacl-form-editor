@@ -70,7 +70,11 @@ const deserializationError = ref<string | null>(null)
 
 function watchStore(store: IndexedFormula) {
   function updateFileInStorage() {
-    const serialized = Shacl.serialize(store, activeNamespacesDefinitions.value)
+    const serialized = Shacl.serialize(
+      store,
+      activeNamespacesDefinitions.value,
+      file.value.explicitBase ?? file.value.implicitBase ?? null,
+    )
     if (!serialized) return
 
     ignoreStorageUpdates(() => {
@@ -89,16 +93,27 @@ function watchStore(store: IndexedFormula) {
 const { ignoreUpdates: ignoreStorageUpdates } = watchIgnorable(
   file,
   (fileUpdated) => {
-    const [error, newStore] = tryCatch(Shacl.deserialize, fileUpdated.store)
+    const [error, deserialized] = tryCatch(Shacl.deserialize, fileUpdated.store)
     if (error) {
       deserializationError.value = error.message
       return
     }
 
-    updateActiveNamespaces(newStore)
+    updateActiveNamespaces(deserialized.store)
 
-    watchStore(newStore)
-    store.value = newStore
+    watchStore(deserialized.store)
+    store.value = deserialized.store
+
+    if (
+      file.value.implicitBase !== deserialized.implicitBase ||
+      file.value.explicitBase !== deserialized.explicitBase
+    ) {
+      Files.updateBase(fileId.value, {
+        implicitBase: deserialized.implicitBase,
+        explicitBase: deserialized.explicitBase,
+      })
+    }
+
     deserializationError.value = null
   },
   { immediate: true },

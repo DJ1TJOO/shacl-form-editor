@@ -1,4 +1,4 @@
-import { useFileStore } from '@/components/file'
+import { useFile } from '@/components/file'
 import { Shacl } from '@/components/rdf'
 import { useStorage } from '@vueuse/core'
 import { computed } from 'vue'
@@ -10,7 +10,7 @@ export function usePrefixSuggestions() {
 }
 
 export function usePrefixSuggestionsList(types?: readonly [string, ...string[]]) {
-  const store = useFileStore()
+  const { store, file } = useFile()
 
   const storedSuggestions = computed(() => {
     const namedNodes = getNamedNodesFromStoreWithTypes(store.value, true)
@@ -20,7 +20,7 @@ export function usePrefixSuggestionsList(types?: readonly [string, ...string[]])
     }))
 
     return namedNodes.map(({ iri, types }) => ({
-      label: absoluteToPrefixed(namespaces, iri),
+      label: absoluteToPrefixed(namespaces, file.value.implicitBase, iri),
       iri,
       types,
     }))
@@ -56,7 +56,15 @@ export function usePrefixSuggestionsList(types?: readonly [string, ...string[]])
   )
 }
 
-export function prefixedToAbsolute(namespaces: NamespaceDefinition[], prefixed: string) {
+export function prefixedToAbsolute(
+  namespaces: NamespaceDefinition[],
+  implicitBase: string | undefined | null,
+  prefixed: string,
+) {
+  if (implicitBase && prefixed.startsWith(':')) {
+    return implicitBase + prefixed.slice(1)
+  }
+
   const namespace = namespaces.find(({ prefix }) => prefixed.startsWith(prefix + ':'))
   if (!namespace) return prefixed
 
@@ -65,7 +73,7 @@ export function prefixedToAbsolute(namespaces: NamespaceDefinition[], prefixed: 
 
 // The user may provide a URI with a different protocol or separator, we guess that they want to use the same prefix, so we need to extract the base URI
 // @TODO: discuss if this feature is needed, could cause confusion if the user wants to use a differnt protocol or separator for an existing prefix
-function getBaseURI(uri: string): string {
+function getBasicURI(uri: string): string {
   let base = uri.replace(/^https?:\/\//, '')
 
   if (base.endsWith('#') || base.endsWith('/')) {
@@ -82,12 +90,20 @@ function getBaseURI(uri: string): string {
   return base
 }
 
-export function absoluteToPrefixed(namespaces: NamespaceDefinition[], absolute: string) {
-  const absoluteBase = getBaseURI(absolute)
+export function absoluteToPrefixed(
+  namespaces: NamespaceDefinition[],
+  implicitBase: string | undefined | null,
+  absolute: string,
+) {
+  const absoluteBase = getBasicURI(absolute)
   const localName = Shacl.getLocalName(absolute)
   if (!localName) return absolute
 
-  const namespace = namespaces.find(({ iri }) => getBaseURI(iri) === absoluteBase)
+  if (implicitBase && absoluteBase === getBasicURI(implicitBase)) {
+    return `:${localName}`
+  }
+
+  const namespace = namespaces.find(({ iri }) => getBasicURI(iri) === absoluteBase)
   if (!namespace) return absolute
 
   return `${namespace.prefix}:${localName}`

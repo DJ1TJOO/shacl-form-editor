@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T extends string | undefined">
+import { useFile } from '@/components/file'
 import { Namespaces, Prefixes } from '@/components/namespace'
 import {
   Combobox,
@@ -33,6 +34,7 @@ const comboboxProps = useForwardPropsEmits(comboboxPropsWithoutModel, emits)
 
 const prefix = defineModel<T>({ required: true })
 
+const { file } = useFile()
 const prefixSuggestions = Prefixes.usePrefixSuggestionsList(props.types)
 const namespaces = Namespaces.useActiveNamespacesDefinitions()
 
@@ -56,12 +58,13 @@ const filteredPrefixSuggestions = computed(() => {
           v-bind="{ ...$attrs }"
           v-model="searchTerm"
           :display-value="
-            (prefix: T) => (prefix ? Prefixes.absoluteToPrefixed(namespaces, prefix) : '')
+            (prefix: T) =>
+              prefix ? Prefixes.absoluteToPrefixed(namespaces, file.implicitBase, prefix) : ''
           "
           @blur="
             (e: FocusEvent) => {
               const target = e.target as HTMLInputElement
-              prefix = Prefixes.prefixedToAbsolute(namespaces, target.value) as T
+              prefix = Prefixes.prefixedToAbsolute(namespaces, file.implicitBase, target.value) as T
               props.onBlur?.(e)
             }
           "

@@ -45,7 +45,7 @@ const params = useUrlSearchParams<{ tab: 'editor' | 'turtle' }>('history', {
 
 const turtleEditorProviderRef = ref<InstanceType<typeof TurtleEditorProvider> | null>(null)
 
-const { store, currentShapeIRI, currentShape } = useFile()
+const { store, currentShapeIRI, currentShape, file } = useFile()
 const type = useShapeType({ subject: currentShape.node })
 
 const activeNamespaces = Namespaces.useActiveNamespaces()
@@ -55,7 +55,11 @@ async function goToTurtle() {
   params.tab = 'turtle'
   await nextTick()
   if (currentShapeIRI.value && turtleEditorProviderRef.value?.editor) {
-    const prefixedShape = Prefixes.absoluteToPrefixed(namespaces.value, currentShapeIRI.value)
+    const prefixedShape = Prefixes.absoluteToPrefixed(
+      namespaces.value,
+      file.value.implicitBase,
+      currentShapeIRI.value,
+    )
     scrollToShape(prefixedShape, turtleEditorProviderRef.value.editor)
   }
 }

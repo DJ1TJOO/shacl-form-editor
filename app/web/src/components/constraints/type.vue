@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
+import { useFile } from '@/components/file'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { Namespaces, Prefixes } from '@/components/namespace'
@@ -35,6 +36,7 @@ const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype
 const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
 const { value: nodeKind } = useNamed({ subject, predicate: Shacl.SHACL('nodeKind') })
 
+const { file } = useFile()
 const namespaces = Namespaces.useActiveNamespacesDefinitions()
 </script>
 
@@ -114,7 +116,7 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
             :key="nodeKind.value"
             :value="nodeKind.value"
           >
-            {{ Prefixes.absoluteToPrefixed(namespaces, nodeKind.value) }}
+            {{ Prefixes.absoluteToPrefixed(namespaces, file.implicitBase, nodeKind.value) }}
           </SelectItem>
         </SelectContent>
       </Select>

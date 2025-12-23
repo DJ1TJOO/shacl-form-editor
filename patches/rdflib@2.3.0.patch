@@ -1,8 +1,52 @@
+diff --git a/esm/serialize.js b/esm/serialize.js
+index caf642dd60ef2680c86945d1b929942e2a18d4e2..e618a2a90218429c67a34618a557259781929993 100644
+--- a/esm/serialize.js
++++ b/esm/serialize.js
+@@ -40,21 +40,21 @@ contentType, callback, options) {
+         return executeCallback(null, documentString);
+       case TurtleContentType:
+       case TurtleLegacyContentType:
+-        sz.setFlags('si'); // Suppress = for sameAs and => for implies
++        sz.addFlags('si'); // Suppress = for sameAs and => for implies
+         documentString = sz.statementsToN3(newSts);
+         return executeCallback(null, documentString);
+       case NTriplesContentType:
+-        sz.setFlags('deinprstux'); // Suppress nice parts of N3 to make ntriples
++        sz.addFlags('deinprstux'); // Suppress nice parts of N3 to make ntriples
+         documentString = sz.statementsToNTriples(newSts);
+         return executeCallback(null, documentString);
+       case JSONLDContentType:
+-        sz.setFlags('si dr'); // turtle + dr (means no default, no relative prefix)
++        sz.addFlags('si dr'); // turtle + dr (means no default, no relative prefix)
+         documentString = sz.statementsToJsonld(newSts); // convert via turtle
+         return executeCallback(null, documentString);
+       case NQuadsContentType:
+       case NQuadsAltContentType:
+         // @@@ just outpout the quads? Does not work for collections
+-        sz.setFlags('deinprstux q'); // Suppress nice parts of N3 to make ntriples
++        sz.addFlags('deinprstux q'); // Suppress nice parts of N3 to make ntriples
+         documentString = sz.statementsToNTriples(newSts); // q in flag means actually quads
+         return executeCallback(null, documentString);
+       default:
 diff --git a/esm/serializer.js b/esm/serializer.js
-index 56a42295fbf81427b90dafc0287123dfe5c0a588..4c53339e5bb885009df8a1299b44f696a16bbde0 100644
+index 56a42295fbf81427b90dafc0287123dfe5c0a588..77a61774bcb9d5560d63f5ebfa5f258a65448c81 100644
 --- a/esm/serializer.js
 +++ b/esm/serializer.js
-@@ -162,7 +162,7 @@ export class Serializer {
+@@ -57,6 +57,13 @@ export class Serializer {
+     this.flags = flags || '';
+     return this;
+   }
++  addFlags(additionalFlags) {
++    for (let i = 0; i < additionalFlags.length; i++) {
++      if (this.flags.indexOf(additionalFlags[i]) >= 0) continue;
++      this.flags += additionalFlags[i];
++    }
++    return this;
++  }
+   toStr(x) {
+     var s = x.toNT();
+     if (x.termType === 'Graph') {
+@@ -162,7 +169,7 @@ export class Serializer {
      if (slash >= 0) p = p.slice(slash + 1);
      var i = 0;
      while (i < p.length) {
@@ -11,6 +55,24 @@ index 56a42295fbf81427b90dafc0287123dfe5c0a588..4c53339e5bb885009df8a1299b44f696
          i++;
        } else {
          break;
+@@ -305,7 +312,7 @@ export class Serializer {
+     };
+     sts.sort(SPO);
+     if (this.base && !this.defaultNamespace) {
+-      this.defaultNamespace = this.base + '#';
++      this.defaultNamespace = this.base;
+     }
+     var predMap = {};
+     if (this.flags.indexOf('s') < 0) {
+@@ -633,7 +640,7 @@ export class Serializer {
+         }
+         // this.checkIntegrity() //  @@@ Remove when not testing
+         var prefix = this.prefixes[namesp];
+-        if (!prefix) prefix = this.makeUpPrefix(namesp);
++        if (!prefix && this.flags.indexOf('m') < 0) prefix = this.makeUpPrefix(namesp);
+         if (prefix) {
+           this.namespacesUsed[namesp] = true;
+           return prefix + ':' + localid;
 diff --git a/lib/serializer.js b/lib/serializer.js
 index 26b766052e86c0044574558c8bbbadfd7e7127a8..4bf72682fffd4ee212489d21ef6419ab9a494b84 100644
 --- a/lib/serializer.js
@@ -24,11 +86,55 @@ index 26b766052e86c0044574558c8bbbadfd7e7127a8..4bf72682fffd4ee212489d21ef6419ab
          i++;
        } else {
          break;
+diff --git a/src/serialize.ts b/src/serialize.ts
+index 1e5ef7acc99ea4c25f8654897575eb5c0eef58e7..4028ae532f76e8878d09d025a35d98281f881e91 100644
+--- a/src/serialize.ts
++++ b/src/serialize.ts
+@@ -72,20 +72,20 @@ export default function serialize (
+         return executeCallback(null, documentString)
+       case TurtleContentType:
+       case TurtleLegacyContentType:
+-        sz.setFlags('si') // Suppress = for sameAs and => for implies
++        sz.addFlags('si') // Suppress = for sameAs and => for implies
+         documentString = sz.statementsToN3(newSts)
+         return executeCallback(null, documentString)
+       case NTriplesContentType:
+-        sz.setFlags('deinprstux') // Suppress nice parts of N3 to make ntriples
++        sz.addFlags('deinprstux') // Suppress nice parts of N3 to make ntriples
+         documentString = sz.statementsToNTriples(newSts)
+         return executeCallback(null, documentString)
+       case JSONLDContentType:
+-        sz.setFlags('si dr') // turtle + dr (means no default, no relative prefix)
++        sz.addFlags('si dr') // turtle + dr (means no default, no relative prefix)
+         documentString = sz.statementsToJsonld(newSts) // convert via turtle
+         return executeCallback(null, documentString)
+       case NQuadsContentType:
+       case NQuadsAltContentType: // @@@ just outpout the quads? Does not work for collections
+-        sz.setFlags('deinprstux q') // Suppress nice parts of N3 to make ntriples
++        sz.addFlags('deinprstux q') // Suppress nice parts of N3 to make ntriples
+         documentString = sz.statementsToNTriples(newSts) // q in flag means actually quads
+         return executeCallback(null, documentString)
+       default:
 diff --git a/src/serializer.js b/src/serializer.js
-index 251f11c709d2ee4b3e341bf6f58a39c4f6863098..2b3ac813c173480d8bc26e074a1330631655251f 100644
+index 251f11c709d2ee4b3e341bf6f58a39c4f6863098..185eba51d9a43107d6ed7d32ccef1a76e9579c67 100644
 --- a/src/serializer.js
 +++ b/src/serializer.js
-@@ -170,7 +170,7 @@ export class Serializer {
+@@ -57,6 +57,14 @@ export class Serializer {
+     return this
+   }
+ 
++  addFlags(additionalFlags) {
++    for (let i = 0; i < additionalFlags.length; i++) {
++      if (this.flags.indexOf(additionalFlags[i]) >= 0) continue;
++      this.flags += additionalFlags[i];
++    }
++    return this;
++  }
++
+   toStr(x) {
+     var s = x.toNT()
+     if (x.termType === 'Graph') {
+@@ -170,7 +178,7 @@ export class Serializer {
      if (slash >= 0) p = p.slice(slash + 1)
      var i = 0
      while (i < p.length) {
@@ -37,3 +143,21 @@ index 251f11c709d2ee4b3e341bf6f58a39c4f6863098..2b3ac813c173480d8bc26e074a133063
          i++
        } else {
          break
+@@ -315,7 +323,7 @@ export class Serializer {
+     sts.sort(SPO)
+ 
+     if (this.base && !this.defaultNamespace){
+-      this.defaultNamespace = this.base + '#'
++      this.defaultNamespace = this.base
+     }
+ 
+     var predMap = {}
+@@ -657,7 +665,7 @@ export class Serializer {
+         }
+         // this.checkIntegrity() //  @@@ Remove when not testing
+         var prefix = this.prefixes[namesp]
+-        if (!prefix) prefix = this.makeUpPrefix(namesp)
++        if (!prefix && this.flags.indexOf('m') < 0) prefix = this.makeUpPrefix(namesp)
+         if (prefix) {
+           this.namespacesUsed[namesp] = true
+           return prefix + ':' + localid

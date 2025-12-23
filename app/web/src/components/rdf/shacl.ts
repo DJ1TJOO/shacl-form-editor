@@ -330,26 +330,58 @@ export function removeProperty(store: IndexedFormula, property: BlankNode | Name
   }
 }
 
-export function serialize(store: IndexedFormula, namespaces: NamespaceDefinition[]) {
+export function serialize(
+  store: IndexedFormula,
+  namespaces: NamespaceDefinition[],
+  base: string | null,
+) {
   for (const namespace of namespaces) {
     store.setPrefixForURI(namespace.prefix, namespace.iri)
   }
 
-  const serialized = store.serialize(null, null, null)
+  // @TODO: Hack to fix this issue: https://github.com/linkeddata/rdflib.js/issues/251, see patches/rdflib@2.3.0.patch
+  const serialized = store.serialize(base, null, null, {
+    flags: 'rm', // r: disable relative prefixes for base, m: disable making up prefixes, the user should use the namespace manager
+  })
   if (!serialized) return null
 
   return serialized
 }
 
+export const prefixRegex = /[a-zA-Z][a-zA-Z0-9_-]+/g
+export const iriRegex = /[^<>"{}|^`\\\x00-\x20]+/g
+export const turtleBaseRegex = new RegExp(String.raw`@base\s+<(${iriRegex.source})>\s*\.`, 'g')
+export const turtlePrefixRegex = new RegExp(
+  String.raw`@prefix\s+(${prefixRegex.source})?\:\s*<(${iriRegex.source})>\s*\.`,
+  'g',
+)
+
 export function deserialize(serialized: string) {
   const store = graph()
-  // @TODO: Handle base URI, what is this?
-  parse(serialized, store, 'http://localhost:3000/')
-  return store
+
+  const explicitBase = serialized.match(turtleBaseRegex)?.[1]
+  const implicitBase = serialized
+    .matchAll(turtlePrefixRegex)
+    .filter(([, prefix]) => prefix === undefined)
+    .next().value?.[2]
+
+  const base = explicitBase ?? implicitBase ?? 'http://localhost/'
+  parse(serialized, store, base, 'text/turtle', (error) => {
+    if (error) {
+      console.error(error)
+    }
+  })
+
+  return { store, explicitBase, implicitBase }
 }
 
-export function download(store: IndexedFormula, namespaces: NamespaceDefinition[], debug = false) {
-  const serialized = serialize(store, namespaces)
+export function download(
+  store: IndexedFormula,
+  namespaces: NamespaceDefinition[],
+  base: string | null,
+  debug = false,
+) {
+  const serialized = serialize(store, namespaces, base)
   if (!serialized) return
 
   if (debug) {

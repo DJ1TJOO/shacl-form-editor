@@ -8,6 +8,8 @@ export interface File {
   created: string
   updated: string
   activeNamespaces: NamespaceDefinition['prefix'][]
+  implicitBase?: string
+  explicitBase?: string
 }
 
 export interface FileWithId extends File {
@@ -21,6 +23,10 @@ export function parseFile(file: string): File | null {
   if (typeof fileData.created !== 'string' || isNaN(Date.parse(fileData.created))) return null
   if (typeof fileData.updated !== 'string' || isNaN(Date.parse(fileData.updated))) return null
   if (!Array.isArray(fileData.activeNamespaces)) return null
+  if (typeof fileData.implicitBase !== 'string' && typeof fileData.implicitBase !== 'undefined')
+    return null
+  if (typeof fileData.explicitBase !== 'string' && typeof fileData.explicitBase !== 'undefined')
+    return null
 
   return {
     store: fileData.store,
@@ -28,6 +34,8 @@ export function parseFile(file: string): File | null {
     created: fileData.created,
     updated: fileData.updated,
     activeNamespaces: fileData.activeNamespaces,
+    implicitBase: fileData.implicitBase,
+    explicitBase: fileData.explicitBase,
   }
 }
 
@@ -116,6 +124,29 @@ export function updateActiveNamespaces(
   if (!existingFileData) return false
 
   existingFileData.activeNamespaces = activeNamespaces
+
+  const stringifiedFile = JSON.stringify(existingFileData)
+  window.localStorage.setItem(`file-${fileId}`, stringifiedFile)
+  dispatchFileUpdateEvent(fileId, existingFile, stringifiedFile)
+}
+
+export function updateBase(
+  fileId: string,
+  {
+    implicitBase,
+    explicitBase,
+  }: {
+    implicitBase?: string
+    explicitBase?: string
+  },
+) {
+  const existingFile = window.localStorage.getItem(`file-${fileId}`)
+  if (!existingFile) return false
+  const existingFileData = parseFile(existingFile)
+  if (!existingFileData) return false
+
+  existingFileData.implicitBase = implicitBase
+  existingFileData.explicitBase = explicitBase
 
   const stringifiedFile = JSON.stringify(existingFileData)
   window.localStorage.setItem(`file-${fileId}`, stringifiedFile)

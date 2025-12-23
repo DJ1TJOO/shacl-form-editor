@@ -17,7 +17,7 @@ const route = useRoute()
 const { shapes, removeShape } = useShapes()
 const { editor } = injectTurtleEditorContext()
 
-const { fileId } = useFile()
+const { fileId, file } = useFile()
 const namespaces = Namespaces.useActiveNamespacesDefinitions()
 </script>
 
@@ -36,7 +36,11 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
           router.replace(`/file/${fileId}/${encodeURIComponent(shape.value)}?tab=${activeTab}`)
           if (activeTab !== 'turtle' || !editor) return
 
-          const prefixedShape = Prefixes.absoluteToPrefixed(namespaces, shape.value)
+          const prefixedShape = Prefixes.absoluteToPrefixed(
+            namespaces,
+            file.implicitBase,
+            shape.value,
+          )
           scrollToShape(prefixedShape, editor)
         }
       "

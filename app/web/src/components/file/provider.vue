@@ -44,11 +44,7 @@ const fileId = computed(() => {
 })
 
 const storageKey = computed(() => `file-${fileId.value}`)
-const fileInStorage = useStorage<string>(storageKey, null)
-if (!fileInStorage.value) {
-  router.push('/?fileNotFound=1')
-}
-
+const fileInStorage = useStorage<string>(storageKey, null) // This can never be null since the router beforeEnter will redirect to the home page if the file is not found
 const file = computed(() => {
   const newFile = Files.parseFile(fileInStorage.value)
   if (!newFile) {

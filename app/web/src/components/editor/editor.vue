@@ -48,6 +48,7 @@ const turtleEditorProviderRef = ref<InstanceType<typeof TurtleEditorProvider> | 
 const { store, currentShapeIRI, currentShape } = useFile()
 const type = useShapeType({ subject: currentShape.node })
 
+const activeNamespaces = Namespaces.useActiveNamespaces()
 const namespaces = Namespaces.useActiveNamespacesDefinitions()
 
 async function goToTurtle() {
@@ -94,7 +95,7 @@ const showNewItemDialog = computed(() => !route.params.shapeId && params.tab ===
         </Button>
       </div>
       <div class="flex gap-2">
-        <NamespaceManager>
+        <NamespaceManager v-model:active-namespaces="activeNamespaces">
           <Button size="lg" color="background-highlighted">
             <ClipboardListIcon /> Manage Namespaces
           </Button>

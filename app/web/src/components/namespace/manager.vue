@@ -17,7 +17,6 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/cn'
-import { tryCatch } from '@/lib/try-catch'
 import { reactiveOmit } from '@vueuse/core'
 import { EditIcon, PlusIcon, SearchIcon, TrashIcon } from 'lucide-vue-next'
 import { useForwardPropsEmits, type DialogRootEmits, type DialogRootProps } from 'reka-ui'
@@ -30,9 +29,9 @@ const delegatedProps = reactiveOmit(props, 'open', 'defaultOpen')
 const forward = useForwardPropsEmits(delegatedProps, emits)
 
 const open = defineModel<boolean>('open')
+const activeNamespaces = defineModel<string[]>('activeNamespaces')
 
 const prefixSuggestions = Prefixes.usePrefixSuggestions()
-const [, activeNamespaces] = tryCatch(Namespaces.useActiveNamespaces)
 const files = Files.useFiles()
 
 const customNamespaces = Namespaces.useCustomNamespaces()
@@ -41,7 +40,7 @@ const allNamespaces = computed(() =>
     ...customNamespaces.value.map((ns) => ({
       ...ns,
       type: 'custom',
-      active: activeNamespaces?.value.includes(ns.prefix) ?? false,
+      active: activeNamespaces.value?.includes(ns.prefix) ?? false,
     })),
     ...packagedNamespaces
       .filter(
@@ -51,7 +50,7 @@ const allNamespaces = computed(() =>
       .map((ns) => ({
         ...ns,
         type: 'packaged',
-        active: activeNamespaces?.value.includes(ns.prefix) ?? false,
+        active: activeNamespaces.value?.includes(ns.prefix) ?? false,
       })),
   ].toSorted((a, b) => {
     if (a.active && !b.active) return -1
@@ -61,7 +60,7 @@ const allNamespaces = computed(() =>
 )
 
 function toggleNamespace(prefix: string, value: boolean) {
-  if (!activeNamespaces) return
+  if (!activeNamespaces.value) return
 
   if (value) {
     if (activeNamespaces.value.includes(prefix)) return

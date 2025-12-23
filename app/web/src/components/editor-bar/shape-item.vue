@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/context-menu'
 import { CircleIcon, DiamondIcon, TrashIcon } from 'lucide-vue-next'
 import { ref } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 defineProps<{
   to: string
@@ -19,7 +19,7 @@ defineProps<{
 
 defineEmits<{
   (e: 'removeShape'): void
-  (e: 'click'): void
+  (e: 'click', event: PointerEvent): void
 }>()
 
 const route = useRoute()
@@ -34,12 +34,12 @@ const isConfirmDialogOpen = ref(false)
 <template>
   <ContextMenu>
     <ContextMenuTrigger>
-      <RouterLink :to="to" class="shrink-0" @click="$emit('click')">
+      <a class="shrink-0" @click="$emit('click', $event)" type="button">
         <BarItem :active="isActive(to)" text-color="text">
           <component :is="type === 'node' ? DiamondIcon : CircleIcon" class="size-4" />
           {{ label }}
         </BarItem>
-      </RouterLink>
+      </a>
     </ContextMenuTrigger>
     <ContextMenuContent>
       <ContextMenuItem variant="danger" @click="isConfirmDialogOpen = true">

@@ -33,7 +33,9 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
       :to="`/file/${fileId}/${encodeURIComponent(shape.value)}`"
       @click="
         () => {
+          router.replace(`/file/${fileId}/${encodeURIComponent(shape.value)}?tab=${activeTab}`)
           if (activeTab !== 'turtle' || !editor) return
+
           const prefixedShape = Prefixes.absoluteToPrefixed(namespaces, shape.value)
           scrollToShape(prefixedShape, editor)
         }

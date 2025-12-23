@@ -8,11 +8,11 @@ const { actions } = injectHeaderProviderContext()
 <template>
   <header
     data-slot="header"
-    class="flex justify-between items-center gap-4 bg-background px-10 py-2 w-full"
+    class="items-center gap-4 grid grid-cols-[1fr_2fr_1fr] bg-background px-4 lg:px-10 py-2 w-full"
   >
-    <router-link to="/" class="flex flex-col text-branding shrink-0">
-      <h1 class="font-bold text-3xl leading-none">SHACL Form Editor</h1>
-      <p class="leading-none tracking-wider">Build Validation Schemas Visually</p>
+    <router-link to="/" class="max-lg:hidden flex flex-col text-branding">
+      <h1 class="font-bold text-3xl leading-none whitespace-nowrap">SHACL Form Editor</h1>
+      <p class="leading-none tracking-wider whitespace-nowrap">Build Validation Schemas Visually</p>
     </router-link>
     <component :is="actions" />
   </header>

@@ -67,14 +67,14 @@ const showNewItemDialog = computed(() => !route.params.shapeId && params.tab ===
 <template>
   <TurtleEditorProvider ref="turtleEditorProviderRef">
     <HeaderActions>
-      <div class="flex gap-2">
+      <div class="@container/editor-header-tab flex lg:justify-center gap-2 max-lg:col-span-2">
         <Button
           :color="params.tab === 'editor' ? 'complementary' : 'background-highlighted'"
           size="lg"
           @click="params.tab = 'editor'"
         >
           <LayoutTemplateIcon />
-          Editor
+          <span class="@max-sm/editor-header-tab:hidden">Editor</span>
         </Button>
         <Button
           :color="params.tab === 'turtle' ? 'complementary' : 'background-highlighted'"
@@ -82,7 +82,7 @@ const showNewItemDialog = computed(() => !route.params.shapeId && params.tab ===
           @click="goToTurtle"
         >
           <CodeIcon />
-          Turtle
+          <span class="@max-sm/editor-header-tab:hidden">Turtle</span>
         </Button>
         <Button
           color="background-highlighted"
@@ -91,22 +91,23 @@ const showNewItemDialog = computed(() => !route.params.shapeId && params.tab ===
           title="Future feature to test forms generated from the schema"
         >
           <FormIcon />
-          Form
+          <span class="@max-sm/editor-header-tab:hidden">Form</span>
         </Button>
       </div>
-      <div class="flex gap-2">
+      <div class="@container/editor-header-actions flex justify-end gap-2">
         <NamespaceManager v-model:active-namespaces="activeNamespaces">
           <Button size="lg" color="background-highlighted">
-            <ClipboardListIcon /> Manage Namespaces
+            <ClipboardListIcon />
+            <span class="@max-sm/editor-header-actions:hidden">Manage Namespaces</span>
           </Button>
         </NamespaceManager>
         <Button
           size="lg"
-          @click="Shacl.download(store, namespaces)"
+          @click="Shacl.download(store, namespaces, file.explicitBase ?? file.implicitBase ?? null)"
           title="Log the serialized data to the console, to download edit the downloadTtl function"
         >
           <DownloadIcon />
-          Export Schema
+          <span class="@max-sm/editor-header-actions:hidden">Export Schema</span>
         </Button>
       </div>
     </HeaderActions>

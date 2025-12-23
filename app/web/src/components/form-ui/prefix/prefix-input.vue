@@ -42,8 +42,7 @@ const filteredPrefixSuggestions = computed(() => {
   const [prefix, iri] = searchTerm.value.split(':')
   return prefixSuggestions.value.filter(
     (p) =>
-      (prefix && startsWith(p.iri, prefix)) ||
-      (iri && contains(p.iri, iri)) ||
+      (prefix && startsWith(p.label, prefix) && (!iri || contains(p.iri, iri))) ||
       contains(p.iri, searchTerm.value),
   )
 })

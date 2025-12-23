@@ -2,7 +2,7 @@
 import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { Shacl, Xsd } from '@/components/rdf'
+import { RDF_PROPERTY_TYPES, Shacl, Xsd } from '@/components/rdf'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -43,7 +43,7 @@ const canHaveLessThanConstraints = computed(() => {
       </FieldLabel>
 
       <template v-for="(equalsEntry, index) in equals" :key="index">
-        <PrefixInput v-model="equalsEntry.value" :types="[Shacl.SHACL('PropertyShape').value]">
+        <PrefixInput v-model="equalsEntry.value" :types="RDF_PROPERTY_TYPES">
           <RemoveButton @click="equals.splice(index, 1)" />
         </PrefixInput>
       </template>
@@ -62,7 +62,7 @@ const canHaveLessThanConstraints = computed(() => {
       </FieldLabel>
 
       <template v-for="(disjointEntry, index) in disjoint" :key="index">
-        <PrefixInput v-model="disjointEntry.value" :types="[Shacl.SHACL('PropertyShape').value]">
+        <PrefixInput v-model="disjointEntry.value" :types="RDF_PROPERTY_TYPES">
           <RemoveButton @click="disjoint.splice(index, 1)" />
         </PrefixInput>
       </template>
@@ -93,7 +93,7 @@ const canHaveLessThanConstraints = computed(() => {
         v-for="(lessThanEntry, index) in lessThan"
         :key="lessThanEntry.node.value"
       >
-        <PrefixInput v-model="lessThanEntry.value" :types="[Shacl.SHACL('PropertyShape').value]">
+        <PrefixInput v-model="lessThanEntry.value" :types="RDF_PROPERTY_TYPES">
           <RemoveButton @click="lessThan.splice(index, 1)" />
         </PrefixInput>
         <Checkbox
@@ -114,10 +114,7 @@ const canHaveLessThanConstraints = computed(() => {
         v-for="(lessThanOrEqualsEntry, index) in lessThanOrEquals"
         :key="lessThanOrEqualsEntry.node.value"
       >
-        <PrefixInput
-          v-model="lessThanOrEqualsEntry.value"
-          :types="[Shacl.SHACL('PropertyShape').value]"
-        >
+        <PrefixInput v-model="lessThanOrEqualsEntry.value" :types="RDF_PROPERTY_TYPES">
           <RemoveButton @click="lessThanOrEquals.splice(index, 1)" />
         </PrefixInput>
         <Checkbox

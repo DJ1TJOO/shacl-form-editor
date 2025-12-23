@@ -191,7 +191,7 @@ function removeNamespace(prefix: string) {
           </span>
           <div class="flex items-center gap-1 ml-auto">
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger as-child>
                 <span
                   v-if="hasSuggestions(namespace.prefix) || hasPossibleSuggestions(namespace)"
                   :class="
@@ -216,7 +216,7 @@ function removeNamespace(prefix: string) {
             </Tooltip>
 
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger as-child>
                 <span
                   v-if="namespace.type === 'packaged'"
                   class="bg-background-blue px-1.5 py-0.5 rounded text-branding text-xs"

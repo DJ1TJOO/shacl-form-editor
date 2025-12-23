@@ -54,6 +54,10 @@ const file = computed(() => {
   return newFile
 })
 
+const updateActiveNamespaces = Namespaces.useActivateNamespacesFromStoreWithoutContext({
+  file,
+  fileInStorage,
+})
 const activeNamespacesDefinitions = Namespaces.useActiveNamespacesDefinitionsWithoutContext({
   file,
   fileInStorage,
@@ -90,6 +94,8 @@ const { ignoreUpdates: ignoreStorageUpdates } = watchIgnorable(
       deserializationError.value = error.message
       return
     }
+
+    updateActiveNamespaces(newStore)
 
     watchStore(newStore)
     store.value = newStore

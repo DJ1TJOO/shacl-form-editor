@@ -63,6 +63,56 @@ export function useActiveNamespacesDefinitions(): ComputedRef<NamespaceDefinitio
   return useActiveNamespacesDefinitionsWithoutContext({ file, fileInStorage }, store)
 }
 
+export function useActivateNamespacesFromStoreWithoutContext({
+  file,
+  fileInStorage,
+}: Pick<FileContext, 'file' | 'fileInStorage'>) {
+  const activeNamespaces = useActiveNamespacesWithoutContext({ file, fileInStorage })
+  const customNamespaces = useCustomNamespaces()
+
+  function activateNamespace(prefix: string) {
+    if (activeNamespaces.value.includes(prefix)) return
+    activeNamespaces.value = [...activeNamespaces.value, prefix]
+  }
+
+  function update(store: IndexedFormula) {
+    const storeNamespaces = Object.entries(store.namespaces)
+
+    for (const [prefix, iri] of storeNamespaces) {
+      const foundExistingCustom = customNamespaces.value.find(
+        (customNamespace) => customNamespace.iri === iri,
+      )
+
+      if (foundExistingCustom) {
+        activateNamespace(prefix)
+        if (foundExistingCustom.prefix === prefix) continue
+
+        customNamespaces.value.splice(customNamespaces.value.indexOf(foundExistingCustom), 1, {
+          ...foundExistingCustom,
+          prefix,
+        })
+        continue
+      }
+
+      const foundExistingPackaged = packagedNamespaces.find(
+        (packagedNamespace) => packagedNamespace.iri === iri,
+      )
+
+      if (foundExistingPackaged) {
+        activateNamespace(prefix)
+        if (foundExistingPackaged.prefix === prefix) continue
+
+        customNamespaces.value.push({
+          ...foundExistingPackaged,
+          prefix,
+        })
+      }
+    }
+  }
+
+  return update
+}
+
 export function useCustomNamespaces() {
   return useStorage<NamespaceDefinition[]>('custom-namespaces', [])
 }

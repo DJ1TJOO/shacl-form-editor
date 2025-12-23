@@ -356,7 +356,7 @@ export const turtlePrefixRegex = new RegExp(
   'g',
 )
 
-export function deserialize(serialized: string) {
+export async function deserialize(serialized: string) {
   const store = graph()
 
   const explicitBase = serialized.match(turtleBaseRegex)?.[1]
@@ -366,11 +366,16 @@ export function deserialize(serialized: string) {
     .next().value?.[2]
 
   const base = explicitBase ?? implicitBase ?? 'http://localhost/'
-  parse(serialized, store, base, 'text/turtle', (error) => {
-    if (error) {
-      console.error(error)
-    }
-  })
+  await new Promise((resolve, reject) =>
+    parse(serialized, store, base, 'text/turtle', (error) => {
+      if (error) {
+        reject(error)
+        return
+      }
+
+      resolve(undefined)
+    }),
+  )
 
   return { store, explicitBase, implicitBase }
 }

@@ -3,7 +3,6 @@ import { Files } from '@/components/file'
 import { Namespaces } from '@/components/namespace'
 import { Shacl } from '@/components/rdf'
 import { useGlobalNamed } from '@/composables/use-shacl'
-import { tryCatch } from '@/lib/try-catch'
 import { useStorage, watchIgnorable } from '@vueuse/core'
 import { graph, IndexedFormula, NamedNode } from 'rdflib'
 import { createContext } from 'reka-ui'
@@ -92,29 +91,29 @@ function watchStore(store: IndexedFormula) {
 
 const { ignoreUpdates: ignoreStorageUpdates } = watchIgnorable(
   file,
-  (fileUpdated) => {
-    const [error, deserialized] = tryCatch(Shacl.deserialize, fileUpdated.store)
-    if (error) {
-      deserializationError.value = error.message
-      return
+  async (fileUpdated) => {
+    try {
+      const deserialized = await Shacl.deserialize(fileUpdated.store)
+
+      updateActiveNamespaces(deserialized.store)
+
+      watchStore(deserialized.store)
+      store.value = deserialized.store
+
+      if (
+        file.value.implicitBase !== deserialized.implicitBase ||
+        file.value.explicitBase !== deserialized.explicitBase
+      ) {
+        Files.updateBase(fileId.value, {
+          implicitBase: deserialized.implicitBase,
+          explicitBase: deserialized.explicitBase,
+        })
+      }
+
+      deserializationError.value = null
+    } catch (error) {
+      deserializationError.value = error instanceof Error ? error.message : 'Unknown error'
     }
-
-    updateActiveNamespaces(deserialized.store)
-
-    watchStore(deserialized.store)
-    store.value = deserialized.store
-
-    if (
-      file.value.implicitBase !== deserialized.implicitBase ||
-      file.value.explicitBase !== deserialized.explicitBase
-    ) {
-      Files.updateBase(fileId.value, {
-        implicitBase: deserialized.implicitBase,
-        explicitBase: deserialized.explicitBase,
-      })
-    }
-
-    deserializationError.value = null
   },
   { immediate: true },
 )

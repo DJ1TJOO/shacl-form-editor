@@ -65,10 +65,10 @@ function toggleNamespace(prefix: string, value: boolean) {
 
   if (value) {
     if (activeNamespaces.value.includes(prefix)) return
-    activeNamespaces.value.push(prefix)
+    activeNamespaces.value = [...activeNamespaces.value, prefix]
   } else {
     if (!activeNamespaces.value.includes(prefix)) return
-    activeNamespaces.value.splice(activeNamespaces.value.indexOf(prefix), 1)
+    activeNamespaces.value = activeNamespaces.value.filter((ns) => ns !== prefix)
   }
 }
 

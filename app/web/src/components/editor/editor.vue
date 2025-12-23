@@ -2,7 +2,7 @@
 import { ConstraintsList } from '@/components/constraints'
 import { EditorBar, NewItemDialog } from '@/components/editor-bar'
 import { useFile } from '@/components/file'
-import { Namespaces, Prefixes } from '@/components/namespace'
+import { NamespaceManager, Namespaces, Prefixes } from '@/components/namespace'
 import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
 import { PropertiesList } from '@/components/properties'
 import { Shacl } from '@/components/rdf'
@@ -14,7 +14,13 @@ import { scrollToShape, TurtleEditorProvider, TurtleFileEditor } from '@/compone
 import { Button } from '@/components/ui/button'
 import { useShapeType } from '@/composables/use-shacl'
 import { useUrlSearchParams } from '@vueuse/core'
-import { CodeIcon, DownloadIcon, FormIcon, LayoutTemplateIcon } from 'lucide-vue-next'
+import {
+  ClipboardListIcon,
+  CodeIcon,
+  DownloadIcon,
+  FormIcon,
+  LayoutTemplateIcon,
+} from 'lucide-vue-next'
 import { computed, nextTick, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -88,6 +94,11 @@ const showNewItemDialog = computed(() => !route.params.shapeId && params.tab ===
         </Button>
       </div>
       <div class="flex gap-2">
+        <NamespaceManager>
+          <Button size="lg" color="background-highlighted">
+            <ClipboardListIcon /> Manage Namespaces
+          </Button>
+        </NamespaceManager>
         <Button
           size="lg"
           @click="Shacl.download(store, namespaces)"

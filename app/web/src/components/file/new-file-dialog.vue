@@ -69,7 +69,7 @@ function create() {
           <FieldGroup>
             <Field>
               <FieldLabel>File name</FieldLabel>
-              <Input v-model="fileName" placeholder="my-file" />
+              <Input v-model="fileName" placeholder="My File" />
               <span class="text-text-light text-xs">Stored as '{{ slug }}'</span>
               <FieldError
                 :errors="existingFile ? [`File already stored with name '${slug}'`] : []"

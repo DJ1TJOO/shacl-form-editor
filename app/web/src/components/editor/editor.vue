@@ -10,7 +10,7 @@ import { HeaderActions } from '@/components/sfe-header'
 import { Shape } from '@/components/shape'
 import { SideBar } from '@/components/side-bar'
 import { Toolbox } from '@/components/toolbox'
-import { scrollToShape, TurtleEditorProvider, TurtleFileEditor } from '@/components/turtle-editor'
+import { TurtleEditor, TurtleEditorProvider } from '@/components/turtle-editor'
 import { Button } from '@/components/ui/button'
 import { useShapeType } from '@/composables/use-shacl'
 import { useUrlSearchParams } from '@vueuse/core'
@@ -21,7 +21,7 @@ import {
   FormIcon,
   LayoutTemplateIcon,
 } from 'lucide-vue-next'
-import { computed, nextTick, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 const isLeftSideBarOpen = ref(true)
@@ -53,15 +53,17 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
 
 async function goToTurtle() {
   params.tab = 'turtle'
-  await nextTick()
-  if (currentShapeIRI.value && turtleEditorProviderRef.value?.editor) {
-    const prefixedShape = Prefixes.absoluteToPrefixed(
-      namespaces.value,
-      file.value.implicitBase,
-      currentShapeIRI.value,
-    )
-    scrollToShape(prefixedShape, turtleEditorProviderRef.value.editor)
-  }
+  if (!currentShapeIRI.value) return
+
+  const prefixedShape = Prefixes.absoluteToPrefixed(
+    namespaces.value,
+    file.value.implicitBase,
+    currentShapeIRI.value,
+  )
+
+  setTimeout(() => {
+    turtleEditorProviderRef.value?.scrollToShape(prefixedShape)
+  }, 100)
 }
 
 const route = useRoute()
@@ -116,11 +118,16 @@ const showNewItemDialog = computed(() => !route.params.shapeId && params.tab ===
       </div>
     </HeaderActions>
 
-    <NewItemDialog v-model:open="showNewItemDialog" />
+    <NewItemDialog :open="showNewItemDialog" />
 
     <OptionsSidebarProvider ref="optionsSidebarProviderRef">
       <EditorBar :activeTab="params.tab" />
-      <div v-if="params.tab === 'editor'" class="gap-3 grid p-1" :style="{ gridTemplateColumns }">
+      <div
+        :key="currentShapeIRI"
+        v-if="params.tab === 'editor'"
+        class="gap-3 grid p-1"
+        :style="{ gridTemplateColumns }"
+      >
         <SideBar :child-class="!isLeftSideBarOpen && 'h-full justify-center'">
           <Shape :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
           <Toolbox
@@ -133,8 +140,11 @@ const showNewItemDialog = computed(() => !route.params.shapeId && params.tab ===
         <ConstraintsList v-if="type === 'property'" as="main" />
         <OptionsBar />
       </div>
-      <main v-else-if="params.tab === 'turtle'" class="bg-background-highlighted p-1">
-        <TurtleFileEditor />
+      <main
+        v-else-if="params.tab === 'turtle'"
+        class="flex flex-1 items-stretch bg-background-highlighted p-1 min-h-0"
+      >
+        <TurtleEditor />
       </main>
     </OptionsSidebarProvider>
   </TurtleEditorProvider>

@@ -110,6 +110,7 @@ const { ignoreUpdates: ignoreStorageUpdates } = watchIgnorable(
         })
       }
 
+      routeToValidShape()
       deserializationError.value = null
     } catch (error) {
       deserializationError.value = error instanceof Error ? error.message : 'Unknown error'
@@ -140,6 +141,10 @@ const { ignoreUpdates: ignoreCurrentShapeIRIUpdates } = watchIgnorable(
 )
 
 function routeToValidShape() {
+  if (store.value.statements.length === 0) {
+    return
+  }
+
   const currentPath = route.path
 
   if (currentShapeIRI.value && Shacl.shapeExists(store.value, currentShapeIRI.value)) {

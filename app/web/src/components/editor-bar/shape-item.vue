@@ -34,12 +34,12 @@ const isConfirmDialogOpen = ref(false)
 <template>
   <ContextMenu>
     <ContextMenuTrigger>
-      <a class="shrink-0" @click="$emit('click', $event)" type="button">
+      <button class="h-full shrink-0" @click="$emit('click', $event)" type="button">
         <BarItem :active="isActive(to)" text-color="text">
           <component :is="type === 'node' ? DiamondIcon : CircleIcon" class="size-4" />
           {{ label }}
         </BarItem>
-      </a>
+      </button>
     </ContextMenuTrigger>
     <ContextMenuContent>
       <ContextMenuItem variant="danger" @click="isConfirmDialogOpen = true">

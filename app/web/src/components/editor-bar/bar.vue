@@ -4,7 +4,7 @@ import NewItem from '@/components/editor-bar/new-item.vue'
 import ShapeItem from '@/components/editor-bar/shape-item.vue'
 import { useFile } from '@/components/file'
 import { Namespaces, Prefixes } from '@/components/namespace'
-import { injectTurtleEditorContext, scrollToShape } from '@/components/turtle-editor'
+import { injectTurtleEditorContext } from '@/components/turtle-editor'
 import { useShapes } from '@/composables/use-shacl'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -15,7 +15,7 @@ defineProps<{
 const router = useRouter()
 const route = useRoute()
 const { shapes, removeShape } = useShapes()
-const { editor } = injectTurtleEditorContext()
+const { scrollToShape } = injectTurtleEditorContext()
 
 const { fileId, file } = useFile()
 const namespaces = Namespaces.useActiveNamespacesDefinitions()
@@ -33,15 +33,15 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
       :to="`/file/${fileId}/${encodeURIComponent(shape.value)}`"
       @click="
         () => {
-          router.replace(`/file/${fileId}/${encodeURIComponent(shape.value)}?tab=${activeTab}`)
-          if (activeTab !== 'turtle' || !editor) return
+          router.replace(`/file/${fileId}/${encodeURIComponent(shape.value)}`)
+          if (activeTab !== 'turtle') return
 
           const prefixedShape = Prefixes.absoluteToPrefixed(
             namespaces,
             file.implicitBase,
             shape.value,
           )
-          scrollToShape(prefixedShape, editor)
+          scrollToShape(prefixedShape)
         }
       "
       :label="shape.name"

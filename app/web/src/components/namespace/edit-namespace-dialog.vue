@@ -3,6 +3,7 @@ import type { NamespaceDefinition } from '@/components/namespace'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogScrollContent,
@@ -106,6 +107,9 @@ function submit() {
       <form @submit.prevent="submit" class="gap-4 grid">
         <DialogHeader>
           <DialogTitle>{{ props.defaultValues ? 'Edit' : 'Add' }} namespace</DialogTitle>
+          <DialogDescription v-if="props.defaultValues">
+            Changes in namespace definitions will be applied to all files.
+          </DialogDescription>
         </DialogHeader>
         <FieldSet>
           <FieldGroup>

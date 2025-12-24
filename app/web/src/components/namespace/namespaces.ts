@@ -7,7 +7,7 @@ import type { NamespaceDefinition, PrefixSuggestion } from '.'
 import { packagedNamespaces } from './packaged/packaged'
 import { usePrefixSuggestions } from './prefixes'
 
-export const DEFAULT_ACTIVE_NAMESPACES = ['xsd', 'sh']
+export const DEFAULT_ACTIVE_NAMESPACES = ['xsd', 'sh', 'dash']
 
 export function useActiveNamespacesWithoutContext({
   file,

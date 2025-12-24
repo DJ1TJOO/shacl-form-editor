@@ -9,27 +9,33 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   Dialog,
+  DialogDescription,
   DialogHeader,
   DialogScrollContent,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/cn'
 import { reactiveOmit } from '@vueuse/core'
-import { EditIcon, PlusIcon, SearchIcon, TrashIcon } from 'lucide-vue-next'
+import { EditIcon, InfoIcon, PlusIcon, SearchIcon, TrashIcon } from 'lucide-vue-next'
 import { useForwardPropsEmits, type DialogRootEmits, type DialogRootProps } from 'reka-ui'
 import { computed, ref } from 'vue'
 
-const props = defineProps<DialogRootProps>()
+const props = defineProps<DialogRootProps & { allowImplicitBase?: boolean }>()
 const emits = defineEmits<DialogRootEmits>()
 
 const delegatedProps = reactiveOmit(props, 'open', 'defaultOpen')
 const forward = useForwardPropsEmits(delegatedProps, emits)
 
 const open = defineModel<boolean>('open')
+if (props.defaultOpen) {
+  open.value = true
+}
 const activeNamespaces = defineModel<string[]>('activeNamespaces')
+const implicitBase = defineModel<string>('implicitBase')
 
 const prefixSuggestions = Prefixes.usePrefixSuggestions()
 const files = Files.useFiles()
@@ -150,6 +156,9 @@ function removeNamespace(prefix: string) {
     <DialogScrollContent :aria-describedby="undefined" class="max-w-2xl">
       <DialogHeader>
         <DialogTitle>Manage namespaces</DialogTitle>
+        <DialogDescription v-if="activeNamespaces">
+          Select which namespaces are active for the current file.
+        </DialogDescription>
       </DialogHeader>
 
       <EditNamespaceDialog
@@ -157,6 +166,28 @@ function removeNamespace(prefix: string) {
         :default-values="editingNamespace || undefined"
         @submit="handleEdit"
       />
+
+      <FieldSet v-if="allowImplicitBase">
+        <FieldGroup>
+          <Field>
+            <FieldLabel>
+              Implicit Base IRI for this file
+              <Tooltip>
+                <TooltipTrigger><InfoIcon /></TooltipTrigger>
+                <TooltipContent>
+                  Uses the `<code>@prefix : &lt;iri&gt;</code>` directive.
+                  <br />
+                  <code>@base</code> is currently <strong>not</strong> supported.
+                </TooltipContent>
+              </Tooltip>
+            </FieldLabel>
+
+            <InputGroup>
+              <InputGroupInput v-model="implicitBase" placeholder="http://example.org/" />
+            </InputGroup>
+          </Field>
+        </FieldGroup>
+      </FieldSet>
 
       <div class="flex justify-between items-center gap-2">
         <InputGroup>

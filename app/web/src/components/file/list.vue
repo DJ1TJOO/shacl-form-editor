@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { DeleteFileDialog, Files, RenameFileDialog } from '@/components/file'
+import { DeleteFileDialog, Files, NewFileDialog, RenameFileDialog } from '@/components/file'
+import { Button } from '@/components/ui/button'
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
-import { PencilIcon, TrashIcon } from 'lucide-vue-next'
+import { PencilIcon, PlusIcon, TrashIcon } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
@@ -46,7 +47,13 @@ function openDeleteFileDialog(file: Files.FileWithId) {
     :fileName="activeFile.name"
   />
 
-  <ul class="gap-2 grid @4xl/files-list:grid-cols-3 @xl/files-list:grid-cols-2">
+  <div v-if="sortedFiles.length === 0" class="flex flex-col justify-center items-center gap-2">
+    <p class="text-text text-center">No files found</p>
+    <NewFileDialog>
+      <Button size="lg"><PlusIcon /> New File</Button>
+    </NewFileDialog>
+  </div>
+  <ul v-else class="gap-2 grid @4xl/files-list:grid-cols-3 @xl/files-list:grid-cols-2">
     <li v-for="file in sortedFiles" :key="file.id">
       <ContextMenu>
         <ContextMenuTrigger>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ConstraintsList } from '@/components/constraints'
 import { EditorBar, NewItemDialog } from '@/components/editor-bar'
-import { useFile } from '@/components/file'
+import { Files, useFile } from '@/components/file'
 import { NamespaceManager, Namespaces, Prefixes } from '@/components/namespace'
 import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
 import { PropertiesList } from '@/components/properties'
@@ -21,7 +21,7 @@ import {
   FormIcon,
   LayoutTemplateIcon,
 } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const isLeftSideBarOpen = ref(true)
@@ -45,7 +45,7 @@ const params = useUrlSearchParams<{ tab: 'editor' | 'turtle' }>('history', {
 
 const turtleEditorProviderRef = ref<InstanceType<typeof TurtleEditorProvider> | null>(null)
 
-const { store, currentShapeIRI, currentShape, file } = useFile()
+const { store, currentShapeIRI, currentShape, file, fileId } = useFile()
 const type = useShapeType({ subject: currentShape.node })
 
 const activeNamespaces = Namespaces.useActiveNamespaces()
@@ -67,7 +67,17 @@ async function goToTurtle() {
 }
 
 const route = useRoute()
-const showNewItemDialog = computed(() => !route.params.shapeId && params.tab === 'editor')
+
+const newFile = computed(() => !route.params.shapeId && params.tab === 'editor')
+const newFileDialog = ref<'namespace-manager' | 'new-item-dialog' | null>(null)
+watch(
+  newFile,
+  (newFile) => {
+    if (!newFile) return
+    newFileDialog.value = 'namespace-manager'
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -101,7 +111,23 @@ const showNewItemDialog = computed(() => !route.params.shapeId && params.tab ===
         </Button>
       </div>
       <div class="@container/editor-header-actions flex justify-end gap-2">
-        <NamespaceManager v-model:active-namespaces="activeNamespaces">
+        <NamespaceManager
+          :key="newFileDialog === 'namespace-manager' ? 'new-file-namespace-manager' : undefined"
+          :default-open="newFileDialog === 'namespace-manager'"
+          @update:open="
+            (open) => {
+              if (!newFile) return
+              if (open) return
+              newFileDialog = 'new-item-dialog'
+            }
+          "
+          v-model:active-namespaces="activeNamespaces"
+          allow-implicit-base
+          :implicit-base="file.implicitBase"
+          @update:implicit-base="
+            Files.updateBase(fileId, { implicitBase: $event, explicitBase: file.explicitBase })
+          "
+        >
           <Button size="lg" color="background-highlighted">
             <ClipboardListIcon />
             <span class="@max-sm/editor-header-actions:hidden">Manage Namespaces</span>
@@ -118,13 +144,23 @@ const showNewItemDialog = computed(() => !route.params.shapeId && params.tab ===
       </div>
     </HeaderActions>
 
-    <NewItemDialog :open="showNewItemDialog" />
+    <NewItemDialog
+      :key="newFileDialog === 'new-item-dialog' ? 'new-file-new-item-dialog' : undefined"
+      :default-open="newFileDialog === 'new-item-dialog'"
+      @update:open="
+        (open) => {
+          if (!newFile) return
+          if (open) return
+          newFileDialog = null
+        }
+      "
+    />
 
     <OptionsSidebarProvider ref="optionsSidebarProviderRef">
       <EditorBar :activeTab="params.tab" />
       <div
         :key="currentShapeIRI"
-        v-if="params.tab === 'editor'"
+        v-if="currentShapeIRI && params.tab === 'editor'"
         class="gap-3 grid p-1"
         :style="{ gridTemplateColumns }"
       >

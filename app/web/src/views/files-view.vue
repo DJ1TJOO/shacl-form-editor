@@ -11,7 +11,7 @@ const params = useUrlSearchParams<{ fileNotFound?: string }>('history')
 </script>
 
 <template>
-  <main class="@container/files-list mx-auto p-1 max-w-5xl">
+  <main class="@container/files-list mx-auto p-1 w-full max-w-5xl">
     <HeaderActions>
       <div class="flex max-lg:justify-center gap-2 max-lg:col-span-3 lg:col-start-3">
         <NamespaceManager>

@@ -100,13 +100,15 @@ const { ignoreUpdates: ignoreStorageUpdates } = watchIgnorable(
       watchStore(deserialized.store)
       store.value = deserialized.store
 
+      const newImplicitBase = deserialized.implicitBase ?? file.value.implicitBase
+      const newExplicitBase = deserialized.explicitBase ?? file.value.explicitBase
       if (
-        file.value.implicitBase !== deserialized.implicitBase ||
-        file.value.explicitBase !== deserialized.explicitBase
+        newImplicitBase !== file.value.implicitBase ||
+        newExplicitBase !== file.value.explicitBase
       ) {
         Files.updateBase(fileId.value, {
-          implicitBase: deserialized.implicitBase,
-          explicitBase: deserialized.explicitBase,
+          implicitBase: newImplicitBase,
+          explicitBase: newExplicitBase,
         })
       }
 

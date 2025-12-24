@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useShapes } from '@/composables/use-shacl'
-import { reactiveOmit, useVModel } from '@vueuse/core'
+import { reactiveOmit } from '@vueuse/core'
 import { CircleIcon, DiamondIcon, InfoIcon } from 'lucide-vue-next'
 import {
   RovingFocusGroup,
@@ -32,7 +32,7 @@ import {
   type DialogRootEmits,
   type DialogRootProps,
 } from 'reka-ui'
-import { computed, ref, type Ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps<DialogRootProps>()
@@ -56,10 +56,10 @@ const targetNode = ref<{ value: string }[]>([])
 const targetSubjectsOf = ref<{ value: string }[]>([])
 const targetObjectsOf = ref<{ value: string }[]>([])
 
-const open = useVModel(props, 'open', emits, {
-  passive: true,
-  defaultValue: !!props.defaultOpen,
-}) as Ref<boolean>
+const open = defineModel<boolean>('open')
+if (props.defaultOpen) {
+  open.value = true
+}
 
 function close() {
   open.value = false

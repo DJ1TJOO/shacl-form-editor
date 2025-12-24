@@ -13,6 +13,7 @@ import { Toolbox } from '@/components/toolbox'
 import { TurtleEditor, TurtleEditorProvider } from '@/components/turtle-editor'
 import { Button } from '@/components/ui/button'
 import { useShapeType } from '@/composables/use-shacl'
+import { arraysEqual } from '@/lib/array'
 import { useUrlSearchParams } from '@vueuse/core'
 import {
   ClipboardListIcon,
@@ -74,7 +75,8 @@ watch(
   newFile,
   (newFile) => {
     if (!newFile) return
-    if (activeNamespaces.value !== Namespaces.DEFAULT_ACTIVE_NAMESPACES) {
+
+    if (!arraysEqual(activeNamespaces.value ?? [], Namespaces.DEFAULT_ACTIVE_NAMESPACES)) {
       newFileDialog.value = 'new-item-dialog'
     } else {
       newFileDialog.value = 'namespace-manager'

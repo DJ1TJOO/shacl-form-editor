@@ -251,7 +251,7 @@ export const useNamed = <ReadOnly extends boolean = false>({
     },
   })
 
-  return { value: useReadonly(value, readonly), node: useReadonly(value, readonly) }
+  return { value: useReadonly(value, readonly), node: useReadonly(node, readonly) }
 }
 
 /**

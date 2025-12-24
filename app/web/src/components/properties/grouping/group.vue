@@ -151,8 +151,6 @@ const { elementRef: dropzoneRef } = useDroppable({
 
       // Adding new properties
       if (newProperties.length > 0) {
-        console.log(targetOrder)
-
         if (typeof targetOrder !== 'undefined') {
           createOrderingGapAtTarget(store.value, properties, targetOrder, newProperties.length)
           addNewPropertiesAtTarget(targetOrder, newProperties, iriNode.value)

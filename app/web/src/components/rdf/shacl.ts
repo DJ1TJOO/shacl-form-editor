@@ -390,7 +390,7 @@ export function download(
   if (!serialized) return
 
   if (debug) {
-    console.log(serialized)
+    console.info(serialized)
     return
   }
 

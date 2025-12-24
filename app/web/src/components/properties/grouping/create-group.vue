@@ -129,8 +129,6 @@ function handleCreate() {
     shapes.add(shape.value)
   }
 
-  console.log(groupOrder)
-
   const shape = Array.from(shapes)[0]
   if (shape && groupOrder !== null) {
     createOrderingGapAtTarget(

@@ -1,11 +1,11 @@
 <script lang="ts">
+import { editor as monacoEditor } from 'monaco-editor'
 import { createContext } from 'reka-ui'
-import type { Ref } from 'vue'
-import type CodeMirror from 'vue-codemirror6'
 
 interface TurtleEditorContext {
-  editor: Ref<InstanceType<typeof CodeMirror> | undefined>
-  registerEditor: (editor: InstanceType<typeof CodeMirror>) => void
+  editor: monacoEditor.IStandaloneCodeEditor | undefined
+  registerEditor: (editor: monacoEditor.IStandaloneCodeEditor) => void
+  scrollToShape: (prefixedShape: string) => void
 }
 
 export const [injectTurtleEditorContext, provideTurtleEditorContext] =
@@ -13,18 +13,30 @@ export const [injectTurtleEditorContext, provideTurtleEditorContext] =
 </script>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+let editor: monacoEditor.IStandaloneCodeEditor | undefined = undefined
 
-const editor = ref<InstanceType<typeof CodeMirror>>()
-
-const registerEditor = (editorInstance: InstanceType<typeof CodeMirror>) => {
-  editor.value = editorInstance
+const registerEditor = (editorInstance: monacoEditor.IStandaloneCodeEditor) => {
+  editor = editorInstance
 }
 
-provideTurtleEditorContext({ editor, registerEditor })
+function scrollToShape(prefixedShape: string) {
+  if (!editor) return
+
+  const model = editor.getModel()
+  if (!model) return
+
+  const firstMatch = model.findMatches(`^${prefixedShape}`, true, true, true, null, false, 1)[0]
+  if (!firstMatch) return
+
+  const lineNumber = firstMatch.range.startLineNumber
+  editor.revealLineInCenter(lineNumber, monacoEditor.ScrollType.Smooth)
+}
+
+provideTurtleEditorContext({ editor, registerEditor, scrollToShape })
 
 defineExpose({
   editor,
+  scrollToShape,
 })
 </script>
 

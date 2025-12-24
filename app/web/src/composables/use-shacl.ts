@@ -11,7 +11,7 @@ export const useShapeType = ({
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
 }) => {
-  const { items: types } = useNamedList({ subject, predicate: RDF('type') })
+  const { items: types } = useNamedList({ subject, predicate: RDF('type'), watchSubject: false })
   return computed(() => {
     if (types.some((type) => type.value === Shacl.SHACL('NodeShape').value)) return 'node'
     if (types.some((type) => type.value === Shacl.SHACL('PropertyShape').value)) return 'property'
@@ -147,32 +147,36 @@ function useRdfNode<T extends Node>({
   predicate,
   nodeClass,
   onNodeFromStore,
+  watchSubject = true,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nodeClass: new (...args: any[]) => T // Class constructor for a node type
   onNodeFromStore?: (node: T) => void
+  watchSubject?: boolean
 }) {
   const store = useFileStore()
 
-  watch(
-    () => [toValue(subject), toValue(predicate)] as const,
-    ([subject, predicate], [oldSubject, oldPredicate]) => {
-      if (typeof oldSubject === 'undefined' || typeof oldPredicate === 'undefined') {
-        return
-      }
-
-      const currentNode = store.value.any(oldSubject, oldPredicate)
-      if (currentNode instanceof nodeClass) {
-        store.value.removeMatches(oldSubject, oldPredicate, null)
-
-        if (typeof subject !== 'undefined' && typeof predicate !== 'undefined') {
-          store.value.add(subject, predicate, currentNode)
+  if (watchSubject) {
+    watch(
+      () => [toValue(subject), toValue(predicate)] as const,
+      ([subject, predicate], [oldSubject, oldPredicate]) => {
+        if (typeof oldSubject === 'undefined' || typeof oldPredicate === 'undefined') {
+          return
         }
-      }
-    },
-  )
+
+        const currentNode = store.value.any(oldSubject, oldPredicate)
+        if (currentNode instanceof nodeClass) {
+          store.value.removeMatches(oldSubject, oldPredicate, null)
+
+          if (typeof subject !== 'undefined' && typeof predicate !== 'undefined') {
+            store.value.add(subject, predicate, currentNode)
+          }
+        }
+      },
+    )
+  }
 
   const node = computed({
     get() {
@@ -209,14 +213,17 @@ function useRdfNode<T extends Node>({
 export const useNamed = ({
   subject,
   predicate,
+  watchSubject = true,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
+  watchSubject?: boolean
 }) => {
   const node = useRdfNode({
     subject,
     predicate,
     nodeClass: NamedNode,
+    watchSubject,
   })
 
   const value = computed({
@@ -245,9 +252,11 @@ export const booleanFromCheckboxValue = (value: boolean | 'on' | 'off' | 'indete
 export const useLiteral = <T extends string | boolean | number | Date = string>({
   subject,
   predicate,
+  watchSubject = true,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
+  watchSubject?: boolean
 }) => {
   const language = ref<string | undefined>(undefined)
   const datatype = ref<NamedNodeType>(Xsd.string)
@@ -262,6 +271,7 @@ export const useLiteral = <T extends string | boolean | number | Date = string>(
         datatype.value = foundLiteral.datatype
       })
     },
+    watchSubject,
   })
 
   const value = computed({
@@ -295,37 +305,41 @@ function useRdfNodeList<T extends Node>({
   subject,
   predicate,
   nodeClass,
+  watchSubject = true,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nodeClass: new (...args: any[]) => T // Class constructor for a node type
+  watchSubject?: boolean
 }) {
   const store = useFileStore()
 
-  watch(
-    () => [toValue(subject), toValue(predicate)] as const,
-    ([subject, predicate], [oldSubject, oldPredicate]) => {
-      if (typeof oldSubject === 'undefined' || typeof oldPredicate === 'undefined') {
-        return
-      }
+  if (watchSubject) {
+    watch(
+      () => [toValue(subject), toValue(predicate)] as const,
+      ([subject, predicate], [oldSubject, oldPredicate]) => {
+        if (typeof oldSubject === 'undefined' || typeof oldPredicate === 'undefined') {
+          return
+        }
 
-      const currentNodes = store.value
-        .statementsMatching(oldSubject, oldPredicate)
-        .filter((statement) => statement.object instanceof nodeClass)
-        .map((statement) => statement.object as T)
+        const currentNodes = store.value
+          .statementsMatching(oldSubject, oldPredicate)
+          .filter((statement) => statement.object instanceof nodeClass)
+          .map((statement) => statement.object as T)
 
-      if (currentNodes.length > 0) {
-        store.value.removeMatches(oldSubject, oldPredicate, null)
+        if (currentNodes.length > 0) {
+          store.value.removeMatches(oldSubject, oldPredicate, null)
 
-        if (typeof subject !== 'undefined' && typeof predicate !== 'undefined') {
-          for (const node of currentNodes) {
-            store.value.add(subject, predicate, node)
+          if (typeof subject !== 'undefined' && typeof predicate !== 'undefined') {
+            for (const node of currentNodes) {
+              store.value.add(subject, predicate, node)
+            }
           }
         }
-      }
-    },
-  )
+      },
+    )
+  }
 
   const nodes = computed({
     get() {
@@ -367,14 +381,17 @@ function useRdfNodeList<T extends Node>({
 export const useNamedList = ({
   subject,
   predicate,
+  watchSubject = true,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
+  watchSubject?: boolean
 }) => {
   const nodes = useRdfNodeList({
     subject,
     predicate,
     nodeClass: NamedNode,
+    watchSubject,
   })
 
   const items = reactive<{ value: string; node: NamedNode }[]>([])
@@ -417,14 +434,17 @@ export const useNamedList = ({
 export const useLiteralList = <T extends string | boolean | number | Date = string>({
   subject,
   predicate,
+  watchSubject = true,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
+  watchSubject?: boolean
 }) => {
   const nodes = useRdfNodeList({
     subject,
     predicate,
     nodeClass: Literal,
+    watchSubject,
   })
 
   type LiteralItem = {

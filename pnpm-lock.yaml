@@ -49,6 +49,12 @@ importers:
       lucide-vue-next:
         specifier: '^0.559.0 '
         version: 0.559.0(vue@3.5.25(typescript@5.9.3))
+      monaco-editor:
+        specifier: ^0.55.1
+        version: 0.55.1
+      monaco-editor-vue3:
+        specifier: ^1.0.5
+        version: 1.0.5(monaco-editor@0.55.1)(vue@3.5.25(typescript@5.9.3))
       rdflib:
         specifier: ^2.3.0
         version: 2.3.0(patch_hash=1c0177ba6004148c4348ba2572e35ee9b5340e1b2281617774de10331908e566)(web-streams-polyfill@3.3.3)
@@ -769,6 +775,9 @@ packages:
   '@types/node@22.19.1':
     resolution: {integrity: sha512-LCCV0HdSZZZb34qifBsyWlUmok6W7ouER+oQIGBScS8EsZsQbrtFTUrDX4hOl+CS6p7cnNC4td+qrSVGSCTUfQ==}
 
+  '@types/trusted-types@2.0.7':
+    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+
   '@types/web-bluetooth@0.0.21':
     resolution: {integrity: sha512-oIQLCGWtcFZy2JW77j9k8nHzAOpqMHLQejDA48XXMWH6tjCQHz5RCFz1bzsmROyL6PUm+LLnUiI4BCn221inxA==}
 
@@ -1138,6 +1147,9 @@ packages:
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
+
+  dompurify@3.2.7:
+    resolution: {integrity: sha512-WhL/YuveyGXJaerVlMYGWhvQswa7myDG17P7Vu65EWC05o8vfeNbvNf4d/BOvH99+ZW+LlQsc1GDKMa1vNK6dw==}
 
   electron-to-chromium@1.5.259:
     resolution: {integrity: sha512-I+oLXgpEJzD6Cwuwt1gYjxsDmu/S/Kd41mmLA3O+/uH2pFRO/DvOjUyGozL8j3KeLV6WyZ7ssPwELMsXCcsJAQ==}
@@ -1556,6 +1568,11 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
+  marked@14.0.0:
+    resolution: {integrity: sha512-uIj4+faQ+MgHgwUW1l2PsPglZLOLOT1uErt06dAPtx2kjteLAkbsd/0FiYg/MGS+i7ZKLb7w2WClxHkzOOuryQ==}
+    engines: {node: '>= 18'}
+    hasBin: true
+
   memorystream@0.3.1:
     resolution: {integrity: sha512-S3UwM3yj5mtUSEfP41UZmt/0SCoVYUcU1rkXv+BQ5Ig8ndL4sPoJNBUJERafdPb5jjHJGuMgytgKvKIf58XNBw==}
     engines: {node: '>= 0.10.0'}
@@ -1577,6 +1594,15 @@ packages:
 
   mitt@3.0.1:
     resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
+
+  monaco-editor-vue3@1.0.5:
+    resolution: {integrity: sha512-1n4ayGcuYpZcQ6A4PUYZYqXuf6n+A/2pUNdLnb8I39WZV0zkhfvSRNau3hB0qzq6vp6wSNZ7MgcjQRCJCiGHWQ==}
+    peerDependencies:
+      monaco-editor: '>= 0.25.0 < 1'
+      vue: ^3
+
+  monaco-editor@0.55.1:
+    resolution: {integrity: sha512-jz4x+TJNFHwHtwuV9vA9rMujcZRb0CEilTEwG2rRSpe/A7Jdkuj8xPKttCgOh+v/lkHy7HsZ64oj+q3xoAFl9A==}
 
   mrmime@2.0.1:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
@@ -2645,6 +2671,9 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/trusted-types@2.0.7':
+    optional: true
+
   '@types/web-bluetooth@0.0.21': {}
 
   '@typescript-eslint/eslint-plugin@8.47.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)':
@@ -3086,6 +3115,10 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
+  dompurify@3.2.7:
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
+
   electron-to-chromium@1.5.259: {}
 
   enhanced-resolve@5.18.3:
@@ -3466,6 +3499,8 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  marked@14.0.0: {}
+
   memorystream@0.3.1: {}
 
   merge2@1.4.1: {}
@@ -3484,6 +3519,16 @@ snapshots:
       brace-expansion: 2.0.2
 
   mitt@3.0.1: {}
+
+  monaco-editor-vue3@1.0.5(monaco-editor@0.55.1)(vue@3.5.25(typescript@5.9.3)):
+    dependencies:
+      monaco-editor: 0.55.1
+      vue: 3.5.25(typescript@5.9.3)
+
+  monaco-editor@0.55.1:
+    dependencies:
+      dompurify: 3.2.7
+      marked: 14.0.0
 
   mrmime@2.0.1: {}
 

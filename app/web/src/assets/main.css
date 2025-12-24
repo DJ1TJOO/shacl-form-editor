@@ -36,10 +36,10 @@
 }
 
 @layer base {
-  * {
+  *:not(.monaco-code-editor *) {
     @apply border-separator focus-visible:ring-branding/50 focus-visible:ring-[3px] outline-none;
   }
-  *:focus-visible {
+  *:not(.monaco-code-editor *):focus-visible {
     @apply rounded-sm;
   }
   body {

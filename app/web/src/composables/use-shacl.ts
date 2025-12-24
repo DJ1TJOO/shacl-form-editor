@@ -266,8 +266,8 @@ export const booleanFromCheckboxValue = (value: boolean | 'on' | 'off' | 'indete
 }
 
 export const useLiteral = <
-  ReadOnly extends boolean = false,
   T extends string | boolean | number | Date = string,
+  ReadOnly extends boolean = false,
 >({
   subject,
   predicate,
@@ -460,8 +460,8 @@ export const useNamedList = <ReadOnly extends boolean = false>({
 }
 
 export const useLiteralList = <
-  ReadOnly extends boolean = false,
   T extends string | boolean | number | Date = string,
+  ReadOnly extends boolean = false,
 >({
   subject,
   predicate,

@@ -74,7 +74,12 @@ const required = computed<boolean | 'indeterminate'>({
         </FieldLabel>
         <FieldOptional v-model="maximum" :create="() => minimum ?? 1" v-slot="{ remove }">
           <InputGroup>
-            <InputGroupInput v-model="maximum" :min="minimum ?? 1" default-value="1" type="number" />
+            <InputGroupInput
+              v-model="maximum"
+              :min="minimum ?? 1"
+              default-value="1"
+              type="number"
+            />
             <InputGroupAddon align="inline-end">
               <RemoveButton @click="remove" />
             </InputGroupAddon>

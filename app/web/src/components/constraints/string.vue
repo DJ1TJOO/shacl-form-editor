@@ -103,11 +103,7 @@ const allowedLanguages = computed({
             <TooltipContent>The maximum number of characters allowed.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <FieldOptional
-          v-model="maxLength"
-          :create="() => minLength ?? 1"
-          v-slot="{ remove }"
-        >
+        <FieldOptional v-model="maxLength" :create="() => minLength ?? 1" v-slot="{ remove }">
           <InputGroup>
             <InputGroupInput v-model="maxLength" type="number" :min="minLength ?? 1" />
             <InputGroupAddon align="inline-end">

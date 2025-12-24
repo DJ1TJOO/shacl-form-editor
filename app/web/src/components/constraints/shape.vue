@@ -65,11 +65,7 @@ function goToNode() {
         </Tooltip>
       </FieldLabel>
 
-      <FieldOptional
-        v-model="node"
-        :create="() => 'http://example.com/MyNode'"
-        v-slot="{ remove }"
-      >
+      <FieldOptional v-model="node" :create="() => 'http://example.com/MyNode'" v-slot="{ remove }">
         <PrefixInput v-model="node" :types="[Shacl.SHACL('NodeShape').value]">
           <RemoveButton @click="remove" />
         </PrefixInput>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { useFile } from '@/components/file'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldOptional } from '@/components/form-ui/field'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { getNamedNode, RDF, Shacl } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
@@ -64,10 +65,15 @@ function goToNode() {
         </Tooltip>
       </FieldLabel>
 
-      <AddButton v-if="typeof node === 'undefined'" @click="node = 'http://example.com/MyNode'" />
-      <PrefixInput v-model="node" v-else :types="[Shacl.SHACL('NodeShape').value]">
-        <RemoveButton @click="node = undefined" />
-      </PrefixInput>
+      <FieldOptional
+        v-model="node"
+        :create="() => 'http://example.com/MyNode'"
+        v-slot="{ remove }"
+      >
+        <PrefixInput v-model="node" :types="[Shacl.SHACL('NodeShape').value]">
+          <RemoveButton @click="remove" />
+        </PrefixInput>
+      </FieldOptional>
     </Field>
 
     <div v-if="hasShape" class="gap-1 grid grid-cols-[1fr_1fr_auto]">
@@ -82,13 +88,14 @@ function goToNode() {
             >
           </Tooltip>
         </FieldLabel>
-        <AddButton v-if="typeof qualifiedMinCount === 'undefined'" @click="qualifiedMinCount = 1" />
-        <InputGroup v-else>
-          <InputGroupInput v-model="qualifiedMinCount" type="number" :min="0" />
-          <InputGroupAddon align="inline-end">
-            <RemoveButton @click="qualifiedMinCount = undefined" />
-          </InputGroupAddon>
-        </InputGroup>
+        <FieldOptional v-model="qualifiedMinCount" :create="() => 1" v-slot="{ remove }">
+          <InputGroup>
+            <InputGroupInput v-model="qualifiedMinCount" type="number" :min="0" />
+            <InputGroupAddon align="inline-end">
+              <RemoveButton @click="remove" />
+            </InputGroupAddon>
+          </InputGroup>
+        </FieldOptional>
       </Field>
 
       <Field>
@@ -102,20 +109,22 @@ function goToNode() {
             >
           </Tooltip>
         </FieldLabel>
-        <AddButton
-          v-if="typeof qualifiedMaxCount === 'undefined'"
-          @click="qualifiedMaxCount = qualifiedMinCount ?? 1"
-        />
-        <InputGroup v-else>
-          <InputGroupInput
-            v-model="qualifiedMaxCount"
-            type="number"
-            :min="qualifiedMinCount ?? 0"
-          />
-          <InputGroupAddon align="inline-end">
-            <RemoveButton @click="qualifiedMaxCount = undefined" />
-          </InputGroupAddon>
-        </InputGroup>
+        <FieldOptional
+          v-model="qualifiedMaxCount"
+          :create="() => qualifiedMinCount ?? 1"
+          v-slot="{ remove }"
+        >
+          <InputGroup>
+            <InputGroupInput
+              v-model="qualifiedMaxCount"
+              type="number"
+              :min="qualifiedMinCount ?? 0"
+            />
+            <InputGroupAddon align="inline-end">
+              <RemoveButton @click="remove" />
+            </InputGroupAddon>
+          </InputGroup>
+        </FieldOptional>
       </Field>
 
       <Field>

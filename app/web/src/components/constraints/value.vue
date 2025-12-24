@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldList, FieldOptional } from '@/components/form-ui/field'
 import { Shacl, Xsd } from '@/components/rdf'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
@@ -27,13 +28,14 @@ const { items: inValues } = useLiteralList({ subject, predicate: Shacl.SHACL('in
         </Tooltip>
       </FieldLabel>
 
-      <InputGroup v-if="typeof hasValue === 'string'">
-        <InputGroupInput v-model="hasValue" />
-        <InputGroupAddon align="inline-end">
-          <RemoveButton @click="hasValue = undefined" />
-        </InputGroupAddon>
-      </InputGroup>
-      <AddButton v-else @click="hasValue = ''" />
+      <FieldOptional v-model="hasValue" :create="() => ''" v-slot="{ remove }">
+        <InputGroup>
+          <InputGroupInput v-model="hasValue" />
+          <InputGroupAddon align="inline-end">
+            <RemoveButton @click="remove" />
+          </InputGroupAddon>
+        </InputGroup>
+      </FieldOptional>
     </Field>
 
     <Field>
@@ -45,17 +47,18 @@ const { items: inValues } = useLiteralList({ subject, predicate: Shacl.SHACL('in
         </Tooltip>
       </FieldLabel>
 
-      <template v-for="(inValue, index) in inValues" :key="index">
+      <FieldList
+        v-slot="{ entry, remove }"
+        v-model="inValues"
+        :create="() => ({ value: '', node: new Literal(''), datatype: Xsd.string })"
+      >
         <InputGroup>
-          <InputGroupInput v-model="inValue.value" />
+          <InputGroupInput v-model="entry.value" />
           <InputGroupAddon align="inline-end">
-            <RemoveButton @click="inValues.splice(index, 1)" />
+            <RemoveButton @click="remove" />
           </InputGroupAddon>
         </InputGroup>
-      </template>
-      <AddButton
-        @click="inValues.push({ value: '', node: new Literal(''), datatype: Xsd.string })"
-      />
+      </FieldList>
     </Field>
   </Constraint>
 </template>

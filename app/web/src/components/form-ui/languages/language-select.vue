@@ -25,7 +25,7 @@ const filter = ref('')
 const { contains } = useFilter({ sensitivity: 'base' })
 const filteredLanguages = computed(() => {
   const filtered = languages.filter((language) =>
-    contains(`${language.label} (${language.code})`, filter.value),
+    contains(`${language.label} ${language.code}`, filter.value),
   )
 
   const forwardedValue = forwarded.value
@@ -49,7 +49,7 @@ const filteredLanguages = computed(() => {
 </script>
 
 <template>
-  <Combobox v-bind="forwarded">
+  <Combobox v-bind="forwarded" ignore-filter>
     <ComboboxAnchor>
       <div class="relative items-center">
         <ComboboxInput

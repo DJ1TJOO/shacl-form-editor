@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldList } from '@/components/form-ui/field'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { RDF_PROPERTY_TYPES, Shacl, Xsd } from '@/components/rdf'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -25,10 +26,16 @@ const { items: lessThanOrEquals } = useNamedList({
   predicate: Shacl.SHACL('lessThanOrEquals'),
 })
 
-const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype') })
+const { value: datatype } = useNamed({
+  subject,
+  predicate: Shacl.SHACL('datatype'),
+  readonly: true,
+})
 const canHaveLessThanConstraints = computed(() => {
   return !datatype.value || (!Xsd.isString(datatype.value) && !Xsd.isBoolean(datatype.value))
 })
+
+const lessThanOrEqualsMax = computed(() => lessThanOrEquals.length) // Too disable the add button in the first field list
 </script>
 
 <template>
@@ -42,12 +49,15 @@ const canHaveLessThanConstraints = computed(() => {
         </Tooltip>
       </FieldLabel>
 
-      <template v-for="(equalsEntry, index) in equals" :key="index">
-        <PrefixInput v-model="equalsEntry.value" :types="RDF_PROPERTY_TYPES">
-          <RemoveButton @click="equals.splice(index, 1)" />
+      <FieldList
+        v-slot="{ entry, remove }"
+        v-model="equals"
+        :create="() => ({ value: '', node: new NamedNode(':') })"
+      >
+        <PrefixInput v-model="entry.value" :types="RDF_PROPERTY_TYPES">
+          <RemoveButton @click="remove" />
         </PrefixInput>
-      </template>
-      <AddButton @click="equals.push({ value: '', node: new NamedNode(':') })" />
+      </FieldList>
     </Field>
 
     <Field>
@@ -61,12 +71,15 @@ const canHaveLessThanConstraints = computed(() => {
         </Tooltip>
       </FieldLabel>
 
-      <template v-for="(disjointEntry, index) in disjoint" :key="index">
-        <PrefixInput v-model="disjointEntry.value" :types="RDF_PROPERTY_TYPES">
-          <RemoveButton @click="disjoint.splice(index, 1)" />
+      <FieldList
+        v-slot="{ entry, remove }"
+        v-model="disjoint"
+        :create="() => ({ value: '', node: new NamedNode(':') })"
+      >
+        <PrefixInput v-model="entry.value" :types="RDF_PROPERTY_TYPES">
+          <RemoveButton @click="remove" />
         </PrefixInput>
-      </template>
-      <AddButton @click="disjoint.push({ value: '', node: new NamedNode(':') })" />
+      </FieldList>
     </Field>
 
     <Field
@@ -88,34 +101,16 @@ const canHaveLessThanConstraints = computed(() => {
         </FieldLabel>
       </div>
 
-      <div
+      <FieldList
+        v-slot="{ entry, remove }"
+        v-model="lessThanOrEquals"
+        :create="() => ({ value: '', node: new NamedNode(':') })"
+        :max="lessThanOrEqualsMax"
+        list-class="grid grid-cols-subgrid col-span-2"
         class="items-center grid grid-cols-subgrid col-span-2"
-        v-for="(lessThanEntry, index) in lessThan"
-        :key="lessThanEntry.node.value"
       >
-        <PrefixInput v-model="lessThanEntry.value" :types="RDF_PROPERTY_TYPES">
-          <RemoveButton @click="lessThan.splice(index, 1)" />
-        </PrefixInput>
-        <Checkbox
-          :default-value="false"
-          @update:model-value="
-            (value) => {
-              if (booleanFromCheckboxValue(value)) {
-                lessThanOrEquals.push({ value: lessThanEntry.value, node: lessThanEntry.node })
-                lessThan.splice(index, 1)
-              }
-            }
-          "
-          class="justify-self-center"
-        />
-      </div>
-      <div
-        class="items-center grid grid-cols-subgrid col-span-2"
-        v-for="(lessThanOrEqualsEntry, index) in lessThanOrEquals"
-        :key="lessThanOrEqualsEntry.node.value"
-      >
-        <PrefixInput v-model="lessThanOrEqualsEntry.value" :types="RDF_PROPERTY_TYPES">
-          <RemoveButton @click="lessThanOrEquals.splice(index, 1)" />
+        <PrefixInput v-model="entry.value" :types="RDF_PROPERTY_TYPES">
+          <RemoveButton @click="remove" />
         </PrefixInput>
         <Checkbox
           :default-value="true"
@@ -123,17 +118,39 @@ const canHaveLessThanConstraints = computed(() => {
             (value) => {
               if (!booleanFromCheckboxValue(value)) {
                 lessThan.push({
-                  value: lessThanOrEqualsEntry.value,
-                  node: lessThanOrEqualsEntry.node,
+                  value: entry.value,
+                  node: entry.node,
                 })
-                lessThanOrEquals.splice(index, 1)
+                remove?.()
               }
             }
           "
           class="justify-self-center"
         />
-      </div>
-      <AddButton @click="lessThan.push({ value: '', node: new NamedNode(':') })" />
+      </FieldList>
+      <FieldList
+        v-slot="{ entry, remove }"
+        v-model="lessThan"
+        :create="() => ({ value: '', node: new NamedNode(':') })"
+        list-class="grid grid-cols-subgrid col-span-2"
+        class="items-center grid grid-cols-subgrid col-span-2"
+      >
+        <PrefixInput v-model="entry.value" :types="RDF_PROPERTY_TYPES">
+          <RemoveButton @click="remove" />
+        </PrefixInput>
+        <Checkbox
+          :default-value="false"
+          @update:model-value="
+            (value) => {
+              if (booleanFromCheckboxValue(value)) {
+                lessThanOrEquals.push({ value: entry.value, node: entry.node })
+                remove?.()
+              }
+            }
+          "
+          class="justify-self-center"
+        />
+      </FieldList>
     </Field>
   </Constraint>
 </template>

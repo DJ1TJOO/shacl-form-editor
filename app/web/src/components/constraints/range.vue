@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldOptional } from '@/components/form-ui/field'
 import { Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -8,22 +9,16 @@ import { Field, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useLiteral, useNamed } from '@/composables/use-shacl'
+import { formatDateInput, formatDateTimeInput } from '@/lib/date'
 import { CalendarIcon, InfoIcon } from 'lucide-vue-next'
 import { computed, useTemplateRef } from 'vue'
-
-function formatDate(date: Date) {
-  return date.toISOString().split('T')[0]
-}
-
-function formatDateTime(date: Date) {
-  return date.toISOString().split('.')[0]
-}
 
 const { subject } = defineProps<ConstraintProps>()
 
 const { value: datatype, node: datatypeNode } = useNamed({
   subject,
   predicate: Shacl.SHACL('datatype'),
+  readonly: true,
 })
 const isDatatypeDecimal = computed(() => (datatype.value ? Xsd.isDecimal(datatype.value) : false))
 const isDatatypeInteger = computed(() => (datatype.value ? Xsd.isInteger(datatype.value) : false))
@@ -66,7 +61,7 @@ const minimum = computed({
   get() {
     const value = isMinimumInclusive.value ? minInclusive.value : minExclusive.value
     if (value instanceof Date) {
-      return isDatatypeDateTime.value ? formatDateTime(value) : formatDate(value)
+      return isDatatypeDateTime.value ? formatDateTimeInput(value) : formatDateInput(value)
     }
     return value
   },
@@ -119,7 +114,7 @@ const maximum = computed({
   get() {
     const value = isMaximumInclusive.value ? maxInclusive.value : maxExclusive.value
     if (value instanceof Date) {
-      return isDatatypeDateTime.value ? formatDateTime(value) : formatDate(value)
+      return isDatatypeDateTime.value ? formatDateTimeInput(value) : formatDateInput(value)
     }
     return value
   },
@@ -151,49 +146,52 @@ const showMaximumInclusiveLabel = computed(() => typeof maximum.value !== 'undef
         <FieldLabel v-if="showMinimumInclusiveLabel"> Inclusive </FieldLabel>
       </div>
 
-      <AddButton
-        v-if="typeof minimum === 'undefined'"
-        @click="
-          isDatatypeInteger
-            ? (minimum = 0)
-            : isDatatypeDate
-              ? isDatatypeDateTime
-                ? (minimum = formatDateTime(new Date()))
-                : (minimum = formatDate(new Date()))
-              : (minimum = '')
+      <FieldOptional
+        v-model="minimum"
+        :create="
+          () =>
+            isDatatypeInteger
+              ? 0
+              : isDatatypeDate
+                ? isDatatypeDateTime
+                  ? formatDateTimeInput(new Date())
+                  : formatDateInput(new Date())
+                : ''
         "
-      />
-      <div v-else class="items-center grid grid-cols-subgrid col-span-2">
-        <InputGroup>
-          <InputGroupInput
-            ref="minInput"
-            v-model="minimum"
-            :type="
-              isDatatypeDecimal || isDatatypeInteger
-                ? 'number'
-                : isDatatypeDate
-                  ? isDatatypeDateTime
-                    ? 'datetime-local'
-                    : 'date'
-                  : 'text'
-            "
-            :step="isDatatypeDecimal ? 'any' : isDatatypeInteger ? 1 : undefined"
-            class="hide-date-picker"
-          />
-          <InputGroupAddon align="inline-end">
-            <Button
-              v-if="isDatatypeDate"
-              size="icon-sm"
-              variant="ghost"
-              @click="minInputRef?.inputRef?.showPicker()"
-            >
-              <CalendarIcon />
-            </Button>
-            <RemoveButton @click="minimum = undefined" />
-          </InputGroupAddon>
-        </InputGroup>
-        <Checkbox v-model="isMinimumInclusive" class="justify-self-center" />
-      </div>
+        v-slot="{ remove }"
+      >
+        <div class="items-center grid grid-cols-subgrid col-span-2">
+          <InputGroup>
+            <InputGroupInput
+              ref="minInput"
+              v-model="minimum"
+              :type="
+                isDatatypeDecimal || isDatatypeInteger
+                  ? 'number'
+                  : isDatatypeDate
+                    ? isDatatypeDateTime
+                      ? 'datetime-local'
+                      : 'date'
+                    : 'text'
+              "
+              :step="isDatatypeDecimal ? 'any' : isDatatypeInteger ? 1 : undefined"
+              class="hide-date-picker"
+            />
+            <InputGroupAddon align="inline-end">
+              <Button
+                v-if="isDatatypeDate"
+                size="icon-sm"
+                variant="ghost"
+                @click="minInputRef?.inputRef?.showPicker()"
+              >
+                <CalendarIcon />
+              </Button>
+              <RemoveButton @click="remove" />
+            </InputGroupAddon>
+          </InputGroup>
+          <Checkbox v-model="isMinimumInclusive" class="justify-self-center" />
+        </div>
+      </FieldOptional>
     </Field>
 
     <Field class="gap-1 grid grid-cols-[1fr_auto]">
@@ -208,49 +206,52 @@ const showMaximumInclusiveLabel = computed(() => typeof maximum.value !== 'undef
         <FieldLabel v-if="showMaximumInclusiveLabel"> Inclusive </FieldLabel>
       </div>
 
-      <AddButton
-        v-if="typeof maximum === 'undefined'"
-        @click="
-          isDatatypeInteger
-            ? (maximum = 0)
-            : isDatatypeDate
-              ? isDatatypeDateTime
-                ? (maximum = formatDateTime(new Date()))
-                : (maximum = formatDate(new Date()))
-              : (maximum = '')
+      <FieldOptional
+        v-model="maximum"
+        :create="
+          () =>
+            isDatatypeInteger
+              ? 0
+              : isDatatypeDate
+                ? isDatatypeDateTime
+                  ? formatDateTimeInput(new Date())
+                  : formatDateInput(new Date())
+                : ''
         "
-      />
-      <div v-else class="items-center grid grid-cols-subgrid col-span-2">
-        <InputGroup>
-          <InputGroupInput
-            ref="maxInput"
-            v-model="maximum"
-            :type="
-              isDatatypeDecimal || isDatatypeInteger
-                ? 'number'
-                : isDatatypeDate
-                  ? isDatatypeDateTime
-                    ? 'datetime-local'
-                    : 'date'
-                  : 'text'
-            "
-            :step="isDatatypeDecimal ? 'any' : isDatatypeInteger ? 1 : undefined"
-            class="hide-date-picker"
-          />
-          <InputGroupAddon align="inline-end">
-            <Button
-              v-if="isDatatypeDate"
-              size="icon-sm"
-              variant="ghost"
-              @click="maxInputRef?.inputRef?.showPicker()"
-            >
-              <CalendarIcon />
-            </Button>
-            <RemoveButton @click="maximum = undefined" />
-          </InputGroupAddon>
-        </InputGroup>
-        <Checkbox v-model="isMaximumInclusive" class="justify-self-center" />
-      </div>
+        v-slot="{ remove }"
+      >
+        <div class="items-center grid grid-cols-subgrid col-span-2">
+          <InputGroup>
+            <InputGroupInput
+              ref="maxInput"
+              v-model="maximum"
+              :type="
+                isDatatypeDecimal || isDatatypeInteger
+                  ? 'number'
+                  : isDatatypeDate
+                    ? isDatatypeDateTime
+                      ? 'datetime-local'
+                      : 'date'
+                    : 'text'
+              "
+              :step="isDatatypeDecimal ? 'any' : isDatatypeInteger ? 1 : undefined"
+              class="hide-date-picker"
+            />
+            <InputGroupAddon align="inline-end">
+              <Button
+                v-if="isDatatypeDate"
+                size="icon-sm"
+                variant="ghost"
+                @click="maxInputRef?.inputRef?.showPicker()"
+              >
+                <CalendarIcon />
+              </Button>
+              <RemoveButton @click="remove" />
+            </InputGroupAddon>
+          </InputGroup>
+          <Checkbox v-model="isMaximumInclusive" class="justify-self-center" />
+        </div>
+      </FieldOptional>
     </Field>
   </Constraint>
 </template>

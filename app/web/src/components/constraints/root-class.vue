@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldOptional } from '@/components/form-ui/field'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { Dash, RDF_CLASS_TYPES } from '@/components/rdf'
 import { Field, FieldLabel } from '@/components/ui/field'
@@ -25,13 +26,15 @@ const { value: rootClass } = useNamed({ subject, predicate: Dash.DASH('rootClass
           >
         </Tooltip>
       </FieldLabel>
-      <AddButton
-        v-if="typeof rootClass === 'undefined'"
-        @click="rootClass = 'http://www.w3.org/2000/01/rdf-schema#Resource'"
-      />
-      <PrefixInput v-model="rootClass" v-else :types="RDF_CLASS_TYPES">
-        <RemoveButton @click="rootClass = undefined" />
-      </PrefixInput>
+      <FieldOptional
+        v-model="rootClass"
+        :create="() => 'http://www.w3.org/2000/01/rdf-schema#Resource'"
+        v-slot="{ remove }"
+      >
+        <PrefixInput v-model="rootClass" :types="RDF_CLASS_TYPES">
+          <RemoveButton @click="remove" />
+        </PrefixInput>
+      </FieldOptional>
     </Field>
   </Constraint>
 </template>

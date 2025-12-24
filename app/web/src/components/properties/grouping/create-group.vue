@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useFileStore } from '@/components/file'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldList } from '@/components/form-ui/field'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { injectOptionsSidebarProviderContext } from '@/components/options-bar'
@@ -182,28 +183,22 @@ function handleCreate() {
             </FieldLabel>
             <FieldLabel v-if="labels.length > 0"> Language </FieldLabel>
           </div>
-          <div
+          <FieldList
+            v-slot="{ entry, remove }"
+            v-model="labels"
+            :create="() => ({ value: '', language: undefined })"
+            list-class="grid grid-cols-subgrid col-span-2"
             class="grid grid-cols-subgrid col-span-2"
-            v-for="(label, index) in labels"
-            :key="index"
           >
             <InputGroup>
-              <InputGroupInput v-model="label.value" placeholder="My group" />
+              <InputGroupInput v-model="entry.value" placeholder="My group" />
               <InputGroupAddon align="inline-end">
-                <RemoveButton @click="labels.splice(index, 1)" />
+                <RemoveButton @click="remove" />
               </InputGroupAddon>
             </InputGroup>
             <!-- @TODO: show we show error when the same language is used for multiple times -->
-            <LanguageSelect v-model="label.language" />
-          </div>
-          <AddButton
-            @click="
-              labels.push({
-                value: '',
-                language: undefined,
-              })
-            "
-          />
+            <LanguageSelect v-model="entry.language" />
+          </FieldList>
         </Field>
         <Field>
           <FieldLabel>
@@ -213,30 +208,21 @@ function handleCreate() {
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <div
-            v-for="(description, index) in descriptions"
-            :key="index"
+          <FieldList
+            v-slot="{ entry, remove }"
+            v-model="descriptions"
+            :create="() => ({ value: '', language: undefined })"
+            focus-element="textarea"
             class="space-y-0.5 has-[+div]:mb-2"
           >
-            <Textarea
-              v-model="description.value"
-              placeholder="This is a group with a description"
-            />
+            <Textarea v-model="entry.value" placeholder="This is a group with a description" />
             <div class="flex items-center gap-0.5">
               <div class="flex-1">
-                <LanguageSelect v-model="description.language" />
+                <LanguageSelect v-model="entry.language" />
               </div>
-              <RemoveButton standalone @click="descriptions.splice(index, 1)" />
+              <RemoveButton standalone @click="remove" />
             </div>
-          </div>
-          <AddButton
-            @click="
-              descriptions.push({
-                value: '',
-                language: undefined,
-              })
-            "
-          />
+          </FieldList>
         </Field>
       </FieldGroup>
     </FieldSet>

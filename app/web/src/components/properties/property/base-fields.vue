@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldList, FieldOptional } from '@/components/form-ui/field'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { RDF_PROPERTY_TYPES, Shacl, Xsd } from '@/components/rdf'
@@ -8,9 +9,11 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useLiteral, useLiteralList, useNamed } from '@/composables/use-shacl'
+import { formatDateInput, formatDateTimeInput } from '@/lib/date'
 import { InfoIcon } from 'lucide-vue-next'
 import { Literal, NamedNode } from 'rdflib'
 import type { BlankNode } from 'rdflib/lib/tf-types'
+import { computed } from 'vue'
 
 const { subject } = defineProps<{
   subject: BlankNode | NamedNode
@@ -22,9 +25,34 @@ const { items: descriptions } = useLiteralList({
   subject,
   predicate: Shacl.SHACL('description'),
 })
-const { value: defaultValue } = useLiteral({
+
+const { value: datatype, node: datatypeNode } = useNamed({
+  subject,
+  predicate: Shacl.SHACL('datatype'),
+  readonly: true,
+})
+const isDatatypeDecimal = computed(() => (datatype.value ? Xsd.isDecimal(datatype.value) : false))
+const isDatatypeInteger = computed(() => (datatype.value ? Xsd.isInteger(datatype.value) : false))
+const isDatatypeDate = computed(() => (datatype.value ? Xsd.isDate(datatype.value) : false))
+const isDatatypeDateTime = computed(() => (datatype.value ? Xsd.isDateTime(datatype.value) : false))
+const { value: defaultValueLiteral, datatype: defaultValueDatatype } = useLiteral<
+  number | Date | string
+>({
   subject,
   predicate: Shacl.SHACL('defaultValue'),
+})
+const defaultValue = computed({
+  get() {
+    const value = defaultValueLiteral.value
+    if (value instanceof Date) {
+      return isDatatypeDateTime.value ? formatDateTimeInput(value) : formatDateInput(value)
+    }
+    return value
+  },
+  set(value) {
+    defaultValueDatatype.value = datatypeNode.value ?? Xsd.string
+    defaultValueLiteral.value = value
+  },
 })
 </script>
 
@@ -52,30 +80,24 @@ const { value: defaultValue } = useLiteral({
           </FieldLabel>
           <FieldLabel v-if="labels.length > 0"> Language </FieldLabel>
         </div>
-        <div
+        <FieldList
+          v-slot="{ entry, remove }"
+          v-model="labels"
+          :create="
+            () => ({ value: '', language: undefined, datatype: Xsd.string, node: new Literal('') })
+          "
+          list-class="grid grid-cols-subgrid col-span-2"
           class="grid grid-cols-subgrid col-span-2"
-          v-for="(label, index) in labels"
-          :key="index"
         >
           <InputGroup>
-            <InputGroupInput v-model="label.value" placeholder="My Node" />
+            <InputGroupInput v-model="entry.value" placeholder="My Node" />
             <InputGroupAddon align="inline-end">
-              <RemoveButton @click="labels.splice(index, 1)" />
+              <RemoveButton @click="remove" />
             </InputGroupAddon>
           </InputGroup>
           <!-- @TODO: show we show error when the same language is used for multiple times -->
-          <LanguageSelect v-model="label.language" />
-        </div>
-        <AddButton
-          @click="
-            labels.push({
-              value: '',
-              language: undefined,
-              datatype: Xsd.string,
-              node: new Literal(''),
-            })
-          "
-        />
+          <LanguageSelect v-model="entry.language" />
+        </FieldList>
       </Field>
       <Field>
         <FieldLabel>
@@ -85,29 +107,23 @@ const { value: defaultValue } = useLiteral({
             <TooltipContent>This is content in a tooltip.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <div
-          v-for="(description, index) in descriptions"
-          :key="index"
+        <FieldList
+          v-slot="{ entry, remove }"
+          v-model="descriptions"
+          :create="
+            () => ({ value: '', language: undefined, datatype: Xsd.string, node: new Literal('') })
+          "
+          focus-element="textarea"
           class="space-y-0.5 has-[+div]:mb-2"
         >
-          <Textarea v-model="description.value" placeholder="This is a node with a description" />
+          <Textarea v-model="entry.value" placeholder="This is a node with a description" />
           <div class="flex items-center gap-0.5">
             <div class="flex-1">
-              <LanguageSelect v-model="description.language" />
+              <LanguageSelect v-model="entry.language" />
             </div>
-            <RemoveButton standalone @click="descriptions.splice(index, 1)" />
+            <RemoveButton standalone @click="remove" />
           </div>
-        </div>
-        <AddButton
-          @click="
-            descriptions.push({
-              value: '',
-              language: undefined,
-              datatype: Xsd.string,
-              node: new Literal(''),
-            })
-          "
-        />
+        </FieldList>
       </Field>
 
       <Field>
@@ -118,13 +134,25 @@ const { value: defaultValue } = useLiteral({
             <TooltipContent>This is content in a tooltip.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <InputGroup v-if="typeof defaultValue === 'string'">
-          <InputGroupInput v-model="defaultValue" />
-          <InputGroupAddon align="inline-end">
-            <RemoveButton @click="defaultValue = undefined" />
-          </InputGroupAddon>
-        </InputGroup>
-        <AddButton v-else @click="defaultValue = ''" />
+        <FieldOptional v-model="defaultValue" :create="() => ''" v-slot="{ remove }">
+          <InputGroup>
+            <InputGroupInput
+              v-model="defaultValue"
+              :type="
+                isDatatypeDecimal || isDatatypeInteger
+                  ? 'number'
+                  : isDatatypeDate
+                    ? isDatatypeDateTime
+                      ? 'datetime-local'
+                      : 'date'
+                    : 'text'
+              "
+            />
+            <InputGroupAddon align="inline-end">
+              <RemoveButton @click="remove" />
+            </InputGroupAddon>
+          </InputGroup>
+        </FieldOptional>
       </Field>
     </FieldGroup>
   </FieldSet>

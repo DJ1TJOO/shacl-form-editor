@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldList, FieldOptional } from '@/components/form-ui/field'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { Shacl, Xsd } from '@/components/rdf'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -62,26 +63,28 @@ const severityOptions = [
         </Tooltip>
       </FieldLabel>
 
-      <AddButton
-        v-if="typeof severity === 'undefined'"
-        @click="severity = severityOptions[0].value"
-      />
-      <Select v-model="severity" v-else>
-        <InputGroup>
-          <InputGroupSelectTrigger>
-            <SelectValue />
-          </InputGroupSelectTrigger>
-          <InputGroupAddon align="inline-end">
-            <InputGroupSelectTriggerIcon />
-            <RemoveButton @click="severity = undefined" />
-          </InputGroupAddon>
-        </InputGroup>
-        <SelectContent>
-          <SelectItem v-for="option in severityOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <FieldOptional
+        v-model="severity"
+        :create="() => severityOptions[0].value"
+        v-slot="{ remove }"
+      >
+        <Select v-model="severity">
+          <InputGroup>
+            <InputGroupSelectTrigger>
+              <SelectValue />
+            </InputGroupSelectTrigger>
+            <InputGroupAddon align="inline-end">
+              <InputGroupSelectTriggerIcon />
+              <RemoveButton @click="remove" />
+            </InputGroupAddon>
+          </InputGroup>
+          <SelectContent>
+            <SelectItem v-for="option in severityOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FieldOptional>
     </Field>
 
     <Field class="gap-0.5 grid grid-cols-[1fr_--spacing(20)]">
@@ -97,30 +100,24 @@ const severityOptions = [
         </FieldLabel>
         <FieldLabel v-if="messages.length > 0"> Language </FieldLabel>
       </div>
-      <div
+      <FieldList
+        v-slot="{ entry, remove }"
+        v-model="messages"
+        :create="
+          () => ({ value: '', language: undefined, datatype: Xsd.string, node: new Literal('') })
+        "
+        list-class="grid grid-cols-subgrid col-span-2"
         class="grid grid-cols-subgrid col-span-2"
-        v-for="(message, index) in messages"
-        :key="index"
       >
         <InputGroup>
-          <InputGroupInput v-model="message.value" placeholder="My Node" />
+          <InputGroupInput v-model="entry.value" placeholder="My Node" />
           <InputGroupAddon align="inline-end">
-            <RemoveButton @click="messages.splice(index, 1)" />
+            <RemoveButton @click="remove" />
           </InputGroupAddon>
         </InputGroup>
         <!-- @TODO: show we show error when the same language is used for multiple times -->
-        <LanguageSelect v-model="message.language" />
-      </div>
-      <AddButton
-        @click="
-          messages.push({
-            value: '',
-            language: undefined,
-            datatype: Xsd.string,
-            node: new Literal(''),
-          })
-        "
-      />
+        <LanguageSelect v-model="entry.language" />
+      </FieldList>
     </Field>
 
     <Field>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldOptional } from '@/components/form-ui/field'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { Shacl, Xsd } from '@/components/rdf'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -78,19 +79,20 @@ const allowedLanguages = computed({
             <TooltipContent>The minimum number of characters allowed.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <AddButton v-if="typeof minLength === 'undefined'" @click="minLength = 1" />
-        <InputGroup v-else>
-          <InputGroupInput
-            v-model="minLength"
-            :min="1"
-            :max="maxLength"
-            default-value="1"
-            type="number"
-          />
-          <InputGroupAddon align="inline-end">
-            <RemoveButton @click="minLength = undefined" />
-          </InputGroupAddon>
-        </InputGroup>
+        <FieldOptional v-model="minLength" :create="() => 1" v-slot="{ remove }">
+          <InputGroup>
+            <InputGroupInput
+              v-model="minLength"
+              :min="1"
+              :max="maxLength"
+              default-value="1"
+              type="number"
+            />
+            <InputGroupAddon align="inline-end">
+              <RemoveButton @click="remove" />
+            </InputGroupAddon>
+          </InputGroup>
+        </FieldOptional>
       </Field>
 
       <Field>
@@ -101,13 +103,18 @@ const allowedLanguages = computed({
             <TooltipContent>The maximum number of characters allowed.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <AddButton v-if="typeof maxLength === 'undefined'" @click="maxLength = minLength ?? 1" />
-        <InputGroup v-else>
-          <InputGroupInput v-model="maxLength" type="number" :min="minLength ?? 1" />
-          <InputGroupAddon align="inline-end">
-            <RemoveButton @click="maxLength = undefined" />
-          </InputGroupAddon>
-        </InputGroup>
+        <FieldOptional
+          v-model="maxLength"
+          :create="() => minLength ?? 1"
+          v-slot="{ remove }"
+        >
+          <InputGroup>
+            <InputGroupInput v-model="maxLength" type="number" :min="minLength ?? 1" />
+            <InputGroupAddon align="inline-end">
+              <RemoveButton @click="remove" />
+            </InputGroupAddon>
+          </InputGroup>
+        </FieldOptional>
       </Field>
     </div>
 
@@ -116,44 +123,43 @@ const allowedLanguages = computed({
         <FieldLabel>
           Pattern
           <Tooltip>
-            <Tooltip>
-              <TooltipTrigger><InfoIcon /></TooltipTrigger>
-              <TooltipContent>A regular expression that the string must match.</TooltipContent>
-            </Tooltip>
+            <TooltipTrigger><InfoIcon /></TooltipTrigger>
+            <TooltipContent>A regular expression that the string must match.</TooltipContent>
           </Tooltip>
         </FieldLabel>
         <FieldLabel v-if="hasPattern"> Flags </FieldLabel>
       </div>
 
-      <div v-if="hasPattern" class="grid grid-cols-subgrid col-span-2">
-        <InputGroup>
-          <InputGroupInput v-model="pattern" placeholder="Pattern (e.g. [a-b])" />
-          <InputGroupAddon align="inline-end">
-            <RemoveButton
-              @click="
-                () => {
-                  pattern = undefined
-                  flags = []
-                }
-              "
-            />
-          </InputGroupAddon>
-        </InputGroup>
+      <FieldOptional v-model="pattern" :create="() => ''" v-slot="{ remove }">
+        <div class="grid grid-cols-subgrid col-span-2">
+          <InputGroup>
+            <InputGroupInput v-model="pattern" placeholder="Pattern (e.g. [a-b])" />
+            <InputGroupAddon align="inline-end">
+              <RemoveButton
+                @click="
+                  () => {
+                    remove()
+                    flags = []
+                  }
+                "
+              />
+            </InputGroupAddon>
+          </InputGroup>
 
-        <Select v-model="flags" multiple>
-          <SelectTrigger class="w-full">
-            <SelectValue placeholder="Unset" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="s">s</SelectItem>
-            <SelectItem value="m">m</SelectItem>
-            <SelectItem value="i">i</SelectItem>
-            <SelectItem value="x">x</SelectItem>
-            <SelectItem value="q">q</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <AddButton v-else @click="pattern = ''" />
+          <Select v-model="flags" multiple>
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="Unset" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="s">s</SelectItem>
+              <SelectItem value="m">m</SelectItem>
+              <SelectItem value="i">i</SelectItem>
+              <SelectItem value="x">x</SelectItem>
+              <SelectItem value="q">q</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </FieldOptional>
     </Field>
 
     <Field class="gap-1 grid grid-cols-[1fr_auto]" v-if="!noLanguages">

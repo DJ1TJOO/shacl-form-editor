@@ -5,7 +5,8 @@ import {
   ValidationConstraints,
 } from '@/components/constraints'
 import { useFile } from '@/components/file'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldList } from '@/components/form-ui/field'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { Shacl, Xsd } from '@/components/rdf'
@@ -133,30 +134,29 @@ const { value: path } = useNamed({
             </FieldLabel>
             <FieldLabel v-if="labels.length > 0"> Language </FieldLabel>
           </div>
-          <div
-            class="grid grid-cols-subgrid col-span-2"
-            v-for="(label, index) in labels"
-            :key="index"
-          >
-            <InputGroup>
-              <InputGroupInput v-model="label.value" placeholder="My Node" />
-              <InputGroupAddon align="inline-end">
-                <RemoveButton @click="labels.splice(index, 1)" />
-              </InputGroupAddon>
-            </InputGroup>
-            <!-- @TODO: show we show error when the same language is used for multiple times -->
-            <LanguageSelect v-model="label.language" />
-          </div>
-          <AddButton
-            @click="
-              labels.push({
+          <FieldList
+            v-slot="{ entry, remove }"
+            v-model="labels"
+            :create="
+              () => ({
                 value: '',
                 language: undefined,
                 datatype: Xsd.string,
                 node: new Literal(''),
               })
             "
-          />
+            list-class="grid grid-cols-subgrid col-span-2"
+            class="grid grid-cols-subgrid col-span-2"
+          >
+            <InputGroup>
+              <InputGroupInput v-model="entry.value" placeholder="My Node" />
+              <InputGroupAddon align="inline-end">
+                <RemoveButton @click="remove" />
+              </InputGroupAddon>
+            </InputGroup>
+            <!-- @TODO: show we show error when the same language is used for multiple times -->
+            <LanguageSelect v-model="entry.language" />
+          </FieldList>
         </Field>
         <Field>
           <FieldLabel>
@@ -166,29 +166,28 @@ const { value: path } = useNamed({
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <div
-            v-for="(description, index) in descriptions"
-            :key="index"
-            class="space-y-0.5 has-[+div]:mb-2"
-          >
-            <Textarea v-model="description.value" placeholder="This is a node with a description" />
-            <div class="flex items-center gap-0.5">
-              <div class="flex-1">
-                <LanguageSelect v-model="description.language" />
-              </div>
-              <RemoveButton standalone @click="descriptions.splice(index, 1)" />
-            </div>
-          </div>
-          <AddButton
-            @click="
-              descriptions.push({
+          <FieldList
+            v-slot="{ entry, remove }"
+            v-model="descriptions"
+            :create="
+              () => ({
                 value: '',
                 language: undefined,
                 datatype: Xsd.string,
                 node: new Literal(''),
               })
             "
-          />
+            focus-element="textarea"
+            class="space-y-0.5 has-[+div]:mb-2"
+          >
+            <Textarea v-model="entry.value" placeholder="This is a node with a description" />
+            <div class="flex items-center gap-0.5">
+              <div class="flex-1">
+                <LanguageSelect v-model="entry.language" />
+              </div>
+              <RemoveButton standalone @click="remove" />
+            </div>
+          </FieldList>
         </Field>
       </FieldGroup>
     </FieldSet>

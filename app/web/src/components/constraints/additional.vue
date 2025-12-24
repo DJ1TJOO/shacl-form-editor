@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldList, FieldOptional } from '@/components/form-ui/field'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { RDF, RDF_CLASS_TYPES, Shacl } from '@/components/rdf'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { booleanFromCheckboxValue, useLiteral, useNamedList } from '@/composables/use-shacl'
-import { InfoIcon, XIcon } from 'lucide-vue-next'
+import { InfoIcon } from 'lucide-vue-next'
 import { NamedNode } from 'rdflib'
 
 const { subject } = defineProps<ConstraintProps & { type: 'node' | 'property' }>()
@@ -36,13 +36,14 @@ const { value: defaultValue } = useLiteral({
           <TooltipContent>This is content in a tooltip.</TooltipContent>
         </Tooltip>
       </FieldLabel>
-      <InputGroup v-if="typeof defaultValue === 'string'">
-        <InputGroupInput v-model="defaultValue" />
-        <InputGroupAddon align="inline-end">
-          <RemoveButton @click="defaultValue = undefined" />
-        </InputGroupAddon>
-      </InputGroup>
-      <AddButton v-else @click="defaultValue = ''" />
+      <FieldOptional v-model="defaultValue" :create="() => ''" v-slot="{ remove }">
+        <InputGroup>
+          <InputGroupInput v-model="defaultValue" />
+          <InputGroupAddon align="inline-end">
+            <RemoveButton @click="remove" />
+          </InputGroupAddon>
+        </InputGroup>
+      </FieldOptional>
     </Field>
     <Field>
       <FieldLabel>
@@ -53,19 +54,22 @@ const { value: defaultValue } = useLiteral({
         </Tooltip>
       </FieldLabel>
 
-      <template v-for="(type, index) in types" :key="index">
+      <FieldList
+        v-slot="{ entry, remove }"
+        v-model="types"
+        :create="() => ({ value: '', node: new NamedNode(':') })"
+      >
         <PrefixInput
-          :types="RDF_CLASS_TYPES"
-          v-model="type.value"
           v-if="
-            type.value !== Shacl.SHACL('NodeShape').value &&
-            type.value !== Shacl.SHACL('PropertyShape').value
+            entry.value !== Shacl.SHACL('NodeShape').value &&
+            entry.value !== Shacl.SHACL('PropertyShape').value
           "
+          :types="RDF_CLASS_TYPES"
+          v-model="entry.value"
         >
-          <RemoveButton @click="types.splice(index, 1)" />
+          <RemoveButton @click="remove" />
         </PrefixInput>
-      </template>
-      <AddButton @click="types.push({ value: '', node: new NamedNode(':') })" />
+      </FieldList>
     </Field>
 
     <Field v-if="type === 'node'">
@@ -94,27 +98,15 @@ const { value: defaultValue } = useLiteral({
         </Tooltip>
       </FieldLabel>
 
-      <template v-for="(property, index) in ignoredProperties" :key="index">
-        <PrefixInput v-model="property.value" :types="[Shacl.SHACL('PropertyShape').value]">
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            color="danger"
-            @click="ignoredProperties.splice(index, 1)"
-          >
-            <XIcon />
-          </Button>
-        </PrefixInput>
-      </template>
-      <Button
-        size="sm"
-        variant="outline"
-        color="background-blue"
-        class="w-fit!"
-        @click="ignoredProperties.push({ value: '', node: new NamedNode(':') })"
+      <FieldList
+        v-slot="{ entry, remove }"
+        v-model="ignoredProperties"
+        :create="() => ({ value: '', node: new NamedNode(':') })"
       >
-        Add
-      </Button>
+        <PrefixInput v-model="entry.value" :types="[Shacl.SHACL('PropertyShape').value]">
+          <RemoveButton @click="remove" />
+        </PrefixInput>
+      </FieldList>
     </Field>
 
     <!-- @TODO: Create something to add any rdf property -->

@@ -28,14 +28,17 @@ const { currentShape } = useFile()
 const { value: datatype } = useNamed({
   subject: currentShape.node,
   predicate: Shacl.SHACL('datatype'),
+  readonly: true,
 })
 const { value: nodeKind } = useNamed({
   subject: currentShape.node,
   predicate: Shacl.SHACL('nodeKind'),
+  readonly: true,
 })
 const { items: classes } = useNamedList({
   subject: currentShape.node,
   predicate: Shacl.SHACL('class'),
+  readonly: true,
 })
 
 const canHaveRangeConstraints = computed(() => {

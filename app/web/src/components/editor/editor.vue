@@ -74,7 +74,11 @@ watch(
   newFile,
   (newFile) => {
     if (!newFile) return
-    newFileDialog.value = 'namespace-manager'
+    if (activeNamespaces.value !== Namespaces.DEFAULT_ACTIVE_NAMESPACES) {
+      newFileDialog.value = 'new-item-dialog'
+    } else {
+      newFileDialog.value = 'namespace-manager'
+    }
   },
   { immediate: true },
 )

@@ -59,7 +59,11 @@ const hasClass = computed(() => {
 </script>
 
 <template>
-  <Primitive v-bind="props" :class="cn('space-y-2 mx-auto max-w-md w-full', props.class)">
+  <Primitive
+    v-bind="props"
+    data-slot="constraints"
+    :class="cn('space-y-2 mx-auto max-w-md w-full', props.class)"
+  >
     <Item label="Cardinality constraints">
       <CardinalityConstraints :subject="currentShape.node.value" />
     </Item>

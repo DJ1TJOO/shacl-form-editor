@@ -83,6 +83,7 @@ const { value: path } = useNamed({
     <ValidationConstraints v-if="type === 'node'" :subject="currentShape.node.value" collapsible />
   </DefineOptions>
   <div
+    data-slot="shape"
     ref="target"
     :class="
       cn(

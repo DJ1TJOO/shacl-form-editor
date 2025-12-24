@@ -30,7 +30,10 @@ const filteredItems = computed(() => {
 </script>
 
 <template>
-  <div :class="cn('gap-2 grid bg-background p-2 rounded-lg', open ? 'w-full' : 'w-fit')">
+  <div
+    data-slot="toolbox"
+    :class="cn('gap-2 grid bg-background p-2 rounded-lg', open ? 'w-full' : 'w-fit')"
+  >
     <div class="flex gap-1">
       <Button color="background-blue" size="icon" @click="$emit('update:open', !open)">
         <component :is="open ? PanelLeftCloseIcon : PanelLeftOpenIcon" />

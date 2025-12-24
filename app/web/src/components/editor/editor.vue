@@ -14,7 +14,7 @@ import { TurtleEditor, TurtleEditorProvider } from '@/components/turtle-editor'
 import { Button } from '@/components/ui/button'
 import { useShapeType } from '@/composables/use-shacl'
 import { arraysEqual } from '@/lib/array'
-import { useUrlSearchParams } from '@vueuse/core'
+import { onKeyStroke, useUrlSearchParams } from '@vueuse/core'
 import {
   ClipboardListIcon,
   CodeIcon,
@@ -83,6 +83,38 @@ watch(
     }
   },
   { immediate: true },
+)
+
+// Alt+<Key> -> focus on section
+const focusableSections = {
+  s: 'shape',
+  p: ['properties', 'constraints'],
+  c: ['properties', 'constraints'],
+  t: 'toolbox',
+  o: 'options-bar',
+}
+
+function focusSection(slot: string | string[]) {
+  const sections = Array.isArray(slot) ? slot : [slot]
+  const section = document.querySelector(sections.map((slot) => `[data-slot="${slot}"]`).join(', '))
+  if (!section) return
+
+  const focusableElement = section.querySelector<HTMLElement>(
+    'input, textarea, select, button, [tabindex]:not([tabindex="-1"])',
+  )
+
+  if (!focusableElement) return
+  focusableElement.focus()
+}
+
+onKeyStroke(
+  Object.keys(focusableSections),
+  (e) => {
+    if (!e.altKey) return
+    e.preventDefault()
+    focusSection(focusableSections[e.key as keyof typeof focusableSections])
+  },
+  { eventName: 'keydown' },
 )
 </script>
 

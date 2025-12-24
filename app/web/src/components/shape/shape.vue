@@ -194,7 +194,7 @@ const { value: path } = useNamed({
     </FieldSet>
     <TargetConstraints
       class="mt-2"
-      v-if="type === 'node'"
+      v-if="type === 'node' && open"
       :subject="currentShape.node.value"
       collapsible
     />

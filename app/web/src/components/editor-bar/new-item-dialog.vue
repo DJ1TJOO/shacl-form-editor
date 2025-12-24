@@ -71,6 +71,12 @@ function reset() {
   resetTargets()
 }
 
+function switchType(newType: 'node' | 'property') {
+  if (type.value === newType) return
+  type.value = newType
+  resetTargets()
+}
+
 function resetTargets() {
   targetClass.value = []
   targetNode.value = []
@@ -154,18 +160,8 @@ function create() {
                   <Button
                     type="button"
                     :color="type === 'node' ? 'default' : 'background-highlighted'"
-                    @click="
-                      () => {
-                        type = 'node'
-                        resetTargets()
-                      }
-                    "
-                    @focus="
-                      () => {
-                        type = 'node'
-                        resetTargets()
-                      }
-                    "
+                    @click="switchType('node')"
+                    @focus="switchType('node')"
                   >
                     <DiamondIcon /> Node
                   </Button>
@@ -174,18 +170,8 @@ function create() {
                   <Button
                     type="button"
                     :color="type === 'property' ? 'default' : 'background-highlighted'"
-                    @click="
-                      () => {
-                        type = 'property'
-                        resetTargets()
-                      }
-                    "
-                    @focus="
-                      () => {
-                        type = 'property'
-                        resetTargets()
-                      }
-                    "
+                    @click="switchType('property')"
+                    @focus="switchType('property')"
                   >
                     <CircleIcon /> Property
                   </Button>

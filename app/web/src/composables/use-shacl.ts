@@ -3,15 +3,31 @@ import { RDF, Shacl, Xsd } from '@/components/rdf'
 import { watchIgnorable } from '@vueuse/core'
 import { BlankNode, IndexedFormula, Literal, NamedNode, Node } from 'rdflib'
 import type { NamedNode as NamedNodeType, Quad_Predicate, Quad_Subject } from 'rdflib/lib/tf-types'
-import type { Ref } from 'vue'
-import { computed, reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import {
+  computed,
+  reactive,
+  readonly as readonlyVue,
+  ref,
+  toValue,
+  watch,
+  type DeepReadonly,
+  type MaybeRefOrGetter,
+  type Ref,
+  type UnwrapNestedRefs,
+} from 'vue'
+
+function useReadonly<T extends object, ReadOnly extends boolean>(value: T, readonly?: ReadOnly) {
+  return (readonly ? readonlyVue(value) : value) as ReadOnly extends true
+    ? DeepReadonly<UnwrapNestedRefs<T>>
+    : T
+}
 
 export const useShapeType = ({
   subject,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
 }) => {
-  const { items: types } = useNamedList({ subject, predicate: RDF('type'), watchSubject: false })
+  const { items: types } = useNamedList({ subject, predicate: RDF('type'), readonly: true })
   return computed(() => {
     if (types.some((type) => type.value === Shacl.SHACL('NodeShape').value)) return 'node'
     if (types.some((type) => type.value === Shacl.SHACL('PropertyShape').value)) return 'property'
@@ -147,18 +163,18 @@ function useRdfNode<T extends Node>({
   predicate,
   nodeClass,
   onNodeFromStore,
-  watchSubject = true,
+  readonly = false,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nodeClass: new (...args: any[]) => T // Class constructor for a node type
   onNodeFromStore?: (node: T) => void
-  watchSubject?: boolean
+  readonly?: boolean
 }) {
   const store = useFileStore()
 
-  if (watchSubject) {
+  if (!readonly) {
     watch(
       () => [toValue(subject), toValue(predicate)] as const,
       ([subject, predicate], [oldSubject, oldPredicate]) => {
@@ -210,20 +226,20 @@ function useRdfNode<T extends Node>({
   return node
 }
 
-export const useNamed = ({
+export const useNamed = <ReadOnly extends boolean = false>({
   subject,
   predicate,
-  watchSubject = true,
+  readonly,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
-  watchSubject?: boolean
+  readonly?: ReadOnly
 }) => {
   const node = useRdfNode({
     subject,
     predicate,
     nodeClass: NamedNode,
-    watchSubject,
+    readonly,
   })
 
   const value = computed({
@@ -235,7 +251,7 @@ export const useNamed = ({
     },
   })
 
-  return { value, node }
+  return { value: useReadonly(value, readonly), node: useReadonly(value, readonly) }
 }
 
 /**
@@ -249,14 +265,17 @@ export const booleanFromCheckboxValue = (value: boolean | 'on' | 'off' | 'indete
   return realValue === true ? true : undefined
 }
 
-export const useLiteral = <T extends string | boolean | number | Date = string>({
+export const useLiteral = <
+  ReadOnly extends boolean = false,
+  T extends string | boolean | number | Date = string,
+>({
   subject,
   predicate,
-  watchSubject = true,
+  readonly,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
-  watchSubject?: boolean
+  readonly?: ReadOnly
 }) => {
   const language = ref<string | undefined>(undefined)
   const datatype = ref<NamedNodeType>(Xsd.string)
@@ -271,7 +290,7 @@ export const useLiteral = <T extends string | boolean | number | Date = string>(
         datatype.value = foundLiteral.datatype
       })
     },
-    watchSubject,
+    readonly,
   })
 
   const value = computed({
@@ -298,24 +317,29 @@ export const useLiteral = <T extends string | boolean | number | Date = string>(
     },
   )
 
-  return { value, node, language, datatype }
+  return {
+    value: useReadonly(value, readonly),
+    node: useReadonly(node, readonly),
+    language: useReadonly(language, readonly),
+    datatype: useReadonly(datatype, readonly),
+  }
 }
 
 function useRdfNodeList<T extends Node>({
   subject,
   predicate,
   nodeClass,
-  watchSubject = true,
+  readonly = false,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nodeClass: new (...args: any[]) => T // Class constructor for a node type
-  watchSubject?: boolean
+  readonly?: boolean
 }) {
   const store = useFileStore()
 
-  if (watchSubject) {
+  if (!readonly) {
     watch(
       () => [toValue(subject), toValue(predicate)] as const,
       ([subject, predicate], [oldSubject, oldPredicate]) => {
@@ -378,20 +402,20 @@ function useRdfNodeList<T extends Node>({
   return nodes
 }
 
-export const useNamedList = ({
+export const useNamedList = <ReadOnly extends boolean = false>({
   subject,
   predicate,
-  watchSubject = true,
+  readonly,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
-  watchSubject?: boolean
+  readonly?: ReadOnly
 }) => {
   const nodes = useRdfNodeList({
     subject,
     predicate,
     nodeClass: NamedNode,
-    watchSubject,
+    readonly,
   })
 
   const items = reactive<{ value: string; node: NamedNode }[]>([])
@@ -428,23 +452,30 @@ export const useNamedList = ({
     { immediate: true },
   )
 
-  return { items, ignoreNodeUpdates, ignoreItemUpdates }
+  return {
+    items: useReadonly(items, readonly),
+    ignoreNodeUpdates,
+    ignoreItemUpdates,
+  }
 }
 
-export const useLiteralList = <T extends string | boolean | number | Date = string>({
+export const useLiteralList = <
+  ReadOnly extends boolean = false,
+  T extends string | boolean | number | Date = string,
+>({
   subject,
   predicate,
-  watchSubject = true,
+  readonly,
 }: {
   subject?: MaybeRefOrGetter<Quad_Subject | undefined>
   predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
-  watchSubject?: boolean
+  readonly?: ReadOnly
 }) => {
   const nodes = useRdfNodeList({
     subject,
     predicate,
     nodeClass: Literal,
-    watchSubject,
+    readonly,
   })
 
   type LiteralItem = {
@@ -504,5 +535,5 @@ export const useLiteralList = <T extends string | boolean | number | Date = stri
     { immediate: true },
   )
 
-  return { items, ignoreNodeUpdates, ignoreItemUpdates }
+  return { items: useReadonly(items, readonly), ignoreNodeUpdates, ignoreItemUpdates }
 }

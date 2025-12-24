@@ -56,7 +56,7 @@ function create() {
 
 <template>
   <Dialog v-bind="forward" v-model:open="open">
-    <DialogTrigger class="shrink-0" v-if="$slots.default">
+    <DialogTrigger class="shrink-0" v-if="$slots.default" as-child>
       <slot />
     </DialogTrigger>
     <DialogScrollContent :aria-describedby="undefined">

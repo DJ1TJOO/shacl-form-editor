@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/combobox'
 import { languages } from './languages'
 
+import { reactiveOmit } from '@vueuse/core'
 import type { ComboboxRootEmits, ComboboxRootProps } from 'reka-ui'
 import { useFilter, useForwardPropsEmits } from 'reka-ui'
 import { computed, ref } from 'vue'
@@ -19,7 +20,10 @@ import { computed, ref } from 'vue'
 const props = defineProps<ComboboxRootProps>()
 const emits = defineEmits<ComboboxRootEmits>()
 
-const forwarded = useForwardPropsEmits(props, emits)
+const comboboxPropsWithoutModel = reactiveOmit(props, 'modelValue')
+const forwarded = useForwardPropsEmits(comboboxPropsWithoutModel, emits)
+
+const language = defineModel<string | string[] | null>()
 
 const filter = ref('')
 const { contains } = useFilter({ sensitivity: 'base' })
@@ -28,17 +32,21 @@ const filteredLanguages = computed(() => {
     contains(`${language.label} ${language.code}`, filter.value),
   )
 
-  const forwardedValue = forwarded.value
-  const modelValue = forwardedValue.modelValue
-  const selectedCodes = forwardedValue.multiple
-    ? Array.isArray(modelValue)
-      ? modelValue
-      : []
-    : modelValue
-      ? [modelValue]
+  const selectedLanguage = language.value
+  const selectedCodes = Array.isArray(selectedLanguage)
+    ? selectedLanguage
+    : selectedLanguage
+      ? [selectedLanguage]
       : []
 
-  return filtered.sort((a, b) => {
+  return filtered.toSorted((a, b) => {
+    const filterLower = filter.value.toLowerCase()
+    const aCodeMatch = a.code.toLowerCase().startsWith(filterLower)
+    const bCodeMatch = b.code.toLowerCase().startsWith(filterLower)
+
+    if (aCodeMatch && !bCodeMatch) return -1
+    if (!aCodeMatch && bCodeMatch) return 1
+
     const aSelected = selectedCodes.includes(a.code)
     const bSelected = selectedCodes.includes(b.code)
     if (aSelected && !bSelected) return -1
@@ -49,16 +57,27 @@ const filteredLanguages = computed(() => {
 </script>
 
 <template>
-  <Combobox v-bind="forwarded" ignore-filter>
+  <Combobox v-model="language" v-bind="forwarded" ignore-filter>
     <ComboboxAnchor>
       <div class="relative items-center">
         <ComboboxInput
           :placeholder="
             forwarded.multiple
-              ? Array.isArray(forwarded.modelValue) && forwarded.modelValue.length > 0
-                ? forwarded.modelValue.join(', ')
+              ? Array.isArray(language) && language.length > 0
+                ? language.join(', ')
                 : 'Unset'
               : 'Unset'
+          "
+          @blur="
+            (e: FocusEvent) => {
+              if (forwarded.multiple || Array.isArray(language)) return
+              const target = e.target as HTMLInputElement
+
+              const foundLanguage = languages.find((language) => language.code === target.value)
+              if (!foundLanguage) return
+
+              language = foundLanguage.code
+            }
           "
           v-model="filter"
         />

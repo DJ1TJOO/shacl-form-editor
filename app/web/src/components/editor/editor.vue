@@ -2,6 +2,7 @@
 import { ConstraintsList } from '@/components/constraints'
 import { EditorBar, NewItemDialog } from '@/components/editor-bar'
 import { Files, useFile } from '@/components/file'
+import { ShortcutsOverview } from '@/components/info'
 import { NamespaceManager, Namespaces, Prefixes } from '@/components/namespace'
 import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
 import { PropertiesList } from '@/components/properties'
@@ -19,6 +20,7 @@ import { onKeyStroke, useUrlSearchParams } from '@vueuse/core'
 import {
   ClipboardListIcon,
   CodeIcon,
+  CommandIcon,
   DownloadIcon,
   FormIcon,
   LayoutTemplateIcon,
@@ -167,6 +169,11 @@ onKeyStroke(
           <DownloadIcon />
           <span class="@max-sm/editor-header-actions:hidden">Export Schema</span>
         </Button>
+        <ShortcutsOverview>
+          <Button size="icon-lg" variant="ghost">
+            <CommandIcon />
+          </Button>
+        </ShortcutsOverview>
       </div>
     </HeaderActions>
 

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/cn'
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-vue-next'
 import { BlankNode, NamedNode } from 'rdflib'
+import { RovingFocusGroup } from 'reka-ui'
 import { computed, ref } from 'vue'
 import BoxItem from './box-item.vue'
 
@@ -41,7 +42,7 @@ const filteredItems = computed(() => {
       <Input v-if="open" v-model="searchQuery" placeholder="Search" />
     </div>
 
-    <div class="group/toolbox-items gap-1 grid" :data-toolbox-open="open">
+    <RovingFocusGroup class="group/toolbox-items gap-1 grid" :data-toolbox-open="open">
       <BoxItem
         v-for="item in filteredItems"
         :key="item.label"
@@ -71,6 +72,6 @@ const filteredItems = computed(() => {
       >
         {{ item.tooltip }}
       </BoxItem>
-    </div>
+    </RovingFocusGroup>
   </div>
 </template>

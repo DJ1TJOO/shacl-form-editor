@@ -14,6 +14,7 @@ import { TurtleEditor, TurtleEditorProvider } from '@/components/turtle-editor'
 import { Button } from '@/components/ui/button'
 import { useShapeType } from '@/composables/use-shacl'
 import { arraysEqual } from '@/lib/array'
+import { focusSection } from '@/lib/tabindex'
 import { onKeyStroke, useUrlSearchParams } from '@vueuse/core'
 import {
   ClipboardListIcon,
@@ -92,19 +93,6 @@ const focusableSections = {
   c: ['properties', 'constraints'],
   t: 'toolbox',
   o: 'options-bar',
-}
-
-function focusSection(slot: string | string[]) {
-  const sections = Array.isArray(slot) ? slot : [slot]
-  const section = document.querySelector(sections.map((slot) => `[data-slot="${slot}"]`).join(', '))
-  if (!section) return
-
-  const focusableElement = section.querySelector<HTMLElement>(
-    'input, textarea, select, button, [tabindex]:not([tabindex="-1"])',
-  )
-
-  if (!focusableElement) return
-  focusableElement.focus()
 }
 
 onKeyStroke(

@@ -31,6 +31,11 @@ const { value: datatype, node: datatypeNode } = useNamed({
   predicate: Shacl.SHACL('datatype'),
   readonly: true,
 })
+const { value: nodeKind } = useNamed({
+  subject,
+  predicate: Shacl.SHACL('nodeKind'),
+  readonly: true,
+})
 const isDatatypeDecimal = computed(() => (datatype.value ? Xsd.isDecimal(datatype.value) : false))
 const isDatatypeInteger = computed(() => (datatype.value ? Xsd.isInteger(datatype.value) : false))
 const isDatatypeDate = computed(() => (datatype.value ? Xsd.isDate(datatype.value) : false))
@@ -41,8 +46,16 @@ const { value: defaultValueLiteral, datatype: defaultValueDatatype } = useLitera
   subject,
   predicate: Shacl.SHACL('defaultValue'),
 })
+const { value: defaultValueNamed } = useNamed({
+  subject,
+  predicate: Shacl.SHACL('defaultValue'),
+})
 const defaultValue = computed({
   get() {
+    if (nodeKind.value === Shacl.SHACL('IRI').value) {
+      return defaultValueNamed.value
+    }
+
     const value = defaultValueLiteral.value
     if (value instanceof Date) {
       return isDatatypeDateTime.value ? formatDateTimeInput(value) : formatDateInput(value)
@@ -50,6 +63,12 @@ const defaultValue = computed({
     return value
   },
   set(value) {
+    if (nodeKind.value === Shacl.SHACL('IRI').value) {
+      if (typeof value !== 'string' && typeof value !== 'undefined') return
+      defaultValueNamed.value = value
+      return
+    }
+
     defaultValueDatatype.value = datatypeNode.value ?? Xsd.string
     defaultValueLiteral.value = value
   },
@@ -134,7 +153,17 @@ const defaultValue = computed({
             <TooltipContent>This is content in a tooltip.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <FieldOptional v-model="defaultValue" :create="() => ''" v-slot="{ remove }">
+        <FieldOptional
+          v-if="nodeKind === Shacl.SHACL('IRI').value"
+          v-model="defaultValueNamed"
+          :create="() => ':'"
+          v-slot="{ remove }"
+        >
+          <PrefixInput v-model="defaultValueNamed">
+            <RemoveButton @click="remove" />
+          </PrefixInput>
+        </FieldOptional>
+        <FieldOptional v-else v-model="defaultValue" :create="() => ''" v-slot="{ remove }">
           <InputGroup>
             <InputGroupInput
               v-model="defaultValue"

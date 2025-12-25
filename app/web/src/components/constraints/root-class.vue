@@ -28,7 +28,7 @@ const { value: rootClass } = useNamed({ subject, predicate: Dash.DASH('rootClass
       </FieldLabel>
       <FieldOptional
         v-model="rootClass"
-        :create="() => 'http://www.w3.org/2000/01/rdf-schema#Resource'"
+        :create="() => 'http://example.com/MyClass'"
         v-slot="{ remove }"
       >
         <PrefixInput v-model="rootClass" :types="RDF_CLASS_TYPES">

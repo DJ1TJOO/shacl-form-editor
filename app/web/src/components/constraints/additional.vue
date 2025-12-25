@@ -3,14 +3,21 @@ import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { RemoveButton } from '@/components/form-ui/buttons'
 import { FieldList, FieldOptional } from '@/components/form-ui/field'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { RDF, RDF_CLASS_TYPES, Shacl } from '@/components/rdf'
+import { RDF, RDF_CLASS_TYPES, Shacl, Xsd } from '@/components/rdf'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { booleanFromCheckboxValue, useLiteral, useNamedList } from '@/composables/use-shacl'
+import {
+  booleanFromCheckboxValue,
+  useLiteral,
+  useNamed,
+  useNamedList,
+} from '@/composables/use-shacl'
+import { formatDateInput, formatDateTimeInput } from '@/lib/date'
 import { InfoIcon } from 'lucide-vue-next'
 import { NamedNode } from 'rdflib'
+import { computed } from 'vue'
 
 const { subject } = defineProps<ConstraintProps & { type: 'node' | 'property' }>()
 
@@ -20,9 +27,53 @@ const { items: ignoredProperties } = useNamedList({
   subject,
   predicate: Shacl.SHACL('ignoredProperties'),
 })
-const { value: defaultValue } = useLiteral({
+
+const { value: datatype, node: datatypeNode } = useNamed({
+  subject,
+  predicate: Shacl.SHACL('datatype'),
+  readonly: true,
+})
+const { value: nodeKind } = useNamed({
+  subject,
+  predicate: Shacl.SHACL('nodeKind'),
+  readonly: true,
+})
+const isDatatypeDecimal = computed(() => (datatype.value ? Xsd.isDecimal(datatype.value) : false))
+const isDatatypeInteger = computed(() => (datatype.value ? Xsd.isInteger(datatype.value) : false))
+const isDatatypeDate = computed(() => (datatype.value ? Xsd.isDate(datatype.value) : false))
+const isDatatypeDateTime = computed(() => (datatype.value ? Xsd.isDateTime(datatype.value) : false))
+const { value: defaultValueLiteral, datatype: defaultValueDatatype } = useLiteral<
+  number | Date | string
+>({
   subject,
   predicate: Shacl.SHACL('defaultValue'),
+})
+const { value: defaultValueNamed } = useNamed({
+  subject,
+  predicate: Shacl.SHACL('defaultValue'),
+})
+const defaultValue = computed({
+  get() {
+    if (nodeKind.value === Shacl.SHACL('IRI').value) {
+      return defaultValueNamed.value
+    }
+
+    const value = defaultValueLiteral.value
+    if (value instanceof Date) {
+      return isDatatypeDateTime.value ? formatDateTimeInput(value) : formatDateInput(value)
+    }
+    return value
+  },
+  set(value) {
+    if (nodeKind.value === Shacl.SHACL('IRI').value) {
+      if (typeof value !== 'string' && typeof value !== 'undefined') return
+      defaultValueNamed.value = value
+      return
+    }
+
+    defaultValueDatatype.value = datatypeNode.value ?? Xsd.string
+    defaultValueLiteral.value = value
+  },
 })
 </script>
 
@@ -36,9 +87,30 @@ const { value: defaultValue } = useLiteral({
           <TooltipContent>This is content in a tooltip.</TooltipContent>
         </Tooltip>
       </FieldLabel>
-      <FieldOptional v-model="defaultValue" :create="() => ''" v-slot="{ remove }">
+      <FieldOptional
+        v-if="nodeKind === Shacl.SHACL('IRI').value"
+        v-model="defaultValueNamed"
+        :create="() => ':'"
+        v-slot="{ remove }"
+      >
+        <PrefixInput v-model="defaultValueNamed">
+          <RemoveButton @click="remove" />
+        </PrefixInput>
+      </FieldOptional>
+      <FieldOptional v-else v-model="defaultValue" :create="() => ''" v-slot="{ remove }">
         <InputGroup>
-          <InputGroupInput v-model="defaultValue" />
+          <InputGroupInput
+            v-model="defaultValue"
+            :type="
+              isDatatypeDecimal || isDatatypeInteger
+                ? 'number'
+                : isDatatypeDate
+                  ? isDatatypeDateTime
+                    ? 'datetime-local'
+                    : 'date'
+                  : 'text'
+            "
+          />
           <InputGroupAddon align="inline-end">
             <RemoveButton @click="remove" />
           </InputGroupAddon>

@@ -30,6 +30,15 @@ const shortcuts: Shortcut[] = [
     action: 'Close dialog, options sidebar',
   },
   {
+    modifier: 'ctrl',
+    key: 'click on properties',
+    action: 'Group properties',
+  },
+  {
+    key: 'Arrow up/down',
+    action: 'Move property up/down in the list, when focused on a grip icon',
+  },
+  {
     modifier: 'alt',
     key: 's',
     action: 'Focus on shape',
@@ -88,7 +97,7 @@ const getModifierIcon = (modifier?: 'alt' | 'ctrl' | 'shift') => {
       <table class="w-full border-collapse table-fixed">
         <thead>
           <tr>
-            <th class="p-2 w-1/5 font-normal text-xs text-left">Shortcut</th>
+            <th class="p-2 w-1/3 font-normal text-xs text-left">Shortcut</th>
             <th class="p-2 font-normal text-xs text-left">Action</th>
           </tr>
         </thead>

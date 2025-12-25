@@ -9,7 +9,7 @@ import { RemoveButton } from '@/components/form-ui/buttons'
 import { FieldList } from '@/components/form-ui/field'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { Shacl, Xsd } from '@/components/rdf'
+import { RDF_PROPERTY_TYPES, Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import {
   Field,
@@ -19,7 +19,6 @@ import {
   FieldSeparator,
   FieldSet,
 } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -122,7 +121,7 @@ const { value: path } = useNamed({
               <TooltipContent>This is content in a tooltip.</TooltipContent>
             </Tooltip>
           </FieldLabel>
-          <Input v-model="path" placeholder="ex:path" />
+          <PrefixInput v-model="path" placeholder="ex:path" :types="RDF_PROPERTY_TYPES" />
         </Field>
         <Field class="gap-0.5 grid grid-cols-[1fr_--spacing(20)]">
           <div class="grid grid-cols-subgrid col-span-2">

@@ -34,7 +34,7 @@ providePropertiesListContext({
 
 <template>
   <Primitive v-bind="props" :class="cn('space-y-2 mx-auto max-w-md w-full', props.class)">
-    <div class="flex gap-2">
+    <div class="flex max-md:flex-col gap-2">
       <Button color="background-blue" class="bg-transparent" @click="listOpen = false">
         Collapse all <ChevronUpIcon />
       </Button>

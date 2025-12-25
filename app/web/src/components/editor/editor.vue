@@ -4,7 +4,12 @@ import { EditorBar, NewItemDialog } from '@/components/editor-bar'
 import { Files, useFile } from '@/components/file'
 import { ShortcutsOverview } from '@/components/info'
 import { NamespaceManager, Namespaces, Prefixes } from '@/components/namespace'
-import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
+import {
+  MobileOptionsBar,
+  OptionsBar,
+  OptionsSidebarProvider,
+  TabletOptionsBar,
+} from '@/components/options-bar'
 import { PropertiesList } from '@/components/properties'
 import { Shacl } from '@/components/rdf'
 import { HeaderActions } from '@/components/sfe-header'
@@ -15,8 +20,9 @@ import { TurtleEditor, TurtleEditorProvider } from '@/components/turtle-editor'
 import { Button } from '@/components/ui/button'
 import { useShapeType } from '@/composables/use-shacl'
 import { arraysEqual } from '@/lib/array'
+import { cn } from '@/lib/cn'
 import { focusSection } from '@/lib/tabindex'
-import { onKeyStroke, useUrlSearchParams } from '@vueuse/core'
+import { onKeyStroke, useMediaQuery, useUrlSearchParams } from '@vueuse/core'
 import {
   ClipboardListIcon,
   CodeIcon,
@@ -30,13 +36,19 @@ import { useRoute } from 'vue-router'
 
 const isLeftSideBarOpen = ref(true)
 const optionsSidebarProviderRef = ref<InstanceType<typeof OptionsSidebarProvider> | null>(null)
+const isOptionsSidebarOpen = computed(() => optionsSidebarProviderRef.value?.isOpen ?? false)
 
+const isLargeScreen = useMediaQuery('(min-width: 80rem)')
+const isSmallScreen = useMediaQuery('(max-width: 48rem)')
 const gridTemplateColumns = computed(() => {
+  if (isSmallScreen.value) {
+    return '1fr'
+  }
+
   const leftWidth = isLeftSideBarOpen.value ? '16rem' : '44px'
   const rightWidth = isLeftSideBarOpen.value ? '24rem' : 'calc(24rem + 16rem - 44px)'
 
-  const isOptionsSidebarOpen = optionsSidebarProviderRef.value?.isOpen ?? false
-  if (isOptionsSidebarOpen) {
+  if (isOptionsSidebarOpen.value && isLargeScreen.value) {
     return `${leftWidth} 1fr ${rightWidth}`
   }
   return `${leftWidth} 1fr`
@@ -194,20 +206,24 @@ onKeyStroke(
       <div
         :key="currentShapeIRI"
         v-if="currentShapeIRI && params.tab === 'editor'"
-        class="gap-3 grid p-1"
+        class="justify-items-center gap-3 grid p-1"
         :style="{ gridTemplateColumns }"
       >
-        <SideBar :child-class="!isLeftSideBarOpen && 'h-full justify-center'">
-          <Shape :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
-          <Toolbox
-            v-if="type === 'node'"
-            :open="isLeftSideBarOpen"
-            @update:open="isLeftSideBarOpen = $event"
-          />
+        <SideBar :disable-scroll="isSmallScreen" class="w-full max-md:max-w-md">
+          <div :class="cn('gap-1 flex flex-col', !isLeftSideBarOpen && 'h-full justify-center')">
+            <Shape :open="isLeftSideBarOpen" @update:open="isLeftSideBarOpen = $event" />
+            <Toolbox
+              v-if="type === 'node'"
+              :open="isLeftSideBarOpen"
+              @update:open="isLeftSideBarOpen = $event"
+            />
+          </div>
         </SideBar>
         <PropertiesList v-if="type === 'node'" as="main" />
         <ConstraintsList v-if="type === 'property'" as="main" />
-        <OptionsBar />
+        <MobileOptionsBar v-if="isSmallScreen" />
+        <TabletOptionsBar v-else-if="!isLargeScreen" />
+        <OptionsBar v-else />
       </div>
       <main
         v-else-if="params.tab === 'turtle'"

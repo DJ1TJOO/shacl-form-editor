@@ -65,10 +65,10 @@ const { listOpen, indeterminate } = injectPropertiesListContext()
 const wasLastSetByOptions = ref(false)
 
 watch(listOpen, (newListOpen) => {
-  if (newListOpen === 'indeterminate' || newListOpen === 'groups') return
+  if (newListOpen === 'indeterminate') return
   ignoreIsOpenUpdates(() => {
     wasLastSetByOptions.value = false
-    isOpen.value = newListOpen
+    isOpen.value = newListOpen === 'groups' || newListOpen
   })
 })
 

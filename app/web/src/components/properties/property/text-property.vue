@@ -24,7 +24,11 @@ defineEmits<{
 
 const { value: editor } = useNamed({ subject, predicate: Dash.DASH('editor') })
 const { value: viewer } = useNamed({ subject, predicate: Dash.DASH('viewer') })
-const { value: datatype } = useNamed({ subject, predicate: Shacl.SHACL('datatype') })
+const { value: datatype } = useNamed({
+  subject,
+  predicate: Shacl.SHACL('datatype'),
+  readonly: true,
+})
 watch(datatype, (newDatatype) => {
   if (newDatatype === RDF('langString').value) {
     editor.value = Dash.DASH('TextFieldWithLangEditor').value

@@ -31,7 +31,7 @@ defineEmits<{
 }>()
 
 const store = useFileStore()
-const { node: path } = useNamed({ subject, predicate: Shacl.SHACL('path') })
+const { node: path } = useNamed({ subject, predicate: Shacl.SHACL('path'), readonly: true })
 const localName = computed(
   () =>
     Shacl.getLocalName(path.value) ??

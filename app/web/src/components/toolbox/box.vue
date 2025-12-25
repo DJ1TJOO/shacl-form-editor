@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/cn'
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-vue-next'
 import { BlankNode, NamedNode } from 'rdflib'
+import { RovingFocusGroup } from 'reka-ui'
 import { computed, ref } from 'vue'
 import BoxItem from './box-item.vue'
 
@@ -30,7 +31,10 @@ const filteredItems = computed(() => {
 </script>
 
 <template>
-  <div :class="cn('gap-2 grid bg-background p-2 rounded-lg', open ? 'w-full' : 'w-fit')">
+  <div
+    data-slot="toolbox"
+    :class="cn('gap-2 grid bg-background p-2 rounded-lg', open ? 'w-full' : 'w-fit')"
+  >
     <div class="flex gap-1">
       <Button color="background-blue" size="icon" @click="$emit('update:open', !open)">
         <component :is="open ? PanelLeftCloseIcon : PanelLeftOpenIcon" />
@@ -38,7 +42,7 @@ const filteredItems = computed(() => {
       <Input v-if="open" v-model="searchQuery" placeholder="Search" />
     </div>
 
-    <div class="group/toolbox-items gap-1 grid" :data-toolbox-open="open">
+    <RovingFocusGroup class="group/toolbox-items gap-1 grid" :data-toolbox-open="open">
       <BoxItem
         v-for="item in filteredItems"
         :key="item.label"
@@ -68,6 +72,6 @@ const filteredItems = computed(() => {
       >
         {{ item.tooltip }}
       </BoxItem>
-    </div>
+    </RovingFocusGroup>
   </div>
 </template>

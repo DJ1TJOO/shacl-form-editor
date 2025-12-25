@@ -2,6 +2,7 @@
 import { ConstraintsList } from '@/components/constraints'
 import { EditorBar, NewItemDialog } from '@/components/editor-bar'
 import { Files, useFile } from '@/components/file'
+import { ShortcutsOverview } from '@/components/info'
 import { NamespaceManager, Namespaces, Prefixes } from '@/components/namespace'
 import { OptionsBar, OptionsSidebarProvider } from '@/components/options-bar'
 import { PropertiesList } from '@/components/properties'
@@ -13,10 +14,13 @@ import { Toolbox } from '@/components/toolbox'
 import { TurtleEditor, TurtleEditorProvider } from '@/components/turtle-editor'
 import { Button } from '@/components/ui/button'
 import { useShapeType } from '@/composables/use-shacl'
-import { useUrlSearchParams } from '@vueuse/core'
+import { arraysEqual } from '@/lib/array'
+import { focusSection } from '@/lib/tabindex'
+import { onKeyStroke, useUrlSearchParams } from '@vueuse/core'
 import {
   ClipboardListIcon,
   CodeIcon,
+  CommandIcon,
   DownloadIcon,
   FormIcon,
   LayoutTemplateIcon,
@@ -74,13 +78,33 @@ watch(
   newFile,
   (newFile) => {
     if (!newFile) return
-    if (activeNamespaces.value !== Namespaces.DEFAULT_ACTIVE_NAMESPACES) {
+
+    if (!arraysEqual(activeNamespaces.value ?? [], Namespaces.DEFAULT_ACTIVE_NAMESPACES)) {
       newFileDialog.value = 'new-item-dialog'
     } else {
       newFileDialog.value = 'namespace-manager'
     }
   },
   { immediate: true },
+)
+
+// Alt+<Key> -> focus on section
+const focusableSections = {
+  s: 'shape',
+  p: ['properties', 'constraints'],
+  c: ['properties', 'constraints'],
+  t: 'toolbox',
+  o: 'options-bar',
+}
+
+onKeyStroke(
+  Object.keys(focusableSections),
+  (e) => {
+    if (!e.altKey) return
+    e.preventDefault()
+    focusSection(focusableSections[e.key as keyof typeof focusableSections])
+  },
+  { eventName: 'keydown' },
 )
 </script>
 
@@ -145,6 +169,11 @@ watch(
           <DownloadIcon />
           <span class="@max-sm/editor-header-actions:hidden">Export Schema</span>
         </Button>
+        <ShortcutsOverview>
+          <Button size="icon-lg" variant="ghost">
+            <CommandIcon />
+          </Button>
+        </ShortcutsOverview>
       </div>
     </HeaderActions>
 

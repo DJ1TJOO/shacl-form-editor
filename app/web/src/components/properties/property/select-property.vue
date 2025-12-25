@@ -23,8 +23,16 @@ defineEmits<{
 
 const { value: editor } = useNamed({ subject, predicate: Dash.DASH('editor') })
 const { value: viewer } = useNamed({ subject, predicate: Dash.DASH('viewer') })
-const { items: classes } = useNamedList({ subject, predicate: Shacl.SHACL('class') })
-const { value: rootClass } = useNamed({ subject, predicate: Dash.DASH('rootClass') })
+const { items: classes } = useNamedList({
+  subject,
+  predicate: Shacl.SHACL('class'),
+  readonly: true,
+})
+const { value: rootClass } = useNamed({
+  subject,
+  predicate: Dash.DASH('rootClass'),
+  readonly: true,
+})
 
 const hasClass = computed(() => classes.length > 0)
 const hasRootClass = computed(() => typeof rootClass.value !== 'undefined')

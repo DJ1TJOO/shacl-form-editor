@@ -1,27 +1,15 @@
 <script setup lang="ts">
 import { cn } from '@/lib/cn'
 import { reactiveOmit } from '@vueuse/core'
-import type {
-  ContextMenuContentEmits,
-  ContextMenuContentProps,
-} from 'reka-ui'
-import {
-  ContextMenuContent,
-  ContextMenuPortal,
-  useForwardPropsEmits,
-} from 'reka-ui'
+import type { ContextMenuContentEmits, ContextMenuContentProps } from 'reka-ui'
+import { ContextMenuContent, ContextMenuPortal, useForwardPropsEmits } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 
 defineOptions({
   inheritAttrs: false,
 })
 
-const props = withDefaults(
-  defineProps<ContextMenuContentProps & { class?: HTMLAttributes['class'] }>(),
-  {
-    sideOffset: 4,
-  },
-)
+const props = defineProps<ContextMenuContentProps & { class?: HTMLAttributes['class'] }>()
 const emits = defineEmits<ContextMenuContentEmits>()
 
 const delegatedProps = reactiveOmit(props, 'class')
@@ -49,5 +37,3 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     </ContextMenuContent>
   </ContextMenuPortal>
 </template>
-
-

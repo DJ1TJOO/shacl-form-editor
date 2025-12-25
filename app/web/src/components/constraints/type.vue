@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { useFile } from '@/components/file'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldList, FieldOptional } from '@/components/form-ui/field'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { Namespaces, Prefixes } from '@/components/namespace'
 import { RDF_CLASS_TYPES, RDFS, Shacl } from '@/components/rdf'
@@ -51,20 +52,16 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
         </Tooltip>
       </FieldLabel>
 
-      <AddButton
-        v-if="typeof datatype === 'undefined'"
-        @click="datatype = 'http://www.w3.org/2001/XMLSchema#string'"
-        :disabled="fixedDatatype"
-      />
       <!-- @TODO: fix when on blur is called in the prefix input the value is set to undefined, this also happens when a user tries to click a option from the list -->
-      <PrefixInput
+      <FieldOptional
         v-model="datatype"
-        v-else
-        :disabled="fixedDatatype"
-        :types="[RDFS('Datatype').value]"
+        :create="() => 'http://www.w3.org/2001/XMLSchema#string'"
+        v-slot="{ remove }"
       >
-        <RemoveButton @click="datatype = undefined" :disabled="fixedDatatype" />
-      </PrefixInput>
+        <PrefixInput v-model="datatype" :disabled="fixedDatatype" :types="[RDFS('Datatype').value]">
+          <RemoveButton @click="remove" :disabled="fixedDatatype" />
+        </PrefixInput>
+      </FieldOptional>
     </Field>
 
     <Field v-if="!noClasses">
@@ -76,15 +73,15 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
         </Tooltip>
       </FieldLabel>
 
-      <PrefixInput
-        v-for="(classEntry, index) in classes"
-        :key="index"
-        v-model="classEntry.value"
-        :types="RDF_CLASS_TYPES"
+      <FieldList
+        v-slot="{ entry, remove }"
+        v-model="classes"
+        :create="() => ({ value: '', node: new NamedNode(':') })"
       >
-        <RemoveButton @click="classes.splice(index, 1)" />
-      </PrefixInput>
-      <AddButton @click="classes.push({ value: '', node: new NamedNode(':') })" />
+        <PrefixInput v-model="entry.value" :types="RDF_CLASS_TYPES">
+          <RemoveButton @click="remove" />
+        </PrefixInput>
+      </FieldList>
     </Field>
     <Field>
       <FieldLabel>
@@ -95,31 +92,32 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
         </Tooltip>
       </FieldLabel>
 
-      <AddButton
-        v-if="typeof nodeKind === 'undefined'"
-        @click="nodeKind = Shacl.nodeKinds[0].value"
-        :disabled="fixedNodeKind"
-      />
-      <Select v-model="nodeKind" v-else :disabled="fixedNodeKind">
-        <InputGroup>
-          <InputGroupSelectTrigger>
-            <SelectValue />
-          </InputGroupSelectTrigger>
-          <InputGroupAddon align="inline-end">
-            <InputGroupSelectTriggerIcon />
-            <RemoveButton @click="nodeKind = undefined" :disabled="fixedNodeKind" />
-          </InputGroupAddon>
-        </InputGroup>
-        <SelectContent>
-          <SelectItem
-            v-for="nodeKind in Shacl.nodeKinds"
-            :key="nodeKind.value"
-            :value="nodeKind.value"
-          >
-            {{ Prefixes.absoluteToPrefixed(namespaces, file.implicitBase, nodeKind.value) }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <FieldOptional
+        v-model="nodeKind"
+        :create="() => Shacl.nodeKinds[0].value"
+        v-slot="{ remove }"
+      >
+        <Select v-model="nodeKind" :disabled="fixedNodeKind">
+          <InputGroup>
+            <InputGroupSelectTrigger>
+              <SelectValue />
+            </InputGroupSelectTrigger>
+            <InputGroupAddon align="inline-end">
+              <InputGroupSelectTriggerIcon />
+              <RemoveButton @click="remove" :disabled="fixedNodeKind" />
+            </InputGroupAddon>
+          </InputGroup>
+          <SelectContent>
+            <SelectItem
+              v-for="nodeKind in Shacl.nodeKinds"
+              :key="nodeKind.value"
+              :value="nodeKind.value"
+            >
+              {{ Prefixes.absoluteToPrefixed(namespaces, file.implicitBase, nodeKind.value) }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FieldOptional>
     </Field>
   </Constraint>
 </template>

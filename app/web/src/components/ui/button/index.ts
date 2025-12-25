@@ -66,6 +66,7 @@ export const buttonVariants = cva(
         lg: 'px-5 py-1 h-8 gap-2.5 rounded-md',
         icon: 'size-7',
         'icon-sm': "size-5 [&_svg:not([class*='size-'])]:size-4",
+        'icon-lg': 'size-8 rounded-md',
       },
     },
     defaultVariants: {

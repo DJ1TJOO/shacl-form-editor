@@ -227,7 +227,7 @@ const { elementRef: dropzoneRef } = useDroppable({
 </script>
 
 <template>
-  <PropertiesList>
+  <PropertiesList data-slot="properties">
     <ul ref="dropzoneRef" class="space-y-2">
       <template v-for="(property, index) in propertiesWithEditorType" :key="property.value.value">
         <component

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Constraint, type ConstraintProps } from '@/components/constraints'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldOptional } from '@/components/form-ui/field'
 import { Shacl } from '@/components/rdf'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
@@ -48,19 +49,20 @@ const required = computed<boolean | 'indeterminate'>({
             <TooltipContent>Minimum number of occurrences.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <AddButton v-if="typeof minimum === 'undefined'" @click="minimum = 1" />
-        <InputGroup v-else>
-          <InputGroupInput
-            v-model="minimum"
-            :min="1"
-            :max="maximum"
-            default-value="1"
-            type="number"
-          />
-          <InputGroupAddon align="inline-end">
-            <RemoveButton @click="minimum = undefined" />
-          </InputGroupAddon>
-        </InputGroup>
+        <FieldOptional v-model="minimum" :create="() => 1" v-slot="{ remove }">
+          <InputGroup>
+            <InputGroupInput
+              v-model="minimum"
+              :min="1"
+              :max="maximum"
+              default-value="1"
+              type="number"
+            />
+            <InputGroupAddon align="inline-end">
+              <RemoveButton @click="remove" />
+            </InputGroupAddon>
+          </InputGroup>
+        </FieldOptional>
       </Field>
       <Field>
         <FieldLabel>
@@ -70,13 +72,19 @@ const required = computed<boolean | 'indeterminate'>({
             <TooltipContent>Maximum number of occurrences.</TooltipContent>
           </Tooltip>
         </FieldLabel>
-        <AddButton v-if="typeof maximum === 'undefined'" @click="maximum = minimum ?? 1" />
-        <InputGroup v-else>
-          <InputGroupInput v-model="maximum" :min="minimum ?? 1" default-value="1" type="number" />
-          <InputGroupAddon align="inline-end">
-            <RemoveButton @click="maximum = undefined" />
-          </InputGroupAddon>
-        </InputGroup>
+        <FieldOptional v-model="maximum" :create="() => minimum ?? 1" v-slot="{ remove }">
+          <InputGroup>
+            <InputGroupInput
+              v-model="maximum"
+              :min="minimum ?? 1"
+              default-value="1"
+              type="number"
+            />
+            <InputGroupAddon align="inline-end">
+              <RemoveButton @click="remove" />
+            </InputGroupAddon>
+          </InputGroup>
+        </FieldOptional>
       </Field>
     </div>
   </Constraint>

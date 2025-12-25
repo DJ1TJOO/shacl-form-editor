@@ -28,14 +28,17 @@ const { currentShape } = useFile()
 const { value: datatype } = useNamed({
   subject: currentShape.node,
   predicate: Shacl.SHACL('datatype'),
+  readonly: true,
 })
 const { value: nodeKind } = useNamed({
   subject: currentShape.node,
   predicate: Shacl.SHACL('nodeKind'),
+  readonly: true,
 })
 const { items: classes } = useNamedList({
   subject: currentShape.node,
   predicate: Shacl.SHACL('class'),
+  readonly: true,
 })
 
 const canHaveRangeConstraints = computed(() => {
@@ -56,7 +59,11 @@ const hasClass = computed(() => {
 </script>
 
 <template>
-  <Primitive v-bind="props" :class="cn('space-y-2 mx-auto max-w-md w-full', props.class)">
+  <Primitive
+    v-bind="props"
+    data-slot="constraints"
+    :class="cn('space-y-2 mx-auto max-w-md w-full', props.class)"
+  >
     <Item label="Cardinality constraints">
       <CardinalityConstraints :subject="currentShape.node.value" />
     </Item>

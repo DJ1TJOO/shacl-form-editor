@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useFile } from '@/components/file'
-import { AddButton, RemoveButton } from '@/components/form-ui/buttons'
+import { RemoveButton } from '@/components/form-ui/buttons'
+import { FieldList } from '@/components/form-ui/field'
 import { PrefixInput } from '@/components/form-ui/prefix'
 import { properties, type PropertiesDefinition } from '@/components/properties'
 import { RDF_CLASS_TYPES } from '@/components/rdf'
@@ -71,6 +72,12 @@ function reset() {
   resetTargets()
 }
 
+function switchType(newType: 'node' | 'property') {
+  if (type.value === newType) return
+  type.value = newType
+  resetTargets()
+}
+
 function resetTargets() {
   targetClass.value = []
   targetNode.value = []
@@ -130,7 +137,7 @@ function create() {
 </script>
 <template>
   <Dialog v-bind="forward" v-model:open="open">
-    <DialogTrigger class="shrink-0" v-if="$slots.default">
+    <DialogTrigger class="shrink-0" v-if="$slots.default" as-child>
       <slot />
     </DialogTrigger>
     <DialogScrollContent :aria-describedby="undefined">
@@ -154,18 +161,8 @@ function create() {
                   <Button
                     type="button"
                     :color="type === 'node' ? 'default' : 'background-highlighted'"
-                    @click="
-                      () => {
-                        type = 'node'
-                        resetTargets()
-                      }
-                    "
-                    @focus="
-                      () => {
-                        type = 'node'
-                        resetTargets()
-                      }
-                    "
+                    @click="switchType('node')"
+                    @focus="switchType('node')"
                   >
                     <DiamondIcon /> Node
                   </Button>
@@ -174,18 +171,8 @@ function create() {
                   <Button
                     type="button"
                     :color="type === 'property' ? 'default' : 'background-highlighted'"
-                    @click="
-                      () => {
-                        type = 'property'
-                        resetTargets()
-                      }
-                    "
-                    @focus="
-                      () => {
-                        type = 'property'
-                        resetTargets()
-                      }
-                    "
+                    @click="switchType('property')"
+                    @focus="switchType('property')"
                   >
                     <CircleIcon /> Property
                   </Button>
@@ -215,12 +202,15 @@ function create() {
                 </Tooltip>
               </FieldLabel>
 
-              <template v-for="(classEntry, index) in targetClass" :key="index">
-                <PrefixInput v-model="classEntry.value" :types="RDF_CLASS_TYPES">
-                  <RemoveButton @click="targetClass.splice(index, 1)" />
+              <FieldList
+                v-slot="{ entry, remove }"
+                v-model="targetClass"
+                :create="() => ({ value: '' })"
+              >
+                <PrefixInput v-model="entry.value" :types="RDF_CLASS_TYPES">
+                  <RemoveButton @click="remove" />
                 </PrefixInput>
-              </template>
-              <AddButton @click="targetClass.push({ value: '' })" />
+              </FieldList>
             </Field>
 
             <Field v-if="type === 'node'">
@@ -232,12 +222,15 @@ function create() {
                 </Tooltip>
               </FieldLabel>
 
-              <template v-for="(nodeEntry, index) in targetNode" :key="index">
-                <PrefixInput v-model="nodeEntry.value" :types="RDF_CLASS_TYPES">
-                  <RemoveButton @click="targetNode.splice(index, 1)" />
+              <FieldList
+                v-slot="{ entry, remove }"
+                v-model="targetNode"
+                :create="() => ({ value: '' })"
+              >
+                <PrefixInput v-model="entry.value" :types="RDF_CLASS_TYPES">
+                  <RemoveButton @click="remove" />
                 </PrefixInput>
-              </template>
-              <AddButton @click="targetNode.push({ value: '' })" />
+              </FieldList>
             </Field>
 
             <Field v-if="type === 'node'">
@@ -251,12 +244,15 @@ function create() {
                 </Tooltip>
               </FieldLabel>
 
-              <template v-for="(subjectEntry, index) in targetSubjectsOf" :key="index">
-                <PrefixInput v-model="subjectEntry.value" :types="RDF_CLASS_TYPES">
-                  <RemoveButton @click="targetSubjectsOf.splice(index, 1)" />
+              <FieldList
+                v-slot="{ entry, remove }"
+                v-model="targetSubjectsOf"
+                :create="() => ({ value: '' })"
+              >
+                <PrefixInput v-model="entry.value" :types="RDF_CLASS_TYPES">
+                  <RemoveButton @click="remove" />
                 </PrefixInput>
-              </template>
-              <AddButton @click="targetSubjectsOf.push({ value: '' })" />
+              </FieldList>
             </Field>
 
             <Field v-if="type === 'node'">
@@ -270,12 +266,15 @@ function create() {
                 </Tooltip>
               </FieldLabel>
 
-              <template v-for="(objectEntry, index) in targetObjectsOf" :key="index">
-                <PrefixInput v-model="objectEntry.value" :types="RDF_CLASS_TYPES">
-                  <RemoveButton @click="targetObjectsOf.splice(index, 1)" />
+              <FieldList
+                v-slot="{ entry, remove }"
+                v-model="targetObjectsOf"
+                :create="() => ({ value: '' })"
+              >
+                <PrefixInput v-model="entry.value" :types="RDF_CLASS_TYPES">
+                  <RemoveButton @click="remove" />
                 </PrefixInput>
-              </template>
-              <AddButton @click="targetObjectsOf.push({ value: '' })" />
+              </FieldList>
             </Field>
 
             <Field v-if="type === 'property'">

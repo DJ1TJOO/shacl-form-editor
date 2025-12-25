@@ -6,13 +6,17 @@ import { ScrollAreaScrollbar, ScrollAreaThumb } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 
 const props = withDefaults(
-  defineProps<ScrollAreaScrollbarProps & { class?: HTMLAttributes['class'] }>(),
+  defineProps<
+    ScrollAreaScrollbarProps & { class?: HTMLAttributes['class']; size?: number; offset?: number }
+  >(),
   {
     orientation: 'vertical',
+    size: 2.5,
+    offset: 0,
   },
 )
 
-const delegatedProps = reactiveOmit(props, 'class')
+const delegatedProps = reactiveOmit(props, 'class', 'size')
 </script>
 
 <template>
@@ -22,11 +26,17 @@ const delegatedProps = reactiveOmit(props, 'class')
     :class="
       cn(
         'flex p-px transition-colors touch-none select-none',
-        orientation === 'vertical' && 'h-full w-2.5 border-l border-l-transparent',
-        orientation === 'horizontal' && 'h-2.5 flex-col border-t border-t-transparent',
+        orientation === 'vertical' && `h-full border-l border-l-transparent`,
+        orientation === 'horizontal' && `flex-col border-t border-t-transparent`,
         props.class,
       )
     "
+    :style="{
+      width: orientation === 'vertical' ? `calc(var(--spacing)*${props.size})` : undefined,
+      height: orientation === 'horizontal' ? `calc(var(--spacing)*${props.size})` : undefined,
+      bottom: orientation === 'horizontal' ? `calc(var(--spacing)*${props.offset})` : 0,
+      right: orientation === 'vertical' ? `calc(var(--spacing)*${props.offset})` : 0,
+    }"
   >
     <ScrollAreaThumb
       data-slot="scroll-area-thumb"

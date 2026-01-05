@@ -7,8 +7,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { getAlternativeModifier, getDefaultModifier, getSystem } from '@/lib/shortcut'
 import { reactiveOmit } from '@vueuse/core'
-import { ArrowBigUpIcon, CommandIcon, OptionIcon } from 'lucide-vue-next'
+import {
+  ChevronsUpDownIcon,
+  ChevronUpIcon,
+  CommandIcon,
+  OptionIcon,
+  RectangleHorizontalIcon,
+} from 'lucide-vue-next'
 import { useForwardPropsEmits, type DialogRootEmits, type DialogRootProps } from 'reka-ui'
 
 const props = defineProps<DialogRootProps>()
@@ -20,61 +27,78 @@ const forward = useForwardPropsEmits(delegatedProps, emits)
 const open = defineModel<boolean>('open')
 
 interface Shortcut {
-  modifier?: 'alt' | 'ctrl' | 'shift'
-  key: string
+  modifier?: 'default' | 'alternative' | 'arrows' | 'escape'
+  key?: string
+  info?: string
   action: string
 }
-const shortcuts: Shortcut[] = [
+
+interface ShortcutGroup {
+  label: string
+  shortcuts: Shortcut[]
+}
+
+const shortcuts: (Shortcut | ShortcutGroup)[] = [
   {
-    key: 'Escape',
-    action: 'Close dialog, options sidebar',
-  },
-  {
-    modifier: 'ctrl',
+    modifier: 'default',
     key: 'click on properties',
     action: 'Group properties',
   },
   {
-    key: 'Arrow up/down',
-    action: 'Move property up/down in the list, when focused on a grip icon',
-  },
-  {
-    modifier: 'alt',
-    key: 's',
-    action: 'Focus on shape',
-  },
-  {
-    modifier: 'alt',
-    key: 'p',
-    action: 'Focus on properties',
-  },
-  {
-    modifier: 'alt',
-    key: 'c',
-    action: 'Focus on constraints',
-  },
-  {
-    modifier: 'alt',
-    key: 't',
-    action: 'Focus on toolbox',
-  },
-  {
-    modifier: 'alt',
-    key: 'o',
-    action: 'Focus on options',
+    label: 'Keyboard navigation',
+    shortcuts: [
+      {
+        modifier: 'escape',
+        info: 'Escape',
+        action: 'Close dialog, options sidebar',
+      },
+      {
+        modifier: 'arrows',
+        info: 'Arrows',
+        action: 'Move property up/down in the list, when focused on a grip icon',
+      },
+      {
+        modifier: 'alternative',
+        key: 's',
+        action: 'Focus on shape',
+      },
+      {
+        modifier: 'alternative',
+        key: 'p',
+        action: 'Focus on properties',
+      },
+      {
+        modifier: 'alternative',
+        key: 'c',
+        action: 'Focus on constraints',
+      },
+      {
+        modifier: 'alternative',
+        key: 't',
+        action: 'Focus on toolbox',
+      },
+      {
+        modifier: 'alternative',
+        key: 'o',
+        action: 'Focus on options',
+      },
+    ],
   },
 ]
 
-const getModifierIcon = (modifier?: 'alt' | 'ctrl' | 'shift') => {
+const getModifierIcon = (modifier?: 'default' | 'alternative' | 'arrows' | 'escape') => {
+  if (!modifier) return null
+
+  const os = getSystem()
   switch (modifier) {
-    case 'alt':
-      return OptionIcon
-    case 'ctrl':
+    case 'default':
       return CommandIcon
-    case 'shift':
-      return ArrowBigUpIcon
-    default:
-      return null
+    case 'alternative':
+      return os === 'mac' ? ChevronUpIcon : OptionIcon
+    case 'arrows':
+      return ChevronsUpDownIcon
+    case 'escape':
+      return RectangleHorizontalIcon
   }
 }
 </script>
@@ -88,9 +112,14 @@ const getModifierIcon = (modifier?: 'alt' | 'ctrl' | 'shift') => {
       <DialogHeader>
         <DialogTitle>Shortcuts editor</DialogTitle>
         <DialogDescription class="flex items-center gap-4 text-sm">
-          <span><OptionIcon class="inline size-3" /> = <code>alt</code></span>
-          <span><CommandIcon class="inline size-3" /> = <code>ctrl</code></span>
-          <span><ArrowBigUpIcon class="inline size-3" /> = <code>shift</code></span>
+          <span>
+            <component :is="getModifierIcon('alternative')" class="inline size-3" /> =
+            <code>{{ getAlternativeModifier('modifier') === 'Alt' ? 'Alt' : 'Ctrl' }}</code></span
+          >
+          <span>
+            <component :is="getModifierIcon('default')" class="inline size-3" /> =
+            <code>{{ getDefaultModifier('modifier') === 'Meta' ? 'Cmd' : 'Ctrl' }}</code>
+          </span>
         </DialogDescription>
       </DialogHeader>
 
@@ -103,22 +132,30 @@ const getModifierIcon = (modifier?: 'alt' | 'ctrl' | 'shift') => {
         </thead>
         <tbody>
           <tr
-            v-for="(shortcut, index) in shortcuts"
+            v-for="(shortcut, index) in shortcuts.flatMap((shortcut) =>
+              'shortcuts' in shortcut ? [shortcut, ...shortcut.shortcuts] : [shortcut],
+            )"
             :key="index"
             class="odd:bg-background-highlighted"
           >
-            <td class="p-2">
-              <span class="text-sm">
-                <component
-                  v-if="getModifierIcon(shortcut.modifier)"
-                  :is="getModifierIcon(shortcut.modifier)"
-                  class="inline size-3"
-                />
-                <template v-if="shortcut.modifier"> + </template>
-                <code>{{ shortcut.key }}</code>
-              </span>
-            </td>
-            <td class="p-2 text-sm">{{ shortcut.action }}</td>
+            <template v-if="!('shortcuts' in shortcut)">
+              <td class="p-2">
+                <span class="text-sm">
+                  <component
+                    v-if="shortcut.modifier"
+                    :is="getModifierIcon(shortcut.modifier)"
+                    :class="['inline', shortcut.key ? 'size-3' : 'size-4']"
+                  />
+                  <template v-if="shortcut.modifier && shortcut.key"> + </template>
+                  <code>{{ shortcut.key }}</code>
+                  <code v-if="shortcut.info">{{ ' ' }}{{ shortcut.info }}</code>
+                </span>
+              </td>
+              <td class="p-2 text-sm">{{ shortcut.action }}</td>
+            </template>
+            <template v-else>
+              <td colspan="2" class="bg-light p-2 pt-4 text-xs">{{ shortcut.label }}</td>
+            </template>
           </tr>
         </tbody>
       </table>

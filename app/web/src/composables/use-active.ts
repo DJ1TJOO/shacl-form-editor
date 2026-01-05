@@ -1,3 +1,4 @@
+import { getDefaultModifier } from '@/lib/shortcut'
 import {
   onClickOutside,
   onKeyStroke,
@@ -67,7 +68,8 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
   }
 
   const activeElement = useActiveElement()
-  const ctrlKey = useKeyModifier('Control')
+  const ctrlKey = useKeyModifier(getDefaultModifier('modifier'))
+  const defaultModifierKey = getDefaultModifier('keyevent')
 
   function isPreventActivationElement(element: EventTarget | Element | null | undefined) {
     return !!(element instanceof Element && element.closest(`[${PREVENT_ACTIVATION_ATTRIBUTE}]`))
@@ -112,12 +114,12 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
         return
       }
 
-      if (isActive.value && e.ctrlKey) {
+      if (isActive.value && e[defaultModifierKey]) {
         setActive(false)
         return
       }
 
-      setActive(true, e.ctrlKey && !isNoGrouping.value)
+      setActive(true, e[defaultModifierKey] && !isNoGrouping.value)
     },
   })
 
@@ -135,7 +137,7 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
       !isNoGrouping.value &&
       !isNoGroupingElement(event.target) &&
       isActive.value &&
-      event.ctrlKey
+      event[defaultModifierKey]
     ) {
       setActive(true, true)
       return

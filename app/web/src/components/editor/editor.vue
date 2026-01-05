@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { useShapeType } from '@/composables/use-shacl'
 import { arraysEqual } from '@/lib/array'
 import { cn } from '@/lib/cn'
+import { getAlternativeModifier } from '@/lib/shortcut'
 import { focusSection } from '@/lib/tabindex'
 import { onKeyStroke, useMediaQuery, useUrlSearchParams } from '@vueuse/core'
 import {
@@ -100,7 +101,8 @@ watch(
   { immediate: true },
 )
 
-// Alt+<Key> -> focus on section
+// Win/Linux: Alt+<Key> -> focus on section
+// Mac: Ctrl+<Key> -> focus on section
 const focusableSections = {
   s: 'shape',
   p: ['properties', 'constraints'],
@@ -112,7 +114,8 @@ const focusableSections = {
 onKeyStroke(
   Object.keys(focusableSections),
   (e) => {
-    if (!e.altKey) return
+    if (!e[getAlternativeModifier()]) return
+
     e.preventDefault()
     focusSection(focusableSections[e.key as keyof typeof focusableSections])
   },

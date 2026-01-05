@@ -7,7 +7,7 @@ const { isOpen } = injectOptionsSidebarProviderContext()
 </script>
 
 <template>
-  <SideBar v-if="isOpen">
+  <SideBar v-if="isOpen" class="w-full">
     <Bar />
   </SideBar>
 </template>

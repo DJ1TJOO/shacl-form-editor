@@ -11,7 +11,7 @@ Build validation schemas visually
 
 - [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) - Required for Vue 3 support
 
-## How to Run
+## How to Run From Editor
 
 1. Install dependencies:
 
@@ -27,6 +27,29 @@ Build validation schemas visually
    ```
 
 3. Open your browser and navigate to http://localhost:5173/
+
+## How to Run From Standalone
+
+1. Install dependencies:
+
+   ```sh
+   pnpm install
+   ```
+
+2. Build server:
+
+   ```sh
+   cd app/web
+   pnpm build
+   ```
+
+3. Start server:
+
+   ```sh
+   pnpm preview
+   ```
+
+4. Open your browser and navigate to http://localhost:4173/
 
 ## Additional Information
 

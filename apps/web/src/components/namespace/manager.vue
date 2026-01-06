@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   Dialog,
+  DialogClose,
   DialogDescription,
   DialogHeader,
   DialogScrollContent,
@@ -153,12 +154,17 @@ function removeNamespace(prefix: string) {
     <DialogTrigger class="shrink-0" v-if="$slots.default" as-child>
       <slot />
     </DialogTrigger>
-    <DialogScrollContent :aria-describedby="undefined" class="max-w-2xl">
+    <DialogScrollContent :aria-describedby="undefined" class="max-w-2xl" no-close-button>
       <DialogHeader>
-        <DialogTitle>Manage namespaces</DialogTitle>
+        <DialogTitle class="flex justify-between items-center gap-2">
+          Manage namespaces
+        </DialogTitle>
         <DialogDescription v-if="activeNamespaces">
           Select which namespaces are active for the current file.
         </DialogDescription>
+        <DialogClose as-child>
+          <Button class="top-3 right-3 z-10 absolute" color="background-blue">Done</Button>
+        </DialogClose>
       </DialogHeader>
 
       <EditNamespaceDialog

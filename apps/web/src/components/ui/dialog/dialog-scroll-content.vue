@@ -11,11 +11,12 @@ const props = defineProps<
   DialogContentProps & {
     class?: HTMLAttributes['class']
     'aria-describedby'?: HTMLAttributes['aria-describedby']
+    noCloseButton?: boolean
   }
 >()
 const emits = defineEmits<DialogContentEmits>()
 
-const delegatedProps = reactiveOmit(props, 'class', 'aria-describedby')
+const delegatedProps = reactiveOmit(props, 'class', 'aria-describedby', 'noCloseButton')
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>
@@ -49,6 +50,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
         <slot />
 
         <DialogClose
+          v-if="!props.noCloseButton"
           class="top-4 right-4 absolute hover:bg-background-highlighted p-0.5 rounded-md transition-colors"
         >
           <X class="w-4 h-4" />

@@ -90,7 +90,10 @@ const newFileDialog = ref<'namespace-manager' | 'new-item-dialog' | null>(null)
 watch(
   newFile,
   (newFile) => {
-    if (!newFile) return
+    if (!newFile) {
+      newFileDialog.value = null
+      return
+    }
 
     if (!arraysEqual(activeNamespaces.value ?? [], Namespaces.DEFAULT_ACTIVE_NAMESPACES)) {
       newFileDialog.value = 'new-item-dialog'

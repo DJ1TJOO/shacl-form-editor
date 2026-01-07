@@ -15,7 +15,12 @@ const open = defineModel<boolean>('open')
     v-model:open="open"
     title="Delete file"
     :description="`Are you sure you want to delete the file '${fileName}'?`"
-    @confirm="Files.deleteFile(fileId)"
+    @confirm="
+      () => {
+        Files.deleteFile(fileId)
+        $router.push('/')
+      }
+    "
   >
     <slot />
   </ConfirmDialog>

@@ -18,6 +18,7 @@ export interface FileWithId extends File {
 
 export function parseFile(file: string): File | null {
   const fileData = JSON.parse(file)
+  if (!fileData) return null
   if (typeof fileData.store !== 'string') return null
   if (typeof fileData.name !== 'string') return null
   if (typeof fileData.created !== 'string' || isNaN(Date.parse(fileData.created))) return null

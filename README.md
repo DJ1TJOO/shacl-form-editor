@@ -2,6 +2,13 @@
 
 Build validation schemas visually
 
+## Missing features
+
+The tool is missing the following features:
+
+- SHACL Logical Constraint Components: sh:not, sh:and, sh:or, sh:xone
+- The Form mode to show the user how the shacl data will be transformed in to a form
+
 ## Documentation
 
 See [Getting Started](docs/getting-started.md)

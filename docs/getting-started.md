@@ -56,7 +56,7 @@ Once a file and shape are created, the **Editor** mode shows the main layout of 
 
 ![Editor overview](images/getting-started/mode-editor.png)
 
-- <span style="color: #4BA1F1">(Blue)</span> **Mode selector**: Switch between **Editor**, **Turtle**, and **Form** modes.
+- <span style="color: #4BA1F1">(Blue)</span> **Mode selector**: Switch between **Editor**, **Turtle**, and **Form** modes. **Important!**: The Form mode is currently not implemented!
 - <span style="color: #AE3EC9">(Purple)</span> **File and shape navigation (editor bar)**: Tabs for the current file, current shape, and a **New shape** button.
 - <span style="color: #4CB05E">(Green)</span> **Shape definition panel (left)**: Configure the selected shape (IRI, label, description, targets, additional options).
 - <span style="color: #AE3EC9">(Purple)</span> **Toolbox (left)**: Drag elements such as **Text field**, **True / False**, **URI**, etc. to create properties.

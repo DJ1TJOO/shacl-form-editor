@@ -29,7 +29,7 @@ importers:
         specifier: 3.6.2
         version: 3.6.2
 
-  app/web:
+  apps/web:
     dependencies:
       '@sindresorhus/slugify':
         specifier: ^3.0.0

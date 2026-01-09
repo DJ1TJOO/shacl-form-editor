@@ -18,7 +18,7 @@ This opens a dialog where you provide the file name
 2. **Stored as**: The editor shows how the file will be stored internally (e.g. `example-with-spaces`).
 3. Click **Create** to create and open the file.
 
-### Choosing namespaces
+## Choosing namespaces
 
 Each file uses a set of active namespaces. These determine the prefixes you can use for shapes and properties.
 
@@ -39,7 +39,24 @@ If a required namespace is missing, you can add it using **Add namespace** in th
 3. **Fetch URL / Content Type**: Optional metadata, useful when namespaces are retrievable for autocomplete.
 4. Click **Save** to add the namespace to the list and make it available in the editor.
 
-### Creating first shape
+## Prefix inputs
+
+SHACL and RDF make use of IRI's a lot, to make this easier there are prefixes set in the namespace manager. There prefixes can be used in the prefix inputs (e.g.: `path`, `targetNode`, `datatype`, etc)
+
+The prefix input has two feature:
+
+1. Auto-complete: when typing in a prefix or localName (e.g. `person`) it will show a list of suggestions to choose from
+
+<img alt="Prefix input datatype" src="images/getting-started/prefix-input-datatype.png" width=300/>
+<img alt="Prefix input target class" src="images/getting-started/prefix-input-target-class.png" width=300/>
+
+2. It will shorten full IRI (e.g. `http://example.org/Test` -> `ex:Test`) when the namespace is known and **activated**
+
+3. It will keep full IRI for unknown namespaces
+
+<img alt="Prefix input target class" src="images/getting-started/prefix-input-unkown-namespace.png" width=300/>
+
+# Creating first shape
 
 With a file open and namespaces configured, lets create your first shape.
 
@@ -50,7 +67,7 @@ With a file open and namespaces configured, lets create your first shape.
 3. <span style="color: #4BA1F1">(Blue)</span> **Target class / node / subjects / objects**: Configure what this shape applies to (e.g. a `Student` class).
 4. <span style="color: #4CB05E">(Green)</span> Click **Create** to add the shape and open it in the visual editor.
 
-## Overview
+# Overview
 
 Once a file and shape are created, the **Editor** mode shows the main layout of the visual editor:
 
@@ -63,19 +80,19 @@ Once a file and shape are created, the **Editor** mode shows the main layout of 
 - <span style="color: #F1AC4B">(Orange)</span> **Property list (center)**: Shows all properties in the current shape; this is where you drop elements from the toolbox.
 - **Top‑right actions**: Open the namespace manager, export the schema as `.ttl`, and open the shortcuts overview.
 
-### Rename file
+## Rename file
 
 You can rename or delete the current file by left clicking it in the editor bar. It also allows you to quickly create another file or return to the file list.
 
 <img alt="File menu" src="images/getting-started/bar-file.png" width=500/>
 
-### Remove shape
+## Remove shape
 
 To remove a shape right click on the shape in the editor bar.
 
 <img src="images/getting-started/bar-shape.png" width=500 />
 
-## Properties
+# Properties
 
 To create a property (such as **Text field**) drag it from the toolbox on the left into the property list, or click to add it.
 
@@ -86,7 +103,7 @@ To create a property (such as **Text field**) drag it from the toolbox on the le
 - <span style="color: #E03131">(Red)</span> **Remove**: the **X** button to remove a property.
 - <span style="color: #4CB05E">(Green)</span> **Options**: Configure constraints for the highlighted property.
 
-## Grouping
+# Grouping
 
 You can group related properties.
 
@@ -103,7 +120,7 @@ Once a group has been created, it appears as a single grouped block that can be 
 - <span style="color: #4BA1F1">(Blue)</span> **Order**: Use the handle at the top‑left to reorder group or properties
 - <span style="color: #E03131">(Red)</span> **Remove/Ungroup**: the **X** button to ungroup a group, the underlying properties stay in the shape.
 
-## Direct editing (Turtle)
+# Direct editing (Turtle)
 
 For advanced users, the editor offers a **Turtle** mode where you can directly edit the SHACL/Turtle source.
 

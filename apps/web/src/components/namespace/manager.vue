@@ -31,7 +31,14 @@ const emits = defineEmits<DialogRootEmits>()
 const delegatedProps = reactiveOmit(props, 'open', 'defaultOpen')
 const forward = useForwardPropsEmits(delegatedProps, emits)
 
-const open = defineModel<boolean>('open')
+const open = defineModel<boolean>('open', {
+  set: (value) => {
+    if (!value) {
+      searchQuery.value = ''
+    }
+    return value
+  },
+})
 if (props.defaultOpen) {
   open.value = true
 }

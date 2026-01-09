@@ -21,7 +21,12 @@ export const nodeKinds = [
 
 export function getLocalName(iri?: string | NamedNodeType) {
   if (!iri) return undefined
-  const iriNode = getNamedNode(iri)
+  let iriNode = undefined
+  try {
+    iriNode = getNamedNode(iri)
+  } catch {
+    return undefined
+  }
   const iriValue = iriNode.value
 
   const hashIndex = iriValue.lastIndexOf('#')

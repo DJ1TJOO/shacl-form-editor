@@ -29,7 +29,13 @@ const props = defineProps<
 >()
 const emits = defineEmits<ComboboxRootEmits>()
 
-const comboboxPropsWithoutModel = reactiveOmit(props, 'modelValue')
+const comboboxPropsWithoutModel = reactiveOmit(
+  props,
+  'modelValue',
+  'onBlur',
+  'noSuggestions',
+  'types',
+)
 const comboboxProps = useForwardPropsEmits(comboboxPropsWithoutModel, emits)
 
 const prefix = defineModel<T>({ required: true })
@@ -38,18 +44,38 @@ const { file } = useFile()
 const prefixSuggestions = Prefixes.usePrefixSuggestionsList(props.types)
 const namespaces = Namespaces.useActiveNamespacesDefinitions()
 
+const maxSuggestions = 100
+
 const searchTerm = ref('')
 const { contains, startsWith } = useFilter({ sensitivity: 'base' })
 const filteredPrefixSuggestions = computed(() => {
   const [prefix, iri] = searchTerm.value.split(':')
-  return prefixSuggestions.value.filter(
-    (p) =>
-      (prefix &&
-        (startsWith(p.label, prefix) || startsWith(p.label.replace(':', ''), prefix)) &&
-        (!iri || contains(p.iri, iri))) ||
-      contains(p.iri, searchTerm.value),
-  )
+
+  const filtered = []
+
+  for (const p of prefixSuggestions.value) {
+    let startWithPrefix = false
+    if (prefix) {
+      startWithPrefix = startsWith(p.label, prefix) || startsWith(p.label.replace(':', ''), prefix)
+      if (iri) {
+        startWithPrefix = startWithPrefix && contains(p.iri, iri)
+      }
+    }
+
+    const inIri = contains(p.iri, searchTerm.value)
+
+    if (startWithPrefix || inIri) {
+      filtered.push(p)
+
+      if (filtered.length > maxSuggestions) {
+        break
+      }
+    }
+  }
+
+  return filtered
 })
+const hasMore = computed(() => filteredPrefixSuggestions.value.length > maxSuggestions)
 </script>
 
 <template>
@@ -90,6 +116,12 @@ const filteredPrefixSuggestions = computed(() => {
             <span> {{ option.label }}</span>
           </div>
         </ComboboxItem>
+        <span
+          v-if="hasMore"
+          class="relative flex items-center gap-2 px-2 py-1.5 rounded-sm outline-hidden text-xs cursor-default select-none"
+        >
+          Adapt filter to show more results
+        </span>
       </ComboboxGroup>
     </ComboboxList>
   </Combobox>

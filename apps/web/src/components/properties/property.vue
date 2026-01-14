@@ -35,7 +35,7 @@ const { node: path } = useNamed({ subject, predicate: Shacl.SHACL('path'), reado
 const localName = computed(
   () =>
     Shacl.getLocalName(path.value) ??
-    (subject instanceof NamedNode ? Shacl.getLocalName(subject.value) : undefined),
+    (subject instanceof NamedNode ? Shacl.getLocalName(subject.value) : 'Unknown'),
 )
 
 const {

@@ -3,7 +3,7 @@ import { Constraint, type ConstraintProps } from '@/components/constraints'
 import { RemoveButton } from '@/components/form-ui/buttons'
 import { FieldList, FieldOptional } from '@/components/form-ui/field'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { RDF, RDF_CLASS_TYPES, Shacl, Xsd } from '@/components/rdf'
+import { Shacl, Xsd } from '@/components/rdf'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
@@ -22,7 +22,6 @@ import { computed } from 'vue'
 const { subject } = defineProps<ConstraintProps & { type: 'node' | 'property' }>()
 
 const { value: closed } = useLiteral<boolean>({ subject, predicate: Shacl.SHACL('closed') })
-const { items: types } = useNamedList({ subject, predicate: RDF('type') })
 const { items: ignoredProperties } = useNamedList({
   subject,
   predicate: Shacl.SHACL('ignoredProperties'),
@@ -97,7 +96,26 @@ const defaultValue = computed({
           <RemoveButton @click="remove" />
         </PrefixInput>
       </FieldOptional>
-      <FieldOptional v-else v-model="defaultValue" :create="() => ''" v-slot="{ remove }">
+      <FieldOptional
+        v-else
+        v-model="defaultValue"
+        :create="
+          () => {
+            if (isDatatypeDecimal || isDatatypeInteger) {
+              return 0
+            }
+
+            if (isDatatypeDate) {
+              return isDatatypeDateTime
+                ? formatDateTimeInput(new Date())
+                : formatDateInput(new Date())
+            }
+
+            return ''
+          }
+        "
+        v-slot="{ remove }"
+      >
         <InputGroup>
           <InputGroupInput
             v-model="defaultValue"
@@ -116,32 +134,6 @@ const defaultValue = computed({
           </InputGroupAddon>
         </InputGroup>
       </FieldOptional>
-    </Field>
-    <Field>
-      <FieldLabel>
-        Type
-        <Tooltip>
-          <TooltipTrigger><InfoIcon /></TooltipTrigger>
-          <TooltipContent>Additional RDF types.</TooltipContent>
-        </Tooltip>
-      </FieldLabel>
-
-      <FieldList
-        v-slot="{ entry, remove }"
-        v-model="types"
-        :create="() => ({ value: '', node: new NamedNode(':') })"
-      >
-        <PrefixInput
-          v-if="
-            entry.value !== Shacl.SHACL('NodeShape').value &&
-            entry.value !== Shacl.SHACL('PropertyShape').value
-          "
-          :types="RDF_CLASS_TYPES"
-          v-model="entry.value"
-        >
-          <RemoveButton @click="remove" />
-        </PrefixInput>
-      </FieldList>
     </Field>
 
     <Field v-if="type === 'node'">
@@ -180,7 +172,5 @@ const defaultValue = computed({
         </PrefixInput>
       </FieldList>
     </Field>
-
-    <!-- @TODO: Create something to add any rdf property -->
   </Constraint>
 </template>

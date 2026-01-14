@@ -91,6 +91,13 @@ const hasMore = computed(() => filteredPrefixSuggestions.value.length > maxSugge
           "
           @blur="
             (e: FocusEvent) => {
+              if (e.relatedTarget !== null) {
+                const relatedTarget = e.relatedTarget as HTMLElement
+                if (relatedTarget.closest(`[data-slot='combobox-item']`)) {
+                  return
+                }
+              }
+
               const target = e.target as HTMLInputElement
               prefix = Prefixes.prefixedToAbsolute(namespaces, file.implicitBase, target.value) as T
               props.onBlur?.(e)

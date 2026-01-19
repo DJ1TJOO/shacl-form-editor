@@ -74,7 +74,7 @@ onMounted(() => {
     if (!removedSubject) return
 
     properties.value = properties.value.filter(({ subject }) => subject !== removedSubject)
-    if (properties.value.length === 0) {
+    if (properties.value.length <= 0) {
       optionsSidebar.close(id)
     } else {
       open()

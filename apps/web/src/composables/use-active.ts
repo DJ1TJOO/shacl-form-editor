@@ -133,6 +133,10 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
   onClickOutside(target, (event) => {
     if (isPreventActivationElement(event.target)) return
 
+    if (isOptionsElement(event.target) || !isActivatableElement(event.target)) {
+      return
+    }
+
     if (
       !isNoGrouping.value &&
       !isNoGroupingElement(event.target) &&
@@ -143,11 +147,7 @@ export function useActive(target: MaybeElementRef, options: UseActiveOptions = {
       return
     }
 
-    if (
-      isOptionsElement(event.target) ||
-      !isActivatableElement(event.target) ||
-      (!isNoGrouping.value && isGroupedElement(event.target))
-    ) {
+    if (!isNoGrouping.value && isGroupedElement(event.target)) {
       return
     }
 

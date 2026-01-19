@@ -30,11 +30,6 @@ const { value: datatype } = useNamed({
   predicate: Shacl.SHACL('datatype'),
   readonly: true,
 })
-const { value: nodeKind } = useNamed({
-  subject: currentShape.node,
-  predicate: Shacl.SHACL('nodeKind'),
-  readonly: true,
-})
 const { items: classes } = useNamedList({
   subject: currentShape.node,
   predicate: Shacl.SHACL('class'),
@@ -69,13 +64,12 @@ const hasClass = computed(() => {
     </Item>
 
     <Item label="Type constraints">
-      <TypeConstraints
-        :subject="currentShape.node.value"
+      <TypeConstraints :subject="currentShape.node.value" />
+      <!-- @TODO: should be based on editor type, requires refactoring of properties too
         :fixedDatatype="!!datatype"
         :fixedNodeKind="!!nodeKind"
         :noDatatype="!datatype"
-        :noClasses="!!nodeKind"
-      />
+        :noClasses="!!nodeKind" -->
     </Item>
 
     <Item v-if="canHaveStringConstraints" label="String constraints">

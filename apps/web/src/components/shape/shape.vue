@@ -9,7 +9,8 @@ import { RemoveButton } from '@/components/form-ui/buttons'
 import { FieldList } from '@/components/form-ui/field'
 import { LanguageSelect } from '@/components/form-ui/languages'
 import { PrefixInput } from '@/components/form-ui/prefix'
-import { RDF_PROPERTY_TYPES, Shacl, Xsd } from '@/components/rdf'
+import { properties } from '@/components/properties'
+import { Dash, RDFS, RDF_PROPERTY_TYPES, Shacl, Xsd } from '@/components/rdf'
 import { Button } from '@/components/ui/button'
 import {
   Field,
@@ -25,9 +26,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useOptionsSidebar } from '@/composables/use-options-sidebar'
 import { useLiteralList, useNamed, useShapeType } from '@/composables/use-shacl'
 import { cn } from '@/lib/cn'
-import { CircleIcon, DiamondIcon, InfoIcon, PanelRightOpenIcon, TypeIcon } from 'lucide-vue-next'
+import { CircleIcon, DiamondIcon, InfoIcon, PanelRightOpenIcon } from 'lucide-vue-next'
 import { Literal } from 'rdflib'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 defineProps<{
   open: boolean
@@ -63,15 +64,32 @@ const {
 
 const { items: labels } = useLiteralList({
   subject: currentShape.node,
-  predicate: Shacl.SHACL('name'),
+  predicate: type.value === 'property' ? Shacl.SHACL('name') : RDFS('label'),
 })
 const { items: descriptions } = useLiteralList({
   subject: currentShape.node,
-  predicate: Shacl.SHACL('description'),
+  predicate: type.value === 'property' ? Shacl.SHACL('description') : RDFS('comment'),
 })
 const { value: path } = useNamed({
   subject: currentShape.node,
   predicate: Shacl.SHACL('path'),
+})
+
+const { value: editor } = useNamed({
+  subject: currentShape.node,
+  predicate: Dash.DASH('editor'),
+  readonly: true,
+})
+const propertyDefinition = computed(() => {
+  if (type.value !== 'property') return undefined
+  if (!currentShape.node.value) return undefined
+
+  return properties.find((property) => {
+    if (!property.editor && editor.value === undefined) return true
+    if (!property.editor) return false
+
+    return Dash.editors[property.editor].value === editor.value
+  })
 })
 </script>
 
@@ -93,8 +111,8 @@ const { value: path } = useNamed({
   >
     <FieldSet v-if="open">
       <FieldLegend v-if="type === 'property'" class="justify-center w-full font-normal text-text">
-        <TypeIcon />
-        Text field
+        <component v-if="propertyDefinition" :is="propertyDefinition.icon" />
+        {{ propertyDefinition?.label ?? 'Property' }}
       </FieldLegend>
       <FieldGroup>
         <Field>

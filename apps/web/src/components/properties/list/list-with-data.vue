@@ -38,63 +38,47 @@ import { computed, type Component } from 'vue'
 
 const propertyEditorTypes: {
   component: Component
-  nodeType: typeof Node
   editor: (keyof typeof Dash.editors)[]
 }[] = [
   {
     component: TextFieldProperty,
-    nodeType: BlankNode,
     editor: ['TextFieldEditor', 'TextFieldWithLangEditor'],
   },
   {
     component: TextAreaProperty,
-    nodeType: BlankNode,
     editor: ['TextAreaEditor', 'TextAreaWithLangEditor'],
   },
   {
     component: BooleanProperty,
-    nodeType: BlankNode,
     editor: ['BooleanSelectEditor'],
   },
   {
     component: DateProperty,
-    nodeType: BlankNode,
     editor: ['DatePickerEditor'],
   },
   {
     component: DateTimeProperty,
-    nodeType: BlankNode,
     editor: ['DateTimePickerEditor'],
   },
   {
     component: RichTextProperty,
-    nodeType: BlankNode,
     editor: ['RichTextEditor'],
   },
   {
     component: URIProperty,
-    nodeType: BlankNode,
     editor: ['URIEditor'],
   },
   {
     component: ComboboxProperty,
-    nodeType: BlankNode,
     editor: ['AutoCompleteEditor'],
   },
   {
     component: SelectProperty,
-    nodeType: BlankNode,
     editor: ['EnumSelectEditor', 'InstancesSelectEditor', 'SubClassEditor'],
   },
   {
     component: SubNodeProperty,
-    nodeType: BlankNode,
     editor: ['DetailsEditor'],
-  },
-  {
-    component: SubProperty,
-    nodeType: NamedNode,
-    editor: [],
   },
 ] as const
 
@@ -105,17 +89,19 @@ function getPropertyEditorType(property: {
   value: BlankNode | NamedNode
   editor: NamedNode | undefined
 }) {
+  if (property.value instanceof NamedNode) {
+    return SubProperty
+  }
+
+  if (!property.editor) {
+    return undefined
+  }
+
   for (const type of propertyEditorTypes) {
-    if (!(property.value instanceof type.nodeType)) continue
-
-    if (typeof property.editor === 'undefined') {
-      if (type.editor.length !== 0) continue
-      return SubProperty
+    const editors = type.editor.map((editor) => Dash.editors[editor].value)
+    if (editors.includes(property.editor.value)) {
+      return type.component
     }
-
-    if (!type.editor.map((editor) => Dash.editors[editor].value).includes(property.editor.value))
-      continue
-    return type.component
   }
   return undefined
 }

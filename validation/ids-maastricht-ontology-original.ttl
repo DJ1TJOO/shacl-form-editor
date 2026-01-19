@@ -1,0 +1,55 @@
+# https://github.com/MaastrichtU-IDS/shacl-shapes/blob/main/generic/ontology_shape.shacl.ttl
+# @ was added to the prefix declarations to make the file parseable by RDFLib, and a .
+@prefix :       <http://example.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix omv: <http://omv.ontoware.org/2005/05/ontology#> .
+@prefix sh:     <http://www.w3.org/ns/shacl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema: <http://schema.org/> .
+@prefix foaf:   <http://xmlns.com/foaf/0.1/> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dc:  <http://purl.org/dc/elements/1.1> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+  
+:Ontology a sh:NodeShape ;
+    rdfs:label "Ontology shape using DublinCore" ;
+    sh:targetClass owl:Ontology ;
+    sh:nodeKind sh:IRI ;
+	sh:property [
+      sh:description "You need to provide at least one title value" ;  
+      sh:path  dct:title ; 
+      sh:minCount 1; 
+      sh:datatype xsd:string ;
+  	] ;
+	sh:property [
+     sh:description "You need to provide at least one creator value" ;  
+     sh:path  dct:creator ;
+      sh:minCount 1; 
+     sh:datatype xsd:string ;
+  	];
+
+   sh:property [
+      sh:description "You need to provide a description" ;
+      sh:path  dct:description ; 
+      sh:minCount 1; 
+      sh:maxCount 1; 
+      sh:datatype  xsd:string ;
+  	];
+
+
+	sh:property [
+      sh:description "You need to provide at least one publisher value" ;
+      sh:path  dct:publisher ; 
+      sh:minCount 1; 
+      sh:nodeKind sh:NodeURIOrLiteral;
+  	] ;
+
+	sh:property [
+      sh:description "You need to provide at least one license value" ;
+      sh:path   dct:license ; 
+      sh:minCount 1; 
+      sh:nodeKind sh:IRI ;
+  	]
+.
+
+

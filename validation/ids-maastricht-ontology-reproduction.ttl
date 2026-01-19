@@ -1,0 +1,60 @@
+@prefix : <http://example.org/>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix dash: <http://datashapes.org/dash#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix dct: <http://purl.org/dc/terms/>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+
+:Ontology
+    a sh:NodeShape;
+    rdfs:label "Ontology shape using DublinCore";
+    sh:property
+            [
+                dash:editor dash:TextAreaEditor;
+                dash:viewer dash:LiteralViewer;
+                sh:datatype xsd:string;
+                sh:description "You need to provide a description";
+                sh:maxCount 1;
+                sh:minCount 1;
+                sh:order 2;
+                sh:path dct:description
+            ],
+            [
+                dash:editor dash:TextFieldEditor;
+                dash:viewer dash:LiteralViewer;
+                sh:datatype xsd:string;
+                sh:description "You need to provide at least one creator value";
+                sh:minCount 1;
+                sh:order 1;
+                sh:path dct:creator
+            ],
+            [
+                dash:editor dash:TextFieldEditor;
+                dash:viewer dash:LiteralViewer;
+                sh:datatype xsd:string;
+                sh:description "You need to provide at least one title value";
+                sh:minCount 1;
+                sh:order 0;
+                sh:path dct:title
+            ],
+            [
+                dash:editor dash:TextFieldEditor;
+                dash:viewer dash:LiteralViewer;
+                sh:description
+                "You need to provide at least one publisher value";
+                sh:minCount 1;
+                sh:nodeKind sh:IRIOrLiteral;
+                sh:order 3;
+                sh:path dct:publisher
+            ],
+            [
+                dash:editor dash:URIEditor;
+                dash:viewer dash:URIViewer;
+                sh:description "You need to provide at least one license value";
+                sh:minCount 1;
+                sh:nodeKind sh:IRI;
+                sh:order 4;
+                sh:path dct:license
+            ];
+    sh:targetClass owl:Ontology.

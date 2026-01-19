@@ -52,7 +52,6 @@ const namespaces = Namespaces.useActiveNamespacesDefinitions()
         </Tooltip>
       </FieldLabel>
 
-      <!-- @TODO: fix when on blur is called in the prefix input the value is set to undefined, this also happens when a user tries to click a option from the list -->
       <FieldOptional
         v-model="datatype"
         :create="() => 'http://www.w3.org/2001/XMLSchema#string'"

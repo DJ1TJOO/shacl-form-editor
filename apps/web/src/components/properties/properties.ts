@@ -96,7 +96,7 @@ export const properties: PropertiesDefinition[] = [
     label: 'URI',
     tooltip: 'Add to library',
     editor: 'URIEditor',
-    viewer: 'LabelViewer',
+    viewer: 'URIViewer',
     nodeKind: Shacl.SHACL('IRI'),
   },
   {

@@ -207,8 +207,8 @@
         dash:editor dash:DetailsEditor ;
         dash:viewer dash:DetailsViewer ;
         sh:order 18 ;
-        sh:node :HasCodeValues_Shape ;
         sh:nodeKind sh:BlankNodeOrIRI ;
+        sh:node :HasCodeValues_Shape;
         sh:path healthdcatap:hasCodeValues ;
         sh:severity sh:Violation
     ], [

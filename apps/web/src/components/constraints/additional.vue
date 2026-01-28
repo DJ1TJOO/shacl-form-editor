@@ -10,19 +10,20 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   booleanFromCheckboxValue,
+  useCollection,
   useLiteral,
-  useNamed,
-  useNamedList,
+  useNamed
 } from '@/composables/use-shacl'
 import { formatDateInput, formatDateTimeInput } from '@/lib/date'
 import { InfoIcon } from 'lucide-vue-next'
 import { NamedNode } from 'rdflib'
 import { computed } from 'vue'
+import { RDF_PROPERTY_TYPES } from '../rdf'
 
 const { subject } = defineProps<ConstraintProps & { type: 'node' | 'property' }>()
 
 const { value: closed } = useLiteral<boolean>({ subject, predicate: Shacl.SHACL('closed') })
-const { items: ignoredProperties } = useNamedList({
+const { items: ignoredProperties } = useCollection<NamedNode>({
   subject,
   predicate: Shacl.SHACL('ignoredProperties'),
 })
@@ -165,9 +166,9 @@ const defaultValue = computed({
       <FieldList
         v-slot="{ entry, remove }"
         v-model="ignoredProperties"
-        :create="() => ({ value: '', node: new NamedNode(':') })"
+        :create="() => ({ node: new NamedNode(':') })"
       >
-        <PrefixInput v-model="entry.value" :types="[Shacl.SHACL('PropertyShape').value]">
+        <PrefixInput v-model="entry.node.value" :types="RDF_PROPERTY_TYPES">
           <RemoveButton @click="remove" />
         </PrefixInput>
       </FieldList>

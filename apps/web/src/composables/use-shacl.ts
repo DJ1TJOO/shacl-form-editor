@@ -1,7 +1,7 @@
-import { useFileStore } from '@/components/file'
+import { UPDATE_FILE_IN_STORAGE_EVENT, useFileStore } from '@/components/file'
 import { RDF, Shacl, Xsd } from '@/components/rdf'
 import { watchIgnorable } from '@vueuse/core'
-import { BlankNode, IndexedFormula, Literal, NamedNode, Node } from 'rdflib'
+import { BlankNode, Collection, IndexedFormula, Literal, NamedNode, Node } from 'rdflib'
 import type { NamedNode as NamedNodeType, Quad_Predicate, Quad_Subject } from 'rdflib/lib/tf-types'
 import {
   computed,
@@ -216,7 +216,17 @@ function useRdfNode<T extends Node>({
         return
       }
 
-      store.value.removeMatches(subjectValue, predicateValue, null)
+      // Avoid rdflib's `removeMatches` / `remove` here because of a known bug
+      // with Collections (see https://github.com/linkeddata/rdflib.js/issues/631)
+      // which causes "Statement to be removed is not on store" for triples whose
+      // object is a `Collection` (e.g. SHACL `sh:in` lists). Instead, remove
+      // matching statements directly via `removeStatement`.
+      const existing = store.value
+        .statementsMatching(subjectValue, predicateValue, null)
+      for (const st of existing) {
+        store.value.removeStatement(st)
+      }
+
       if (value) {
         store.value.add(subjectValue, predicateValue, value)
       }
@@ -323,6 +333,60 @@ export const useLiteral = <
     language: useReadonly(language, readonly),
     datatype: useReadonly(datatype, readonly),
   }
+}
+
+export const useCollection = <T extends Node, ReadOnly extends boolean = false>({
+  subject,
+  predicate,
+  readonly,
+}: {
+  subject?: MaybeRefOrGetter<Quad_Subject | undefined>
+  predicate?: MaybeRefOrGetter<Quad_Predicate | undefined>
+  readonly?: ReadOnly
+}) => {
+  const node = useRdfNode({
+    subject,
+    predicate,
+    nodeClass: Collection<T>,
+    readonly,
+  })
+
+  const items = reactive<{ node: T }[]>([]) as { node: T }[]
+  
+  const { ignoreUpdates: ignoreItemUpdates } = watchIgnorable(
+    items,
+    (newItems) => {
+      if (!newItems || newItems.length === 0) {
+        node.value = undefined
+        return
+      }
+
+      ignoreNodeUpdates(() => {
+        const newNodes = newItems.filter((item) => !(item.node instanceof NamedNode) || item.node.value?.includes(':'))
+          .map((item) => item.node)
+
+        if (!node.value) {
+          node.value = new Collection<T>()
+        }
+
+        node.value.elements.splice(0, node.value.elements.length, ...newNodes)
+        window.dispatchEvent(new Event(UPDATE_FILE_IN_STORAGE_EVENT))
+      })
+    },
+    { deep: true },
+  )
+
+  const { ignoreUpdates: ignoreNodeUpdates } = watchIgnorable(
+    node.value?.elements ?? [],
+    (newNodes) => {
+      ignoreItemUpdates(() => {
+        items.splice(0, items.length, ...newNodes.map((node) => ({ node })))
+      })
+    },
+    { immediate: true },
+  )
+
+  return { items: useReadonly(items, readonly), ignoreItemUpdates, ignoreNodeUpdates }
 }
 
 function useRdfNodeList<T extends Node>({

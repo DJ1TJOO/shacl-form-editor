@@ -4,3 +4,5 @@ export { default as FilesList } from './list.vue'
 export { default as NewFileDialog } from './new-file-dialog.vue'
 export { default as FileProvider, useFile, useFileStore, type FileContext } from './provider.vue'
 export { default as RenameFileDialog } from './rename-file-dialog.vue'
+
+export const UPDATE_FILE_IN_STORAGE_EVENT = 'update-file-in-storage-event'

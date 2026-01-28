@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { booleanFromCheckboxValue, useLiteral, useLiteralList } from '@/composables/use-shacl'
+import { booleanFromCheckboxValue, useCollection, useLiteral } from '@/composables/use-shacl'
 import { InfoIcon } from 'lucide-vue-next'
 import { Literal } from 'rdflib'
 import { computed } from 'vue'
@@ -30,7 +30,7 @@ const { value: minLength } = useLiteral<number>({ subject, predicate: Shacl.SHAC
 const { value: maxLength } = useLiteral<number>({ subject, predicate: Shacl.SHACL('maxLength') })
 const { value: pattern } = useLiteral({ subject, predicate: Shacl.SHACL('pattern') })
 const { value: combinedFlags } = useLiteral({ subject, predicate: Shacl.SHACL('flags') })
-const { items: allowedLanguagesList } = useLiteralList({
+const { items: allowedLanguagesList } = useCollection<Literal>({
   subject,
   predicate: Shacl.SHACL('languageIn'),
 })
@@ -52,16 +52,14 @@ const hasPattern = computed(() => typeof pattern.value !== 'undefined')
 
 const allowedLanguages = computed({
   get() {
-    return allowedLanguagesList.map((language) => language.value)
+    return allowedLanguagesList.map((language) => language.node.value)
   },
   set(value) {
     allowedLanguagesList.splice(
       0,
       allowedLanguagesList.length,
       ...value.map((language) => ({
-        value: language,
-        node: new Literal(language),
-        datatype: Xsd.string,
+        node: new Literal(language, undefined, Xsd.string),
       })),
     )
   },

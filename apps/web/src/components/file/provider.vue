@@ -1,12 +1,12 @@
 <script lang="ts">
-import { Files } from '@/components/file'
+import { Files, UPDATE_FILE_IN_STORAGE_EVENT } from '@/components/file'
 import { Namespaces } from '@/components/namespace'
 import { Shacl } from '@/components/rdf'
 import { useGlobalNamed } from '@/composables/use-shacl'
 import { useStorage, watchIgnorable } from '@vueuse/core'
 import { graph, IndexedFormula, NamedNode } from 'rdflib'
 import { createContext } from 'reka-ui'
-import { computed, readonly, ref, watch, type ComputedRef, type Ref } from 'vue'
+import { computed, onMounted, onUnmounted, readonly, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 export interface FileContext {
@@ -67,27 +67,34 @@ Namespaces.usePrefixSuggestionsForActiveNamespaces(activeNamespacesDefinitions)
 const store = ref(graph()) as Ref<IndexedFormula>
 const deserializationError = ref<string | null>(null)
 
-function watchStore(store: IndexedFormula) {
-  function updateFileInStorage() {
-    const serialized = Shacl.serialize(
-      store,
-      activeNamespacesDefinitions.value,
-      file.value.explicitBase ?? file.value.implicitBase ?? null,
-    )
-    if (!serialized) return
+function updateFileInStorage(store: IndexedFormula) {
+  const serialized = Shacl.serialize(
+    store,
+    activeNamespacesDefinitions.value,
+    file.value.explicitBase ?? file.value.implicitBase ?? null,
+  )
+  if (!serialized) return
 
-    ignoreStorageUpdates(() => {
-      fileInStorage.value = Files.serializeFile({
-        ...file.value,
-        store: serialized,
-        updated: new Date().toISOString(),
-      })
+  ignoreStorageUpdates(() => {
+    fileInStorage.value = Files.serializeFile({
+      ...file.value,
+      store: serialized,
+      updated: new Date().toISOString(),
     })
-  }
-
-  store.addDataCallback(updateFileInStorage)
-  store.addDataRemovalCallback(updateFileInStorage)
+  })
 }
+
+function watchStore(store: IndexedFormula) {
+  store.addDataCallback(updateFileInStorage.bind(null, store))
+  store.addDataRemovalCallback(updateFileInStorage.bind(null, store))
+}
+
+onMounted(() => {
+  window.addEventListener(UPDATE_FILE_IN_STORAGE_EVENT, () => updateFileInStorage(store.value) )
+})
+onUnmounted(() => {
+  window.removeEventListener(UPDATE_FILE_IN_STORAGE_EVENT, () => updateFileInStorage(store.value))
+})
 
 const { ignoreUpdates: ignoreStorageUpdates } = watchIgnorable(
   file,
@@ -143,10 +150,6 @@ const { ignoreUpdates: ignoreCurrentShapeIRIUpdates } = watchIgnorable(
 )
 
 function routeToValidShape() {
-  if (store.value.statements.length === 0) {
-    return
-  }
-
   const currentPath = route.path
 
   if (currentShapeIRI.value && Shacl.shapeExists(store.value, currentShapeIRI.value)) {

@@ -1,8 +1,8 @@
 <script setup lang="ts" generic="T">
-import { AddButton } from '@/components/form-ui/buttons'
-import { cn } from '@/lib/cn'
-import { computed, nextTick, useTemplateRef, type HTMLAttributes } from 'vue'
-import type { FocusElement } from './'
+import { AddButton } from '@/components/form-ui/buttons';
+import { cn } from '@/lib/cn';
+import { computed, nextTick, useTemplateRef, type HTMLAttributes } from 'vue';
+import type { FocusElement } from './';
 
 const props = defineProps<{
   create: () => T

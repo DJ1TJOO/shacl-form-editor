@@ -7,7 +7,8 @@ import { Shacl, Xsd } from '@/components/rdf'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useLiteral, useLiteralList, useNamed, useNamedList } from '@/composables/use-shacl'
+import { useCollection, useLiteral, useNamed } from '@/composables/use-shacl'
+import { formatDateInput, formatDateTimeInput } from '@/lib/date'
 import { InfoIcon } from 'lucide-vue-next'
 import { Literal, NamedNode } from 'rdflib'
 import { computed } from 'vue'
@@ -54,37 +55,9 @@ const hasValue = computed({
   },
 })
 
-const { items: inValuesLiteral } = useLiteralList({ subject, predicate: Shacl.SHACL('in') })
-const { items: inValuesNamed } = useNamedList({
+const { items: inValues } = useCollection<NamedNode | Literal>({
   subject,
   predicate: Shacl.SHACL('in'),
-})
-const inValues = computed({
-  get() {
-    if (nodeKind.value === Shacl.SHACL('IRI').value) {
-      return inValuesNamed.map((item) => ({ value: item.value }))
-    }
-    return inValuesLiteral.map((item) => ({ value: item.value }))
-  },
-  set(value: { value: string }[]) {
-    if (nodeKind.value === Shacl.SHACL('IRI').value) {
-      inValuesNamed.splice(
-        0,
-        inValuesNamed.length,
-        ...value.map((item) => ({ value: item.value, node: new NamedNode(item.value) })),
-      )
-      return
-    }
-    inValuesLiteral.splice(
-      0,
-      inValuesLiteral.length,
-      ...value.map((item) => ({
-        value: item.value,
-        node: new Literal(item.value),
-        datatype: datatypeNode.value ?? Xsd.string,
-      })),
-    )
-  },
 })
 </script>
 
@@ -142,12 +115,12 @@ const inValues = computed({
       <FieldList
         v-if="nodeKind === Shacl.SHACL('IRI').value"
         v-slot="{ entry, remove }"
-        v-model="inValuesNamed"
-        :create="() => ({ value: '', node: new NamedNode('') })"
+        v-model="inValues"
+        :create="() => ({node: new NamedNode(':')})"
       >
         <InputGroup>
           <InputGroupInput
-            v-model="entry.value"
+            v-model="entry.node.value"
             :type="
               isDatatypeDecimal || isDatatypeInteger
                 ? 'number'
@@ -167,11 +140,23 @@ const inValues = computed({
         v-else
         v-slot="{ entry, remove }"
         v-model="inValues"
-        :create="() => ({ value: '' })"
+        :create="
+          () => {
+            if (isDatatypeDecimal || isDatatypeInteger) {
+              return { node: new Literal('0', undefined, datatypeNode!) }
+            }
+
+            if (isDatatypeDate) {
+              const value = isDatatypeDateTime ? formatDateTimeInput(new Date()) : formatDateInput(new Date())
+              return { node: new Literal(value, undefined, datatypeNode!) }
+            }
+
+            return { node: new Literal('', undefined, datatypeNode ?? Xsd.string) }
+          }"
       >
         <InputGroup>
           <InputGroupInput
-            v-model="entry.value"
+            v-model="entry.node.value"
             :type="
               isDatatypeDecimal || isDatatypeInteger
                 ? 'number'

@@ -118,23 +118,9 @@ const { items: inValues } = useCollection<NamedNode | Literal>({
         v-model="inValues"
         :create="() => ({node: new NamedNode(':')})"
       >
-        <InputGroup>
-          <InputGroupInput
-            v-model="entry.node.value"
-            :type="
-              isDatatypeDecimal || isDatatypeInteger
-                ? 'number'
-                : isDatatypeDate
-                  ? isDatatypeDateTime
-                    ? 'datetime-local'
-                    : 'date'
-                  : 'text'
-            "
-          />
-          <InputGroupAddon align="inline-end">
-            <RemoveButton @click="remove" />
-          </InputGroupAddon>
-        </InputGroup>
+        <PrefixInput v-model="entry.node.value">
+          <RemoveButton @click="remove" />
+        </PrefixInput>
       </FieldList>
       <FieldList
         v-else
